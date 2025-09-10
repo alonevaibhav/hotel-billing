@@ -8,64 +8,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import '../../app/core/constants/color_constant.dart';
-import '../services/get_translation_controller/get_text_form.dart';
-import '../services/get_translation_controller/get_translation_controller.dart';
+import '../services/Translation/get_translation_controller/get_text_form.dart';
+import '../services/Translation/get_translation_controller/get_translation_controller.dart';
 
 class ImagePickerUtil {
   static const double sizeFactor = 0.75; // Size constant variable
 
-  static Widget buildTranslatableText({
-    required String text,
-    required TextStyle style,
-    String sourceLanguage = 'en',
-    String? targetLanguage,
-    bool enableTranslation = true,
-    TextAlign? textAlign,
-    int? maxLines,
-    TextOverflow? overflow,
-    Widget? loadingWidget,
-  }) {
-    // Check if TranslationController is registered before using it
-    if (!Get.isRegistered<TranslationController>()) {
-      return Text(text,
-          style: style,
-          textAlign: textAlign,
-          maxLines: maxLines,
-          overflow: overflow);
-    }
-
-    return GetBuilder<TranslationController>(
-      builder: (controller) {
-        // Use a unique key that includes the language to force rebuilds when language changes
-        final currentLang = controller.currentLanguage?.code ?? 'en';
-        final key = Key('${text}_${sourceLanguage}_${currentLang}');
-
-        return GetTranslatableText(
-          text,
-          key: key,
-          style: style,
-          textAlign: textAlign,
-          maxLines: maxLines,
-          overflow: overflow,
-          sourceLanguage: sourceLanguage,
-          targetLanguage: targetLanguage,
-          enableTranslation: enableTranslation,
-          loadingWidget: loadingWidget ??
-              SizedBox(
-                height: style.fontSize ?? 16,
-                width: 20.w * sizeFactor,
-                child: CircularProgressIndicator(
-                  strokeWidth: 1,
-                  color: style.color ?? SetuColors.primaryGreen,
-                ),
-              ),
-          useQueuedTranslation: true,
-          enableCache: true,
-          debounceDelay: const Duration(milliseconds: 150),
-        );
-      },
-    );
-  }
 
   /// Build File Upload Field - Clean version for views
   static Widget buildFileUploadField({
@@ -85,7 +33,7 @@ class ImagePickerUtil {
           style: GoogleFonts.poppins(
             fontSize: 16.sp * sizeFactor,
             fontWeight: FontWeight.w600,
-            color: SetuColors.textPrimary,
+            color: AppColors.textPrimary,
           ),
         ),
         Gap(8.h * sizeFactor),
@@ -120,15 +68,15 @@ class ImagePickerUtil {
         vertical: 12.h * sizeFactor,
       ),
       decoration: BoxDecoration(
-        color: SetuColors.primaryGreen.withOpacity(0.1),
+        color: AppColors.primaryGreen.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8.r * sizeFactor),
-        border: Border.all(color: SetuColors.primaryGreen.withOpacity(0.3)),
+        border: Border.all(color: AppColors.primaryGreen.withOpacity(0.3)),
       ),
       child: Row(
         children: [
           Icon(
             icon,
-            color: SetuColors.primaryGreen,
+            color: AppColors.primaryGreen,
             size: 20.sp * sizeFactor,
           ),
           Gap(8.w * sizeFactor),
@@ -137,7 +85,7 @@ class ImagePickerUtil {
             style: GoogleFonts.poppins(
               fontSize: 16.sp * sizeFactor,
               fontWeight: FontWeight.w600,
-              color: SetuColors.primaryGreen,
+              color: AppColors.primaryGreen,
             ),
           ),
         ],
@@ -164,12 +112,12 @@ class ImagePickerUtil {
           vertical: 16.h * sizeFactor,
         ),
         decoration: BoxDecoration(
-          color: SetuColors.background,
+          color: AppColors.background,
           borderRadius: BorderRadius.circular(12.r * sizeFactor),
           border: Border.all(
             color: uploadedFiles.isEmpty
-                ? SetuColors.lightGreen.withOpacity(0.3)
-                : SetuColors.primaryGreen.withOpacity(0.5),
+                ? AppColors.lightGreen.withOpacity(0.3)
+                : AppColors.primaryGreen.withOpacity(0.5),
             width: uploadedFiles.isEmpty ? 1 : 2,
           ),
         ),
@@ -177,7 +125,7 @@ class ImagePickerUtil {
           children: [
             Icon(
               icon,
-              color: SetuColors.primaryGreen,
+              color: AppColors.primaryGreen,
               size: 20.w * sizeFactor,
             ),
             Gap(12.w * sizeFactor),
@@ -192,8 +140,8 @@ class ImagePickerUtil {
                     style: GoogleFonts.poppins(
                       fontSize: 16.sp * sizeFactor,
                       color: uploadedFiles.isEmpty
-                          ? SetuColors.textSecondary
-                          : SetuColors.primaryGreen,
+                          ? AppColors.textSecondary
+                          : AppColors.primaryGreen,
                       fontWeight: uploadedFiles.isEmpty
                           ? FontWeight.w400
                           : FontWeight.w600,
@@ -205,7 +153,7 @@ class ImagePickerUtil {
                       text: 'Tap to change files',
                       style: GoogleFonts.poppins(
                         fontSize: 12.sp * sizeFactor,
-                        color: SetuColors.textSecondary,
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ],
@@ -217,8 +165,8 @@ class ImagePickerUtil {
                   ? PhosphorIcons.plus(PhosphorIconsStyle.regular)
                   : PhosphorIcons.checkCircle(PhosphorIconsStyle.fill),
               color: uploadedFiles.isEmpty
-                  ? SetuColors.textSecondary
-                  : SetuColors.primaryGreen,
+                  ? AppColors.textSecondary
+                  : AppColors.primaryGreen,
               size: 20.w * sizeFactor,
             ),
           ],
@@ -232,9 +180,9 @@ class ImagePickerUtil {
     return Container(
       padding: EdgeInsets.all(12.w * sizeFactor),
       decoration: BoxDecoration(
-        color: SetuColors.primaryGreen.withOpacity(0.05),
+        color: AppColors.primaryGreen.withOpacity(0.05),
         borderRadius: BorderRadius.circular(8.r * sizeFactor),
-        border: Border.all(color: SetuColors.primaryGreen.withOpacity(0.2)),
+        border: Border.all(color: AppColors.primaryGreen.withOpacity(0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -243,7 +191,7 @@ class ImagePickerUtil {
             children: [
               Icon(
                 PhosphorIcons.files(PhosphorIconsStyle.regular),
-                color: SetuColors.primaryGreen,
+                color: AppColors.primaryGreen,
                 size: 16.w * sizeFactor,
               ),
               Gap(8.w * sizeFactor),
@@ -252,7 +200,7 @@ class ImagePickerUtil {
                 style: GoogleFonts.poppins(
                   fontSize: 14.sp * sizeFactor,
                   fontWeight: FontWeight.w600,
-                  color: SetuColors.primaryGreen,
+                  color: AppColors.primaryGreen,
                 ),
               ),
               const Spacer(),
@@ -262,7 +210,7 @@ class ImagePickerUtil {
                   padding: EdgeInsets.all(4.w * sizeFactor),
                   child: Icon(
                     PhosphorIcons.trash(PhosphorIconsStyle.regular),
-                    color: SetuColors.error,
+                    color: AppColors.error,
                     size: 16.w * sizeFactor,
                   ),
                 ),
@@ -289,7 +237,7 @@ class ImagePickerUtil {
             isImage
                 ? PhosphorIcons.image(PhosphorIconsStyle.regular)
                 : PhosphorIcons.file(PhosphorIconsStyle.regular),
-            color: SetuColors.textSecondary,
+            color: AppColors.textSecondary,
             size: 16.w * sizeFactor,
           ),
           Gap(8.w * sizeFactor),
@@ -298,7 +246,7 @@ class ImagePickerUtil {
               fileName,
               style: GoogleFonts.poppins(
                 fontSize: 12.sp * sizeFactor,
-                color: SetuColors.textSecondary,
+                color: AppColors.textSecondary,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -372,7 +320,7 @@ class ImagePickerUtil {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24.r * sizeFactor)),
         boxShadow: [
           BoxShadow(
-            color: SetuColors.primaryGreen.withOpacity(0.1),
+            color: AppColors.primaryGreen.withOpacity(0.1),
             blurRadius: 20,
             offset: const Offset(0, -5),
           ),
@@ -387,7 +335,7 @@ class ImagePickerUtil {
             width: 40.w * sizeFactor,
             height: 4.h * sizeFactor,
             decoration: BoxDecoration(
-              color: SetuColors.lightGreen.withOpacity(0.3),
+              color: AppColors.lightGreen.withOpacity(0.3),
               borderRadius: BorderRadius.circular(2.r * sizeFactor),
             ),
           ),
@@ -399,7 +347,7 @@ class ImagePickerUtil {
               children: [
                 Icon(
                   PhosphorIcons.upload(PhosphorIconsStyle.fill),
-                  color: SetuColors.primaryGreen,
+                  color: AppColors.primaryGreen,
                   size: 24.w * sizeFactor,
                 ),
                 Gap(12.w * sizeFactor),
@@ -409,7 +357,7 @@ class ImagePickerUtil {
                     style: GoogleFonts.poppins(
                       fontSize: 20.sp * sizeFactor,
                       fontWeight: FontWeight.w700,
-                      color: SetuColors.textPrimary,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ),
@@ -420,7 +368,7 @@ class ImagePickerUtil {
                     padding: EdgeInsets.all(8.w * sizeFactor),
                     child: Icon(
                       Icons.close,
-                      color: SetuColors.textSecondary,
+                      color: AppColors.textSecondary,
                       size: 20.w * sizeFactor,
                     ),
                   ),
@@ -496,10 +444,10 @@ class ImagePickerUtil {
         Container(
           padding: EdgeInsets.all(8.w * sizeFactor),
           decoration: BoxDecoration(
-            color: SetuColors.primaryGreen.withOpacity(0.1),
+            color: AppColors.primaryGreen.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8.r * sizeFactor),
           ),
-          child: Icon(icon, color: SetuColors.primaryGreen, size: 20.w * sizeFactor),
+          child: Icon(icon, color: AppColors.primaryGreen, size: 20.w * sizeFactor),
         ),
         Gap(12.w * sizeFactor),
         buildTranslatableText(
@@ -507,14 +455,14 @@ class ImagePickerUtil {
           style: GoogleFonts.poppins(
             fontSize: 16.sp * sizeFactor,
             fontWeight: FontWeight.w600,
-            color: SetuColors.primaryGreen,
+            color: AppColors.primaryGreen,
           ),
         ),
         Expanded(
           child: Container(
             height: 1.h * sizeFactor,
             margin: EdgeInsets.only(left: 12.w * sizeFactor),
-            color: SetuColors.primaryGreen.withOpacity(0.2),
+            color: AppColors.primaryGreen.withOpacity(0.2),
           ),
         ),
       ],
@@ -532,8 +480,8 @@ class ImagePickerUtil {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12.r * sizeFactor),
-        border: Border.all(color: SetuColors.lightGreen.withOpacity(0.3)),
-        color: SetuColors.background,
+        border: Border.all(color: AppColors.lightGreen.withOpacity(0.3)),
+        color: AppColors.background,
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(12.r * sizeFactor),
@@ -546,12 +494,12 @@ class ImagePickerUtil {
                 width: 48.w * sizeFactor,
                 height: 48.h * sizeFactor,
                 decoration: BoxDecoration(
-                  color: (iconColor ?? SetuColors.primaryGreen).withOpacity(0.1),
+                  color: (iconColor ?? AppColors.primaryGreen).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12.r * sizeFactor),
                 ),
                 child: Icon(
                   icon,
-                  color: iconColor ?? SetuColors.primaryGreen,
+                  color: iconColor ?? AppColors.primaryGreen,
                   size: 24.w * sizeFactor,
                 ),
               ),
@@ -565,7 +513,7 @@ class ImagePickerUtil {
                       style: GoogleFonts.poppins(
                         fontSize: 16.sp * sizeFactor,
                         fontWeight: FontWeight.w600,
-                        color: SetuColors.textPrimary,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     Gap(4.h * sizeFactor),
@@ -573,7 +521,7 @@ class ImagePickerUtil {
                       text: subtitle,
                       style: GoogleFonts.poppins(
                         fontSize: 14.sp * sizeFactor,
-                        color: SetuColors.textSecondary,
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ],
@@ -582,7 +530,7 @@ class ImagePickerUtil {
               Icon(
                 PhosphorIcons.caretRight(PhosphorIconsStyle.regular),
                 size: 16.w * sizeFactor,
-                color: SetuColors.textSecondary,
+                color: AppColors.textSecondary,
               ),
             ],
           ),
@@ -662,7 +610,7 @@ class ImagePickerUtil {
       'Success',
       message,
       snackPosition: SnackPosition.TOP,
-      backgroundColor: SetuColors.primaryGreen,
+      backgroundColor: AppColors.primaryGreen,
       colorText: Colors.white,
       duration: const Duration(seconds: 2),
       margin: EdgeInsets.all(16.w * sizeFactor),
@@ -677,11 +625,65 @@ class ImagePickerUtil {
       'Error',
       message,
       snackPosition: SnackPosition.TOP,
-      backgroundColor: SetuColors.error,
+      backgroundColor: AppColors.error,
       colorText: Colors.white,
       margin: EdgeInsets.all(16.w * sizeFactor),
       borderRadius: 12.r * sizeFactor,
       icon: Icon(PhosphorIcons.warning(PhosphorIconsStyle.fill), color: Colors.white),
     );
   }
+
+  static Widget buildTranslatableText({
+    required String text,
+    required TextStyle style,
+    String sourceLanguage = 'en',
+    String? targetLanguage,
+    bool enableTranslation = true,
+    TextAlign? textAlign,
+    int? maxLines,
+    TextOverflow? overflow,
+    Widget? loadingWidget,
+  }) {
+    // Check if TranslationController is registered before using it
+    if (!Get.isRegistered<TranslationController>()) {
+      return Text(text,
+          style: style,
+          textAlign: textAlign,
+          maxLines: maxLines,
+          overflow: overflow);
+    }
+
+    return GetBuilder<TranslationController>(
+      builder: (controller) {
+        // Use a unique key that includes the language to force rebuilds when language changes
+        final currentLang = controller.currentLanguage?.code ?? 'en';
+        final key = Key('${text}_${sourceLanguage}_${currentLang}');
+
+        return GetTranslatableText(
+          text,
+          key: key,
+          style: style,
+          textAlign: textAlign,
+          maxLines: maxLines,
+          overflow: overflow,
+          sourceLanguage: sourceLanguage,
+          targetLanguage: targetLanguage,
+          enableTranslation: enableTranslation,
+          loadingWidget: loadingWidget ??
+              SizedBox(
+                height: style.fontSize ?? 16,
+                width: 20.w * sizeFactor,
+                child: CircularProgressIndicator(
+                  strokeWidth: 1,
+                  color: style.color ?? AppColors.primaryGreen,
+                ),
+              ),
+          useQueuedTranslation: true,
+          enableCache: true,
+          debounceDelay: const Duration(milliseconds: 150),
+        );
+      },
+    );
+  }
+
 }

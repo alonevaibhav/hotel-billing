@@ -1,67 +1,29 @@
 // import 'dart:async';
 // import 'package:flutter/material.dart';
 // import 'package:flutter_screenutil/flutter_screenutil.dart';
-// import 'package:get/get.dart';
 // import 'package:gap/gap.dart';
 // import 'package:google_fonts/google_fonts.dart';
 // import 'package:intl/intl.dart';
 // import 'package:phosphor_flutter/phosphor_flutter.dart';
 // import '../../app/core/constants/color_constant.dart';
-// import '../services/get_translation_controller/get_text_form.dart';
-// import '../services/get_translation_controller/get_translation_controller.dart';
-// import 'normal_shimmer.dart';
 //
-//
-// class SurveyUIUtils {
+// class CommonUiUtils {
 //   static const double sizeFactor = 0.75; // Size constant variable
 //
-//   /// Translatable Text Widget with proper cache handling
-//   static Widget buildTranslatableText({
+//   /// Simple Text Widget
+//   static Widget buildText({
 //     required String text,
 //     required TextStyle style,
-//     String sourceLanguage = 'en',
-//     String? targetLanguage,
-//     bool enableTranslation = true,
 //     TextAlign? textAlign,
 //     int? maxLines,
 //     TextOverflow? overflow,
-//     Widget? loadingWidget,
 //   }) {
-//     // Check if TranslationController is registered before using it
-//     if (!Get.isRegistered<TranslationController>()) {
-//       return Text(text,
-//           style: style,
-//           textAlign: textAlign,
-//           maxLines: maxLines,
-//           overflow: overflow);
-//     }
-//
-//     return GetBuilder<TranslationController>(
-//       builder: (controller) {
-//         // Use a unique key that includes the language to force rebuilds when language changes
-//         final currentLang = controller.currentLanguage?.code ?? 'en';
-//         final key = Key('${text}_${sourceLanguage}_${currentLang}');
-//
-//         return GetTranslatableText(
-//           text,
-//           key: key,
-//           style: style,
-//           textAlign: textAlign,
-//           maxLines: maxLines,
-//           overflow: overflow,
-//           sourceLanguage: sourceLanguage,
-//           targetLanguage: targetLanguage,
-//           enableTranslation: enableTranslation,
-//           loadingWidget: loadingWidget ??
-//               SimpleShimmer(
-//                 width: 80,
-//                 height: style.fontSize ?? 16,
-//               ),
-//           useQueuedTranslation: true,
-//           enableCache: true,
-//           debounceDelay: const Duration(milliseconds: 150),
-//         );
-//       },
+//     return Text(
+//       text,
+//       style: style,
+//       textAlign: textAlign,
+//       maxLines: maxLines,
+//       overflow: overflow,
 //     );
 //   }
 //
@@ -69,25 +31,23 @@
 //     return Column(
 //       crossAxisAlignment: CrossAxisAlignment.start,
 //       children: [
-//         buildTranslatableText(
+//         buildText(
 //           text: title,
 //           style: GoogleFonts.poppins(
 //             fontSize: 22.sp * sizeFactor,
 //             fontWeight: FontWeight.w700,
-//             color: SetuColors.primaryGreen,
+//             color: AppColors.primaryGreen,
 //           ),
-//           sourceLanguage: 'en',
 //         ),
 //         if (subtitle != null && subtitle.trim().isNotEmpty) ...[
 //           Gap(6.h * sizeFactor),
-//           buildTranslatableText(
+//           buildText(
 //             text: subtitle,
 //             style: GoogleFonts.poppins(
 //               fontSize: 14.sp * sizeFactor,
-//               color: SetuColors.textSecondary,
+//               color: AppColors.textSecondary,
 //               fontWeight: FontWeight.w400,
 //             ),
-//             sourceLanguage: 'en',
 //           ),
 //         ],
 //       ],
@@ -101,7 +61,6 @@
 //     required String hint,
 //     required IconData icon,
 //     String? Function(String?)? validator,
-//     String sourceLanguage = 'en',
 //     String? errorText,
 //     DateTime? initialDate,
 //     DateTime? firstDate,
@@ -112,88 +71,74 @@
 //     return Column(
 //       crossAxisAlignment: CrossAxisAlignment.start,
 //       children: [
-//         buildTranslatableText(
+//         buildText(
 //           text: label,
 //           style: GoogleFonts.poppins(
 //             fontSize: 16.sp * sizeFactor,
 //             fontWeight: FontWeight.w600,
-//             color: SetuColors.textPrimary,
+//             color: AppColors.textPrimary,
 //           ),
-//           sourceLanguage: sourceLanguage,
 //         ),
 //         Gap(8.h * sizeFactor),
-//         GetBuilder<TranslationController>(
-//           builder: (translationController) {
-//             return FutureBuilder<String>(
-//               future: _getTranslatedText(hint, sourceLanguage),
-//               builder: (context, snapshot) {
-//                 final translatedHint = snapshot.data ?? hint;
-//
-//                 return TextFormField(
-//                   controller: controller,
-//                   readOnly: true,
-//                   style: GoogleFonts.poppins(fontSize: 20.sp * sizeFactor),
-//                   validator: validator,
-//                   onTap: () async {
-//                     final selectedDate = await _showCustomDatePicker(
-//                       context: context,
-//                       initialDate: initialDate ?? DateTime.now(),
-//                       firstDate: firstDate ?? DateTime(1900),
-//                       lastDate: lastDate ?? DateTime(2100),
-//                     );
-//
-//                     if (selectedDate != null) {
-//                       controller.text =
-//                           DateFormat(dateFormat).format(selectedDate);
-//                       if (onDateSelected != null) {
-//                         onDateSelected(selectedDate);
-//                       }
-//                     }
-//                   },
-//                   decoration: InputDecoration(
-//                     hintText: translatedHint,
-//                     prefixIcon: Icon(icon,
-//                         color: SetuColors.primaryGreen,
-//                         size: 20.w * sizeFactor),
-//                     suffixIcon: Icon(
-//                       PhosphorIcons.caretDown(PhosphorIconsStyle.regular),
-//                       color: SetuColors.textSecondary,
-//                       size: 16.w * sizeFactor,
-//                     ),
-//                     filled: true,
-//                     fillColor: SetuColors.background,
-//                     border: OutlineInputBorder(
-//                       borderRadius: BorderRadius.circular(12.r * sizeFactor),
-//                       borderSide: BorderSide(
-//                           color: SetuColors.lightGreen.withOpacity(0.3)),
-//                     ),
-//                     enabledBorder: OutlineInputBorder(
-//                       borderRadius: BorderRadius.circular(12.r * sizeFactor),
-//                       borderSide: BorderSide(
-//                           color: SetuColors.lightGreen.withOpacity(0.3)),
-//                     ),
-//                     focusedBorder: OutlineInputBorder(
-//                       borderRadius: BorderRadius.circular(12.r * sizeFactor),
-//                       borderSide:
-//                       BorderSide(color: SetuColors.primaryGreen, width: 2),
-//                     ),
-//                     errorBorder: OutlineInputBorder(
-//                       borderRadius: BorderRadius.circular(12.r * sizeFactor),
-//                       borderSide: BorderSide(color: SetuColors.error, width: 1),
-//                     ),
-//                     focusedErrorBorder: OutlineInputBorder(
-//                       borderRadius: BorderRadius.circular(12.r * sizeFactor),
-//                       borderSide: BorderSide(color: SetuColors.error, width: 2),
-//                     ),
-//                     contentPadding: EdgeInsets.symmetric(
-//                         horizontal: 16.w * sizeFactor,
-//                         vertical: 16.h * sizeFactor),
-//                     errorText: errorText,
-//                   ),
-//                 );
-//               },
+//         TextFormField(
+//           controller: controller,
+//           readOnly: true,
+//           style: GoogleFonts.poppins(fontSize: 20.sp * sizeFactor),
+//           validator: validator,
+//           onTap: () async {
+//             final selectedDate = await _showCustomDatePicker(
+//               context: controller.text.isNotEmpty
+//                   ? null
+//                   : null, // This needs proper context
+//               initialDate: initialDate ?? DateTime.now(),
+//               firstDate: firstDate ?? DateTime(1900),
+//               lastDate: lastDate ?? DateTime(2100),
 //             );
+//
+//             if (selectedDate != null) {
+//               controller.text = DateFormat(dateFormat).format(selectedDate);
+//               if (onDateSelected != null) {
+//                 onDateSelected(selectedDate);
+//               }
+//             }
 //           },
+//           decoration: InputDecoration(
+//             hintText: hint,
+//             prefixIcon: Icon(icon,
+//                 color: AppColors.primaryGreen, size: 20.w * sizeFactor),
+//             suffixIcon: Icon(
+//               PhosphorIcons.caretDown(PhosphorIconsStyle.regular),
+//               color: AppColors.textSecondary,
+//               size: 16.w * sizeFactor,
+//             ),
+//             filled: true,
+//             fillColor: AppColors.background,
+//             border: OutlineInputBorder(
+//               borderRadius: BorderRadius.circular(12.r * sizeFactor),
+//               borderSide:
+//                   BorderSide(color: AppColors.lightGreen.withOpacity(0.3)),
+//             ),
+//             enabledBorder: OutlineInputBorder(
+//               borderRadius: BorderRadius.circular(12.r * sizeFactor),
+//               borderSide:
+//                   BorderSide(color: AppColors.lightGreen.withOpacity(0.3)),
+//             ),
+//             focusedBorder: OutlineInputBorder(
+//               borderRadius: BorderRadius.circular(12.r * sizeFactor),
+//               borderSide: BorderSide(color: AppColors.primaryGreen, width: 2),
+//             ),
+//             errorBorder: OutlineInputBorder(
+//               borderRadius: BorderRadius.circular(12.r * sizeFactor),
+//               borderSide: BorderSide(color: AppColors.error, width: 1),
+//             ),
+//             focusedErrorBorder: OutlineInputBorder(
+//               borderRadius: BorderRadius.circular(12.r * sizeFactor),
+//               borderSide: BorderSide(color: AppColors.error, width: 2),
+//             ),
+//             contentPadding: EdgeInsets.symmetric(
+//                 horizontal: 16.w * sizeFactor, vertical: 16.h * sizeFactor),
+//             errorText: errorText,
+//           ),
 //         ),
 //       ],
 //     );
@@ -201,11 +146,14 @@
 //
 //   /// Custom Date Picker with attractive design
 //   static Future<DateTime?> _showCustomDatePicker({
-//     required BuildContext context,
+//     required BuildContext?
+//         context, // Made nullable since we can't always pass context
 //     required DateTime initialDate,
 //     required DateTime firstDate,
 //     required DateTime lastDate,
 //   }) async {
+//     if (context == null) return null; // Return null if no context provided
+//
 //     return showDialog<DateTime>(
 //       context: context,
 //       barrierDismissible: true,
@@ -219,7 +167,7 @@
 //               borderRadius: BorderRadius.circular(20.r * sizeFactor),
 //               boxShadow: [
 //                 BoxShadow(
-//                   color: SetuColors.primaryGreen.withOpacity(0.1),
+//                   color: AppColors.primaryGreen.withOpacity(0.1),
 //                   blurRadius: 20,
 //                   offset: const Offset(0, 10),
 //                 ),
@@ -232,7 +180,7 @@
 //                 Container(
 //                   padding: EdgeInsets.all(20.w * sizeFactor),
 //                   decoration: BoxDecoration(
-//                     color: SetuColors.primaryGreen.withOpacity(0.1),
+//                     color: AppColors.primaryGreen.withOpacity(0.1),
 //                     borderRadius: BorderRadius.only(
 //                       topLeft: Radius.circular(20.r * sizeFactor),
 //                       topRight: Radius.circular(20.r * sizeFactor),
@@ -242,7 +190,7 @@
 //                     children: [
 //                       Icon(
 //                         PhosphorIcons.calendar(PhosphorIconsStyle.fill),
-//                         color: SetuColors.primaryGreen,
+//                         color: AppColors.primaryGreen,
 //                         size: 24.w * sizeFactor,
 //                       ),
 //                       Gap(12.w * sizeFactor),
@@ -251,7 +199,7 @@
 //                         style: GoogleFonts.poppins(
 //                           fontSize: 18.sp * sizeFactor,
 //                           fontWeight: FontWeight.w600,
-//                           color: SetuColors.primaryGreen,
+//                           color: AppColors.primaryGreen,
 //                         ),
 //                       ),
 //                       const Spacer(),
@@ -262,7 +210,7 @@
 //                           padding: EdgeInsets.all(8.w * sizeFactor),
 //                           child: Icon(
 //                             Icons.close,
-//                             color: SetuColors.textSecondary,
+//                             color: AppColors.textSecondary,
 //                             size: 20.w * sizeFactor,
 //                           ),
 //                         ),
@@ -277,24 +225,24 @@
 //                   child: Theme(
 //                     data: Theme.of(context).copyWith(
 //                       colorScheme: ColorScheme.light(
-//                         primary: SetuColors.primaryGreen,
+//                         primary: AppColors.primaryGreen,
 //                         onPrimary: Colors.white,
 //                         surface: Colors.white,
-//                         onSurface: SetuColors.textPrimary,
+//                         onSurface: AppColors.textPrimary,
 //                       ),
 //                       textTheme: TextTheme(
 //                         headlineSmall: GoogleFonts.poppins(
 //                           fontSize: 20.sp * sizeFactor,
 //                           fontWeight: FontWeight.w600,
-//                           color: SetuColors.textPrimary,
+//                           color: AppColors.textPrimary,
 //                         ),
 //                         bodyLarge: GoogleFonts.poppins(
 //                           fontSize: 14.sp * sizeFactor,
-//                           color: SetuColors.textPrimary,
+//                           color: AppColors.textPrimary,
 //                         ),
 //                         bodyMedium: GoogleFonts.poppins(
 //                           fontSize: 12.sp * sizeFactor,
-//                           color: SetuColors.textSecondary,
+//                           color: AppColors.textSecondary,
 //                         ),
 //                       ),
 //                     ),
@@ -321,192 +269,71 @@
 //     required String label,
 //     required String hint,
 //     required IconData icon,
-//     TextInputType keyboardType =
-//         TextInputType.text ?? TextInputType.text, // Provide a default value,
+//     TextInputType keyboardType = TextInputType.text,
 //     int maxLines = 1,
 //     int? maxLength,
 //     String? Function(String?)? validator,
-//     String sourceLanguage = 'en',
-//     String? errorText, // Add errorText parameter
-//     ValueChanged<String>? onChanged, // Add onChanged parameter
+//     String? errorText,
+//     ValueChanged<String>? onChanged,
 //     GestureTapCallback? onTap,
-//     bool readOnly = false, // default to false
+//     bool readOnly = false,
 //   }) {
 //     return Column(
 //       crossAxisAlignment: CrossAxisAlignment.start,
 //       children: [
-//         buildTranslatableText(
+//         buildText(
 //           text: label,
 //           style: GoogleFonts.poppins(
 //             fontSize: 16.sp * sizeFactor,
 //             fontWeight: FontWeight.w600,
-//             color: SetuColors.textPrimary,
+//             color: AppColors.textPrimary,
 //           ),
-//           sourceLanguage: sourceLanguage,
 //         ),
 //         Gap(8.h * sizeFactor),
-//         GetBuilder<TranslationController>(
-//           builder: (translationController) {
-//             // Translate hint text reactively
-//             return FutureBuilder<String>(
-//               future: _getTranslatedText(hint, sourceLanguage),
-//               builder: (context, snapshot) {
-//                 final translatedHint = snapshot.data ?? hint;
-//
-//                 return TextFormField(
-//                   controller: controller,
-//                   keyboardType: keyboardType,
-//                   maxLines: maxLines,
-//                   maxLength: maxLength,
-//                   style: GoogleFonts.poppins(fontSize: 16.sp * sizeFactor),
-//                   validator: validator,
-//                   onChanged: onChanged, // Pass onChanged to TextFormField
-//                   onTap: onTap, // Pass onTap to TextFormField
-//                   readOnly: readOnly, // ✅ FIX: pass readOnly here
-//                   decoration: InputDecoration(
-//                     hintText: translatedHint,
-//                     prefixIcon: Icon(icon,
-//                         color: SetuColors.primaryGreen,
-//                         size: 20.w * sizeFactor),
-//                     filled: true,
-//                     fillColor: SetuColors.background,
-//                     border: OutlineInputBorder(
-//                       borderRadius: BorderRadius.circular(12.r * sizeFactor),
-//                       borderSide: BorderSide(
-//                           color: SetuColors.lightGreen.withOpacity(0.3)),
-//                     ),
-//                     enabledBorder: OutlineInputBorder(
-//                       borderRadius: BorderRadius.circular(12.r * sizeFactor),
-//                       borderSide: BorderSide(
-//                           color: SetuColors.lightGreen.withOpacity(0.3)),
-//                     ),
-//                     focusedBorder: OutlineInputBorder(
-//                       borderRadius: BorderRadius.circular(12.r * sizeFactor),
-//                       borderSide:
-//                       BorderSide(color: SetuColors.primaryGreen, width: 2),
-//                     ),
-//                     errorBorder: OutlineInputBorder(
-//                       borderRadius: BorderRadius.circular(12.r * sizeFactor),
-//                       borderSide: BorderSide(color: SetuColors.error, width: 1),
-//                     ),
-//                     focusedErrorBorder: OutlineInputBorder(
-//                       borderRadius: BorderRadius.circular(12.r * sizeFactor),
-//                       borderSide: BorderSide(color: SetuColors.error, width: 2),
-//                     ),
-//                     contentPadding: EdgeInsets.symmetric(
-//                         horizontal: 16.w * sizeFactor,
-//                         vertical: 16.h * sizeFactor),
-//                     errorText: errorText, // Pass errorText to InputDecoration
-//                   ),
-//                 );
-//               },
-//             );
-//           },
+//         TextFormField(
+//           controller: controller,
+//           keyboardType: keyboardType,
+//           maxLines: maxLines,
+//           maxLength: maxLength,
+//           style: GoogleFonts.poppins(fontSize: 16.sp * sizeFactor),
+//           validator: validator,
+//           onChanged: onChanged,
+//           onTap: onTap,
+//           readOnly: readOnly,
+//           decoration: InputDecoration(
+//             hintText: hint,
+//             prefixIcon: Icon(icon,
+//                 color: AppColors.primaryGreen, size: 20.w * sizeFactor),
+//             filled: true,
+//             fillColor: AppColors.background,
+//             border: OutlineInputBorder(
+//               borderRadius: BorderRadius.circular(12.r * sizeFactor),
+//               borderSide:
+//                   BorderSide(color: AppColors.lightGreen.withOpacity(0.3)),
+//             ),
+//             enabledBorder: OutlineInputBorder(
+//               borderRadius: BorderRadius.circular(12.r * sizeFactor),
+//               borderSide:
+//                   BorderSide(color: AppColors.lightGreen.withOpacity(0.3)),
+//             ),
+//             focusedBorder: OutlineInputBorder(
+//               borderRadius: BorderRadius.circular(12.r * sizeFactor),
+//               borderSide: BorderSide(color: AppColors.primaryGreen, width: 2),
+//             ),
+//             errorBorder: OutlineInputBorder(
+//               borderRadius: BorderRadius.circular(12.r * sizeFactor),
+//               borderSide: BorderSide(color: AppColors.error, width: 1),
+//             ),
+//             focusedErrorBorder: OutlineInputBorder(
+//               borderRadius: BorderRadius.circular(12.r * sizeFactor),
+//               borderSide: BorderSide(color: AppColors.error, width: 2),
+//             ),
+//             contentPadding: EdgeInsets.symmetric(
+//                 horizontal: 16.w * sizeFactor, vertical: 16.h * sizeFactor),
+//             errorText: errorText,
+//           ),
 //         ),
 //       ],
-//     );
-//   }
-//
-//   static Widget buildQuestionCard({
-//     required String question,
-//     required bool? selectedValue,
-//     required Function(bool) onChanged,
-//   }) {
-//     return Container(
-//       padding: EdgeInsets.all(16.w * SurveyUIUtils.sizeFactor),
-//       decoration: BoxDecoration(
-//         color: SetuColors.background,
-//         borderRadius: BorderRadius.circular(12.r * SurveyUIUtils.sizeFactor),
-//         border: Border.all(color: SetuColors.lightGreen.withOpacity(0.3)),
-//       ),
-//       child: Column(
-//         crossAxisAlignment: CrossAxisAlignment.start,
-//         children: [
-//           SurveyUIUtils.buildTranslatableText(
-//             text: question,
-//             style: GoogleFonts.poppins(
-//               fontSize: 16.sp * SurveyUIUtils.sizeFactor,
-//               fontWeight: FontWeight.w600,
-//               color: SetuColors.textPrimary,
-//             ),
-//           ),
-//           Gap(16.h * SurveyUIUtils.sizeFactor),
-//           Row(
-//             children: [
-//               Expanded(
-//                 child: buildOptionButton(
-//                   text: 'Yes',
-//                   isSelected: selectedValue == true,
-//                   onTap: () => onChanged(true),
-//                   icon: PhosphorIcons.check(PhosphorIconsStyle.regular),
-//                 ),
-//               ),
-//               Gap(12.w * SurveyUIUtils.sizeFactor),
-//               Expanded(
-//                 child: buildOptionButton(
-//                   text: 'No',
-//                   isSelected: selectedValue == false,
-//                   onTap: () => onChanged(false),
-//                   icon: PhosphorIcons.x(PhosphorIconsStyle.regular),
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-//
-//   static Widget buildOptionButton({
-//     required String text,
-//     required bool isSelected,
-//     required VoidCallback onTap,
-//     required IconData icon,
-//   }) {
-//     return InkWell(
-//       onTap: onTap,
-//       borderRadius: BorderRadius.circular(8.r * SurveyUIUtils.sizeFactor),
-//       child: Container(
-//         padding: EdgeInsets.symmetric(
-//           vertical: 12.h * SurveyUIUtils.sizeFactor,
-//           horizontal: 16.w * SurveyUIUtils.sizeFactor,
-//         ),
-//         decoration: BoxDecoration(
-//           color: isSelected
-//               ? SetuColors.primaryGreen.withOpacity(0.1)
-//               : Colors.transparent,
-//           borderRadius: BorderRadius.circular(8.r * SurveyUIUtils.sizeFactor),
-//           border: Border.all(
-//             color: isSelected
-//                 ? SetuColors.primaryGreen
-//                 : SetuColors.lightGreen.withOpacity(0.5),
-//             width: isSelected ? 2 : 1,
-//           ),
-//         ),
-//         child: Row(
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: [
-//             Icon(
-//               icon,
-//               color: isSelected
-//                   ? SetuColors.primaryGreen
-//                   : SetuColors.textSecondary,
-//               size: 18.w * SurveyUIUtils.sizeFactor,
-//             ),
-//             Gap(8.w * SurveyUIUtils.sizeFactor),
-//             SurveyUIUtils.buildTranslatableText(
-//               text: text,
-//               style: GoogleFonts.poppins(
-//                 fontSize: 14.sp * SurveyUIUtils.sizeFactor,
-//                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-//                 color: isSelected
-//                     ? SetuColors.primaryGreen
-//                     : SetuColors.textSecondary,
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
 //     );
 //   }
 //
@@ -516,133 +343,59 @@
 //     required List<String> items,
 //     required ValueChanged<String?> onChanged,
 //     required IconData icon,
-//     String sourceLanguage = 'en',
-//     bool translateItems = true,
 //   }) {
 //     return Column(
 //       crossAxisAlignment: CrossAxisAlignment.start,
 //       children: [
-//         buildTranslatableText(
+//         buildText(
 //           text: label,
 //           style: GoogleFonts.poppins(
 //             fontSize: 16.sp * sizeFactor,
 //             fontWeight: FontWeight.w600,
-//             color: SetuColors.textPrimary,
+//             color: AppColors.textPrimary,
 //           ),
-//           sourceLanguage: sourceLanguage,
 //         ),
 //         Gap(8.h * sizeFactor),
-//         GetBuilder<TranslationController>(
-//           builder: (translationController) {
-//             return FutureBuilder<Map<String, String>>(
-//               future:
-//               translateItems && Get.isRegistered<TranslationController>()
-//                   ? _getTranslatedItems(items, sourceLanguage)
-//                   : Future.value(Map.fromIterables(items, items)),
-//               builder: (context, snapshot) {
-//                 final translatedItems =
-//                     snapshot.data ?? Map.fromIterables(items, items);
-//
-//                 return DropdownButtonFormField<String>(
-//                   value: value == null || value.isEmpty ? null : value, // Handle both null and empty
-//                   items: items.map((item) {
-//                     final translatedText = translatedItems[item] ?? item;
-//                     return DropdownMenuItem(
-//                       value: item, // Keep original value for logic
-//                       child: Text(
-//                         translatedText, // Show translated text
-//                         style:
-//                         GoogleFonts.poppins(fontSize: 16.sp * sizeFactor),
-//                       ),
-//                     );
-//                   }).toList(),
-//                   onChanged: onChanged,
-//                   decoration: InputDecoration(
-//                     prefixIcon: Icon(icon,
-//                         color: SetuColors.primaryGreen,
-//                         size: 20.w * sizeFactor),
-//                     filled: true,
-//                     fillColor: SetuColors.background,
-//                     border: OutlineInputBorder(
-//                       borderRadius: BorderRadius.circular(12.r * sizeFactor),
-//                       borderSide: BorderSide(
-//                           color: SetuColors.lightGreen.withOpacity(0.3)),
-//                     ),
-//                     enabledBorder: OutlineInputBorder(
-//                       borderRadius: BorderRadius.circular(12.r * sizeFactor),
-//                       borderSide: BorderSide(
-//                           color: SetuColors.lightGreen.withOpacity(0.3)),
-//                     ),
-//                     focusedBorder: OutlineInputBorder(
-//                       borderRadius: BorderRadius.circular(12.r * sizeFactor),
-//                       borderSide:
-//                       BorderSide(color: SetuColors.primaryGreen, width: 2),
-//                     ),
-//                     contentPadding: EdgeInsets.symmetric(
-//                         horizontal: 16.w * sizeFactor,
-//                         vertical: 16.h * sizeFactor),
-//                   ),
-//                 );
-//               },
+//         DropdownButtonFormField<String>(
+//           value: value == null || value.isEmpty ? null : value,
+//           items: items.map((item) {
+//             return DropdownMenuItem(
+//               value: item,
+//               child: Text(
+//                 item,
+//                 style: GoogleFonts.poppins(fontSize: 16.sp * sizeFactor),
+//               ),
 //             );
-//           },
+//           }).toList(),
+//           onChanged: onChanged,
+//           decoration: InputDecoration(
+//             prefixIcon: Icon(icon,
+//                 color: AppColors.primaryGreen, size: 20.w * sizeFactor),
+//             filled: true,
+//             fillColor: AppColors.background,
+//             border: OutlineInputBorder(
+//               borderRadius: BorderRadius.circular(12.r * sizeFactor),
+//               borderSide:
+//                   BorderSide(color: AppColors.lightGreen.withOpacity(0.3)),
+//             ),
+//             enabledBorder: OutlineInputBorder(
+//               borderRadius: BorderRadius.circular(12.r * sizeFactor),
+//               borderSide:
+//                   BorderSide(color: AppColors.lightGreen.withOpacity(0.3)),
+//             ),
+//             focusedBorder: OutlineInputBorder(
+//               borderRadius: BorderRadius.circular(12.r * sizeFactor),
+//               borderSide: BorderSide(color: AppColors.primaryGreen, width: 2),
+//             ),
+//             contentPadding: EdgeInsets.symmetric(
+//                 horizontal: 16.w * sizeFactor, vertical: 16.h * sizeFactor),
+//           ),
 //         ),
 //       ],
 //     );
 //   }
 //
-//
-//   static Widget buildStatusContainer({
-//     required String title,
-//     required String subtitle,
-//     required IconData icon,
-//     required Color backgroundColor,
-//     required Color iconColor,
-//     required Color textColor,
-//     String sourceLanguage = 'en',
-//   }) {
-//     return Container(
-//       padding: EdgeInsets.all(20.w * sizeFactor),
-//       decoration: BoxDecoration(
-//         color: backgroundColor.withOpacity(0.1),
-//         borderRadius: BorderRadius.circular(12.r * sizeFactor),
-//         border: Border.all(color: backgroundColor.withOpacity(0.3)),
-//       ),
-//       child: Row(
-//         children: [
-//           Icon(icon, color: iconColor, size: 24.w * sizeFactor),
-//           Gap(16.w * sizeFactor),
-//           Expanded(
-//             child: Column(
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: [
-//                 buildTranslatableText(
-//                   text: title,
-//                   style: GoogleFonts.poppins(
-//                     fontSize: 16.sp * sizeFactor,
-//                     fontWeight: FontWeight.w600,
-//                     color: textColor,
-//                   ),
-//                   sourceLanguage: sourceLanguage,
-//                 ),
-//                 Gap(4.h * sizeFactor),
-//                 buildTranslatableText(
-//                   text: subtitle,
-//                   style: GoogleFonts.poppins(
-//                     fontSize: 12.sp * sizeFactor,
-//                     color: SetuColors.textSecondary,
-//                   ),
-//                   sourceLanguage: sourceLanguage,
-//                 ),
-//               ],
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-//
-//   static Future<T?> showTranslatableDialog<T>({
+//   static Future<T?> showCustomDialog<T>({
 //     required BuildContext context,
 //     required String title,
 //     required String message,
@@ -655,7 +408,6 @@
 //     Color? primaryButtonColor,
 //     Color? backgroundColor,
 //     bool barrierDismissible = true,
-//     String sourceLanguage = 'en',
 //     Widget? customContent,
 //     double? maxWidth,
 //   }) async {
@@ -673,7 +425,7 @@
 //             ),
 //             child: Card(
 //               elevation: 20,
-//               shadowColor: SetuColors.primaryGreen.withOpacity(0.3),
+//               shadowColor: AppColors.primaryGreen.withOpacity(0.3),
 //               shape: RoundedRectangleBorder(
 //                 borderRadius: BorderRadius.circular(20.r * sizeFactor),
 //               ),
@@ -697,7 +449,7 @@
 //                     Container(
 //                       padding: EdgeInsets.all(20.w * sizeFactor),
 //                       decoration: BoxDecoration(
-//                         color: (iconColor ?? SetuColors.primaryGreen)
+//                         color: (iconColor ?? AppColors.primaryGreen)
 //                             .withOpacity(0.1),
 //                         borderRadius: BorderRadius.only(
 //                           topLeft: Radius.circular(20.r * sizeFactor),
@@ -710,40 +462,39 @@
 //                             Container(
 //                               padding: EdgeInsets.all(12.w * sizeFactor),
 //                               decoration: BoxDecoration(
-//                                 color: (iconColor ?? SetuColors.primaryGreen)
+//                                 color: (iconColor ?? AppColors.primaryGreen)
 //                                     .withOpacity(0.2),
 //                                 borderRadius:
-//                                 BorderRadius.circular(50.r * sizeFactor),
+//                                     BorderRadius.circular(50.r * sizeFactor),
 //                               ),
 //                               child: Icon(
 //                                 icon,
-//                                 color: iconColor ?? SetuColors.primaryGreen,
+//                                 color: iconColor ?? AppColors.primaryGreen,
 //                                 size: 28.w * sizeFactor,
 //                               ),
 //                             ),
 //                             Gap(16.w * sizeFactor),
 //                           ],
 //                           Expanded(
-//                             child: buildTranslatableText(
+//                             child: buildText(
 //                               text: title,
 //                               style: GoogleFonts.poppins(
 //                                 fontSize: 20.sp * sizeFactor,
 //                                 fontWeight: FontWeight.w700,
-//                                 color: SetuColors.textPrimary,
+//                                 color: AppColors.textPrimary,
 //                               ),
-//                               sourceLanguage: sourceLanguage,
 //                             ),
 //                           ),
 //                           if (barrierDismissible)
 //                             InkWell(
 //                               onTap: () => Navigator.of(context).pop(),
 //                               borderRadius:
-//                               BorderRadius.circular(20.r * sizeFactor),
+//                                   BorderRadius.circular(20.r * sizeFactor),
 //                               child: Container(
 //                                 padding: EdgeInsets.all(8.w * sizeFactor),
 //                                 child: Icon(
 //                                   Icons.close,
-//                                   color: SetuColors.textSecondary,
+//                                   color: AppColors.textSecondary,
 //                                   size: 20.w * sizeFactor,
 //                                 ),
 //                               ),
@@ -762,14 +513,13 @@
 //                           if (customContent != null)
 //                             customContent
 //                           else
-//                             buildTranslatableText(
+//                             buildText(
 //                               text: message,
 //                               style: GoogleFonts.poppins(
 //                                 fontSize: 16.sp * sizeFactor,
-//                                 color: SetuColors.textSecondary,
+//                                 color: AppColors.textSecondary,
 //                                 height: 1.5,
 //                               ),
-//                               sourceLanguage: sourceLanguage,
 //                             ),
 //
 //                           Gap(24.h * sizeFactor),
@@ -782,11 +532,10 @@
 //                                   child: _buildDialogButton(
 //                                     text: secondaryButtonText,
 //                                     onPressed: onSecondaryPressed ??
-//                                             () => Navigator.of(context).pop(),
+//                                         () => Navigator.of(context).pop(),
 //                                     backgroundColor: Colors.grey.shade100,
-//                                     textColor: SetuColors.textSecondary,
+//                                     textColor: AppColors.textSecondary,
 //                                     borderColor: Colors.grey.shade300,
-//                                     sourceLanguage: sourceLanguage,
 //                                   ),
 //                                 ),
 //                                 Gap(12.w * sizeFactor),
@@ -795,11 +544,10 @@
 //                                 child: _buildDialogButton(
 //                                   text: primaryButtonText ?? 'OK',
 //                                   onPressed: onPrimaryPressed ??
-//                                           () => Navigator.of(context).pop(),
+//                                       () => Navigator.of(context).pop(),
 //                                   backgroundColor: primaryButtonColor ??
-//                                       SetuColors.primaryGreen,
+//                                       AppColors.primaryGreen,
 //                                   textColor: Colors.white,
-//                                   sourceLanguage: sourceLanguage,
 //                                 ),
 //                               ),
 //                             ],
@@ -824,12 +572,11 @@
 //     Color? backgroundColor,
 //     Color? textColor,
 //     Color? borderColor,
-//     String sourceLanguage = 'en',
 //   }) {
 //     return ElevatedButton(
 //       onPressed: onPressed,
 //       style: ElevatedButton.styleFrom(
-//         backgroundColor: backgroundColor ?? SetuColors.primaryGreen,
+//         backgroundColor: backgroundColor ?? AppColors.primaryGreen,
 //         elevation: 0,
 //         padding: EdgeInsets.symmetric(vertical: 14.h * sizeFactor),
 //         shape: RoundedRectangleBorder(
@@ -839,128 +586,16 @@
 //               : BorderSide.none,
 //         ),
 //       ),
-//       child: buildTranslatableText(
+//       child: buildText(
 //         text: text,
 //         style: GoogleFonts.poppins(
 //           fontSize: 16.sp * sizeFactor,
 //           fontWeight: FontWeight.w600,
 //           color: textColor ?? Colors.white,
 //         ),
-//         sourceLanguage: sourceLanguage,
 //       ),
 //     );
 //   }
-//
-//   /// Helper method to get translated text with proper cache handling
-//   static Future<String> _getTranslatedText(
-//       String text, String sourceLanguage) async {
-//     if (!Get.isRegistered<TranslationController>() || text.trim().isEmpty) {
-//       return text;
-//     }
-//
-//     try {
-//       final controller = TranslationController.instance;
-//       if (!controller.isInitialized) {
-//         return text;
-//       }
-//
-//       final targetLang = controller.currentLanguage?.code ?? 'en';
-//       if (targetLang == sourceLanguage) {
-//         return text;
-//       }
-//
-//       // Use queued translation for better performance and cache management
-//       return await controller.queueTranslation(
-//         text,
-//         sourceLanguage: sourceLanguage,
-//         targetLanguage: targetLang,
-//         originalText: sourceLanguage == 'en' ? text : null,
-//       );
-//     } catch (e) {
-//       debugPrint('Translation error: $e');
-//       return text; // Fallback to original text
-//     }
-//   }
-//
-//   /// Helper method to translate multiple items with cache optimization
-//   static Future<Map<String, String>> _getTranslatedItems(
-//       List<String> items, String sourceLanguage) async {
-//     if (!Get.isRegistered<TranslationController>() || items.isEmpty) {
-//       return Map.fromIterables(items, items);
-//     }
-//
-//     try {
-//       final controller = TranslationController.instance;
-//       if (!controller.isInitialized) {
-//         return Map.fromIterables(items, items);
-//       }
-//
-//       final targetLang = controller.currentLanguage?.code ?? 'en';
-//       if (targetLang == sourceLanguage) {
-//         return Map.fromIterables(items, items);
-//       }
-//
-//       // Use batch translation for better performance
-//       final translations = await controller.translateBatch(
-//         items,
-//         sourceLanguage: sourceLanguage,
-//         targetLanguage: targetLang,
-//         useCache: true,
-//       );
-//
-//       return translations;
-//     } catch (e) {
-//       debugPrint('Batch translation error: $e');
-//       return Map.fromIterables(items, items); // Fallback to original items
-//     }
-//   }
-//
-//   /// Method to preload translations for better UX
-//   static Future<void> preloadTranslations({
-//     required List<String> texts,
-//     String sourceLanguage = 'en',
-//   }) async {
-//     if (!Get.isRegistered<TranslationController>() || texts.isEmpty) {
-//       return;
-//     }
-//
-//     try {
-//       final controller = TranslationController.instance;
-//       if (!controller.isInitialized) {
-//         return;
-//       }
-//
-//       final targetLang = controller.currentLanguage?.code ?? 'en';
-//       if (targetLang == sourceLanguage) {
-//         return;
-//       }
-//
-//       // Preload translations in background
-//       unawaited(controller.translateBatch(
-//         texts,
-//         sourceLanguage: sourceLanguage,
-//         targetLanguage: targetLang,
-//         useCache: true,
-//       ));
-//     } catch (e) {
-//       debugPrint('Preload translation error: $e');
-//     }
-//   }
-//
-//   /// Method to handle language change and refresh translations
-//   static void handleLanguageChange() {
-//     if (!Get.isRegistered<TranslationController>()) {
-//       return;
-//     }
-//
-//     // Force rebuild of all GetBuilder widgets
-//     Get.find<TranslationController>().update();
-//   }
-// }
-//
-// /// Extension to avoid blocking the main thread with unawaited futures
-// extension _FutureExtensions on Future {
-//   void get unawaited {}
 // }
 
 
@@ -972,27 +607,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../app/core/constants/color_constant.dart';
-
+import 'custom_drop_down.dart';
 
 class CommonUiUtils {
   static const double sizeFactor = 0.75; // Size constant variable
 
-  /// Simple Text Widget
-  static Widget buildText({
-    required String text,
-    required TextStyle style,
-    TextAlign? textAlign,
-    int? maxLines,
-    TextOverflow? overflow,
-  }) {
-    return Text(
-      text,
-      style: style,
-      textAlign: textAlign,
-      maxLines: maxLines,
-      overflow: overflow,
-    );
-  }
+
 
   static Widget buildStepHeader(String title, [String? subtitle]) {
     return Column(
@@ -1003,7 +623,7 @@ class CommonUiUtils {
           style: GoogleFonts.poppins(
             fontSize: 22.sp * sizeFactor,
             fontWeight: FontWeight.w700,
-            color: SetuColors.primaryGreen,
+            color: AppColors.primaryGreen,
           ),
         ),
         if (subtitle != null && subtitle.trim().isNotEmpty) ...[
@@ -1012,7 +632,7 @@ class CommonUiUtils {
             text: subtitle,
             style: GoogleFonts.poppins(
               fontSize: 14.sp * sizeFactor,
-              color: SetuColors.textSecondary,
+              color: AppColors.textSecondary,
               fontWeight: FontWeight.w400,
             ),
           ),
@@ -1043,7 +663,7 @@ class CommonUiUtils {
           style: GoogleFonts.poppins(
             fontSize: 16.sp * sizeFactor,
             fontWeight: FontWeight.w600,
-            color: SetuColors.textPrimary,
+            color: AppColors.textPrimary,
           ),
         ),
         Gap(8.h * sizeFactor),
@@ -1054,7 +674,9 @@ class CommonUiUtils {
           validator: validator,
           onTap: () async {
             final selectedDate = await _showCustomDatePicker(
-              context: controller.text.isNotEmpty ? null : null, // This needs proper context
+              context: controller.text.isNotEmpty
+                  ? null
+                  : null, // This needs proper context
               initialDate: initialDate ?? DateTime.now(),
               firstDate: firstDate ?? DateTime(1900),
               lastDate: lastDate ?? DateTime(2100),
@@ -1070,41 +692,38 @@ class CommonUiUtils {
           decoration: InputDecoration(
             hintText: hint,
             prefixIcon: Icon(icon,
-                color: SetuColors.primaryGreen,
-                size: 20.w * sizeFactor),
+                color: AppColors.primaryGreen, size: 20.w * sizeFactor),
             suffixIcon: Icon(
               PhosphorIcons.caretDown(PhosphorIconsStyle.regular),
-              color: SetuColors.textSecondary,
+              color: AppColors.textSecondary,
               size: 16.w * sizeFactor,
             ),
             filled: true,
-            fillColor: SetuColors.background,
+            fillColor: AppColors.background,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r * sizeFactor),
-              borderSide: BorderSide(
-                  color: SetuColors.lightGreen.withOpacity(0.3)),
+              borderSide:
+              BorderSide(color: AppColors.lightGreen.withOpacity(0.3)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r * sizeFactor),
-              borderSide: BorderSide(
-                  color: SetuColors.lightGreen.withOpacity(0.3)),
+              borderSide:
+              BorderSide(color: AppColors.lightGreen.withOpacity(0.3)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r * sizeFactor),
-              borderSide:
-              BorderSide(color: SetuColors.primaryGreen, width: 2),
+              borderSide: BorderSide(color: AppColors.primaryGreen, width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r * sizeFactor),
-              borderSide: BorderSide(color: SetuColors.error, width: 1),
+              borderSide: BorderSide(color: AppColors.error, width: 1),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r * sizeFactor),
-              borderSide: BorderSide(color: SetuColors.error, width: 2),
+              borderSide: BorderSide(color: AppColors.error, width: 2),
             ),
             contentPadding: EdgeInsets.symmetric(
-                horizontal: 16.w * sizeFactor,
-                vertical: 16.h * sizeFactor),
+                horizontal: 16.w * sizeFactor, vertical: 16.h * sizeFactor),
             errorText: errorText,
           ),
         ),
@@ -1114,7 +733,8 @@ class CommonUiUtils {
 
   /// Custom Date Picker with attractive design
   static Future<DateTime?> _showCustomDatePicker({
-    required BuildContext? context, // Made nullable since we can't always pass context
+    required BuildContext?
+    context, // Made nullable since we can't always pass context
     required DateTime initialDate,
     required DateTime firstDate,
     required DateTime lastDate,
@@ -1134,7 +754,7 @@ class CommonUiUtils {
               borderRadius: BorderRadius.circular(20.r * sizeFactor),
               boxShadow: [
                 BoxShadow(
-                  color: SetuColors.primaryGreen.withOpacity(0.1),
+                  color: AppColors.primaryGreen.withOpacity(0.1),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -1147,7 +767,7 @@ class CommonUiUtils {
                 Container(
                   padding: EdgeInsets.all(20.w * sizeFactor),
                   decoration: BoxDecoration(
-                    color: SetuColors.primaryGreen.withOpacity(0.1),
+                    color: AppColors.primaryGreen.withOpacity(0.1),
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(20.r * sizeFactor),
                       topRight: Radius.circular(20.r * sizeFactor),
@@ -1157,7 +777,7 @@ class CommonUiUtils {
                     children: [
                       Icon(
                         PhosphorIcons.calendar(PhosphorIconsStyle.fill),
-                        color: SetuColors.primaryGreen,
+                        color: AppColors.primaryGreen,
                         size: 24.w * sizeFactor,
                       ),
                       Gap(12.w * sizeFactor),
@@ -1166,7 +786,7 @@ class CommonUiUtils {
                         style: GoogleFonts.poppins(
                           fontSize: 18.sp * sizeFactor,
                           fontWeight: FontWeight.w600,
-                          color: SetuColors.primaryGreen,
+                          color: AppColors.primaryGreen,
                         ),
                       ),
                       const Spacer(),
@@ -1177,7 +797,7 @@ class CommonUiUtils {
                           padding: EdgeInsets.all(8.w * sizeFactor),
                           child: Icon(
                             Icons.close,
-                            color: SetuColors.textSecondary,
+                            color: AppColors.textSecondary,
                             size: 20.w * sizeFactor,
                           ),
                         ),
@@ -1192,24 +812,24 @@ class CommonUiUtils {
                   child: Theme(
                     data: Theme.of(context).copyWith(
                       colorScheme: ColorScheme.light(
-                        primary: SetuColors.primaryGreen,
+                        primary: AppColors.primaryGreen,
                         onPrimary: Colors.white,
                         surface: Colors.white,
-                        onSurface: SetuColors.textPrimary,
+                        onSurface: AppColors.textPrimary,
                       ),
                       textTheme: TextTheme(
                         headlineSmall: GoogleFonts.poppins(
                           fontSize: 20.sp * sizeFactor,
                           fontWeight: FontWeight.w600,
-                          color: SetuColors.textPrimary,
+                          color: AppColors.textPrimary,
                         ),
                         bodyLarge: GoogleFonts.poppins(
                           fontSize: 14.sp * sizeFactor,
-                          color: SetuColors.textPrimary,
+                          color: AppColors.textPrimary,
                         ),
                         bodyMedium: GoogleFonts.poppins(
                           fontSize: 12.sp * sizeFactor,
-                          color: SetuColors.textSecondary,
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ),
@@ -1253,7 +873,7 @@ class CommonUiUtils {
           style: GoogleFonts.poppins(
             fontSize: 16.sp * sizeFactor,
             fontWeight: FontWeight.w600,
-            color: SetuColors.textPrimary,
+            color: AppColors.textPrimary,
           ),
         ),
         Gap(8.h * sizeFactor),
@@ -1270,36 +890,33 @@ class CommonUiUtils {
           decoration: InputDecoration(
             hintText: hint,
             prefixIcon: Icon(icon,
-                color: SetuColors.primaryGreen,
-                size: 20.w * sizeFactor),
+                color: AppColors.primaryGreen, size: 20.w * sizeFactor),
             filled: true,
-            fillColor: SetuColors.background,
+            fillColor: AppColors.background,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r * sizeFactor),
-              borderSide: BorderSide(
-                  color: SetuColors.lightGreen.withOpacity(0.3)),
+              borderSide:
+              BorderSide(color: AppColors.lightGreen.withOpacity(0.3)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r * sizeFactor),
-              borderSide: BorderSide(
-                  color: SetuColors.lightGreen.withOpacity(0.3)),
+              borderSide:
+              BorderSide(color: AppColors.lightGreen.withOpacity(0.3)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r * sizeFactor),
-              borderSide:
-              BorderSide(color: SetuColors.primaryGreen, width: 2),
+              borderSide: BorderSide(color: AppColors.primaryGreen, width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r * sizeFactor),
-              borderSide: BorderSide(color: SetuColors.error, width: 1),
+              borderSide: BorderSide(color: AppColors.error, width: 1),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r * sizeFactor),
-              borderSide: BorderSide(color: SetuColors.error, width: 2),
+              borderSide: BorderSide(color: AppColors.error, width: 2),
             ),
             contentPadding: EdgeInsets.symmetric(
-                horizontal: 16.w * sizeFactor,
-                vertical: 16.h * sizeFactor),
+                horizontal: 16.w * sizeFactor, vertical: 16.h * sizeFactor),
             errorText: errorText,
           ),
         ),
@@ -1307,213 +924,39 @@ class CommonUiUtils {
     );
   }
 
-  static Widget buildQuestionCard({
-    required String question,
-    required bool? selectedValue,
-    required Function(bool) onChanged,
-  }) {
-    return Container(
-      padding: EdgeInsets.all(16.w * CommonUiUtils.sizeFactor),
-      decoration: BoxDecoration(
-        color: SetuColors.background,
-        borderRadius: BorderRadius.circular(12.r * CommonUiUtils.sizeFactor),
-        border: Border.all(color: SetuColors.lightGreen.withOpacity(0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CommonUiUtils.buildText(
-            text: question,
-            style: GoogleFonts.poppins(
-              fontSize: 16.sp * CommonUiUtils.sizeFactor,
-              fontWeight: FontWeight.w600,
-              color: SetuColors.textPrimary,
-            ),
-          ),
-          Gap(16.h * CommonUiUtils.sizeFactor),
-          Row(
-            children: [
-              Expanded(
-                child: buildOptionButton(
-                  text: 'Yes',
-                  isSelected: selectedValue == true,
-                  onTap: () => onChanged(true),
-                  icon: PhosphorIcons.check(PhosphorIconsStyle.regular),
-                ),
-              ),
-              Gap(12.w * CommonUiUtils.sizeFactor),
-              Expanded(
-                child: buildOptionButton(
-                  text: 'No',
-                  isSelected: selectedValue == false,
-                  onTap: () => onChanged(false),
-                  icon: PhosphorIcons.x(PhosphorIconsStyle.regular),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  static Widget buildOptionButton({
-    required String text,
-    required bool isSelected,
-    required VoidCallback onTap,
-    required IconData icon,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8.r * CommonUiUtils.sizeFactor),
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          vertical: 12.h * CommonUiUtils.sizeFactor,
-          horizontal: 16.w * CommonUiUtils.sizeFactor,
-        ),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? SetuColors.primaryGreen.withOpacity(0.1)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(8.r * CommonUiUtils.sizeFactor),
-          border: Border.all(
-            color: isSelected
-                ? SetuColors.primaryGreen
-                : SetuColors.lightGreen.withOpacity(0.5),
-            width: isSelected ? 2 : 1,
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              color: isSelected
-                  ? SetuColors.primaryGreen
-                  : SetuColors.textSecondary,
-              size: 18.w * CommonUiUtils.sizeFactor,
-            ),
-            Gap(8.w * CommonUiUtils.sizeFactor),
-            CommonUiUtils.buildText(
-              text: text,
-              style: GoogleFonts.poppins(
-                fontSize: 14.sp * CommonUiUtils.sizeFactor,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected
-                    ? SetuColors.primaryGreen
-                    : SetuColors.textSecondary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  static Widget buildDropdownField({
+  /// Custom Dropdown Field using CustomDropdownField
+  static Widget buildCustomDropdownField<T>({
     required String label,
-    required String? value,
-    required List<String> items,
-    required ValueChanged<String?> onChanged,
+    required T? value,
+    required List<T> items,
+    required String Function(T) itemLabelBuilder,
+    required ValueChanged<T?> onChanged,
     required IconData icon,
+    String? hintText,
+    FormFieldValidator<T>? validator,
+    bool isRequired = false,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        buildText(
-          text: label,
-          style: GoogleFonts.poppins(
-            fontSize: 16.sp * sizeFactor,
-            fontWeight: FontWeight.w600,
-            color: SetuColors.textPrimary,
-          ),
-        ),
-        Gap(8.h * sizeFactor),
-        DropdownButtonFormField<String>(
-          value: value == null || value.isEmpty ? null : value,
-          items: items.map((item) {
-            return DropdownMenuItem(
-              value: item,
-              child: Text(
-                item,
-                style: GoogleFonts.poppins(fontSize: 16.sp * sizeFactor),
-              ),
-            );
-          }).toList(),
-          onChanged: onChanged,
-          decoration: InputDecoration(
-            prefixIcon: Icon(icon,
-                color: SetuColors.primaryGreen,
-                size: 20.w * sizeFactor),
-            filled: true,
-            fillColor: SetuColors.background,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r * sizeFactor),
-              borderSide: BorderSide(
-                  color: SetuColors.lightGreen.withOpacity(0.3)),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r * sizeFactor),
-              borderSide: BorderSide(
-                  color: SetuColors.lightGreen.withOpacity(0.3)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r * sizeFactor),
-              borderSide:
-              BorderSide(color: SetuColors.primaryGreen, width: 2),
-            ),
-            contentPadding: EdgeInsets.symmetric(
-                horizontal: 16.w * sizeFactor,
-                vertical: 16.h * sizeFactor),
-          ),
-        ),
-      ],
-    );
-  }
-
-  static Widget buildStatusContainer({
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required Color backgroundColor,
-    required Color iconColor,
-    required Color textColor,
-  }) {
-    return Container(
-      padding: EdgeInsets.all(20.w * sizeFactor),
-      decoration: BoxDecoration(
-        color: backgroundColor.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12.r * sizeFactor),
-        border: Border.all(color: backgroundColor.withOpacity(0.3)),
+    return CustomDropdownField<T>(
+      value: value,
+      labelText: label,
+      hintText: hintText,
+      items: items,
+      itemLabelBuilder: itemLabelBuilder,
+      onChanged: onChanged,
+      prefixIcon: icon,
+      validator: validator,
+      isRequired: isRequired,
+      borderColor: AppColors.lightGreen.withOpacity(0.3),
+      focusedBorderColor: AppColors.primaryGreen,
+      fillColor: AppColors.background,
+      borderRadius: 12.r * sizeFactor,
+      labelStyle: GoogleFonts.poppins(
+        fontSize: 16.sp * sizeFactor,
+        fontWeight: FontWeight.w600,
+        color: AppColors.textPrimary,
       ),
-      child: Row(
-        children: [
-          Icon(icon, color: iconColor, size: 24.w * sizeFactor),
-          Gap(16.w * sizeFactor),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                buildText(
-                  text: title,
-                  style: GoogleFonts.poppins(
-                    fontSize: 16.sp * sizeFactor,
-                    fontWeight: FontWeight.w600,
-                    color: textColor,
-                  ),
-                ),
-                Gap(4.h * sizeFactor),
-                buildText(
-                  text: subtitle,
-                  style: GoogleFonts.poppins(
-                    fontSize: 12.sp * sizeFactor,
-                    color: SetuColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+      itemTextStyle: GoogleFonts.poppins(
+        fontSize: 16.sp * sizeFactor,
       ),
     );
   }
@@ -1548,7 +991,7 @@ class CommonUiUtils {
             ),
             child: Card(
               elevation: 20,
-              shadowColor: SetuColors.primaryGreen.withOpacity(0.3),
+              shadowColor: AppColors.primaryGreen.withOpacity(0.3),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20.r * sizeFactor),
               ),
@@ -1572,7 +1015,7 @@ class CommonUiUtils {
                     Container(
                       padding: EdgeInsets.all(20.w * sizeFactor),
                       decoration: BoxDecoration(
-                        color: (iconColor ?? SetuColors.primaryGreen)
+                        color: (iconColor ?? AppColors.primaryGreen)
                             .withOpacity(0.1),
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(20.r * sizeFactor),
@@ -1585,14 +1028,14 @@ class CommonUiUtils {
                             Container(
                               padding: EdgeInsets.all(12.w * sizeFactor),
                               decoration: BoxDecoration(
-                                color: (iconColor ?? SetuColors.primaryGreen)
+                                color: (iconColor ?? AppColors.primaryGreen)
                                     .withOpacity(0.2),
                                 borderRadius:
                                 BorderRadius.circular(50.r * sizeFactor),
                               ),
                               child: Icon(
                                 icon,
-                                color: iconColor ?? SetuColors.primaryGreen,
+                                color: iconColor ?? AppColors.primaryGreen,
                                 size: 28.w * sizeFactor,
                               ),
                             ),
@@ -1604,7 +1047,7 @@ class CommonUiUtils {
                               style: GoogleFonts.poppins(
                                 fontSize: 20.sp * sizeFactor,
                                 fontWeight: FontWeight.w700,
-                                color: SetuColors.textPrimary,
+                                color: AppColors.textPrimary,
                               ),
                             ),
                           ),
@@ -1617,7 +1060,7 @@ class CommonUiUtils {
                                 padding: EdgeInsets.all(8.w * sizeFactor),
                                 child: Icon(
                                   Icons.close,
-                                  color: SetuColors.textSecondary,
+                                  color: AppColors.textSecondary,
                                   size: 20.w * sizeFactor,
                                 ),
                               ),
@@ -1640,7 +1083,7 @@ class CommonUiUtils {
                               text: message,
                               style: GoogleFonts.poppins(
                                 fontSize: 16.sp * sizeFactor,
-                                color: SetuColors.textSecondary,
+                                color: AppColors.textSecondary,
                                 height: 1.5,
                               ),
                             ),
@@ -1657,7 +1100,7 @@ class CommonUiUtils {
                                     onPressed: onSecondaryPressed ??
                                             () => Navigator.of(context).pop(),
                                     backgroundColor: Colors.grey.shade100,
-                                    textColor: SetuColors.textSecondary,
+                                    textColor: AppColors.textSecondary,
                                     borderColor: Colors.grey.shade300,
                                   ),
                                 ),
@@ -1669,7 +1112,7 @@ class CommonUiUtils {
                                   onPressed: onPrimaryPressed ??
                                           () => Navigator.of(context).pop(),
                                   backgroundColor: primaryButtonColor ??
-                                      SetuColors.primaryGreen,
+                                      AppColors.primaryGreen,
                                   textColor: Colors.white,
                                 ),
                               ),
@@ -1699,7 +1142,7 @@ class CommonUiUtils {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: backgroundColor ?? SetuColors.primaryGreen,
+        backgroundColor: backgroundColor ?? AppColors.primaryGreen,
         elevation: 0,
         padding: EdgeInsets.symmetric(vertical: 14.h * sizeFactor),
         shape: RoundedRectangleBorder(
@@ -1719,4 +1162,22 @@ class CommonUiUtils {
       ),
     );
   }
+
+
+  static Widget buildText({
+    required String text,
+    required TextStyle style,
+    TextAlign? textAlign,
+    int? maxLines,
+    TextOverflow? overflow,
+  }) {
+    return Text(
+      text,
+      style: style,
+      textAlign: textAlign,
+      maxLines: maxLines,
+      overflow: overflow,
+    );
+  }
 }
+

@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import '../../../app/core/constants/color_constant.dart';
+import '../../../../app/core/constants/color_constant.dart';
 import 'get_text_form.dart';
 import 'get_translation_controller.dart';
 
@@ -55,7 +55,7 @@ class TranslatedUIUtils {
                 width: 20.w * sizeFactor,
                 child: CircularProgressIndicator(
                   strokeWidth: 1,
-                  color: style.color ?? SetuColors.primaryGreen,
+                  color: style.color ?? AppColors.primaryGreen,
                 ),
               ),
           useQueuedTranslation: true,
@@ -75,7 +75,7 @@ class TranslatedUIUtils {
           style: GoogleFonts.poppins(
             fontSize: 22.sp * sizeFactor,
             fontWeight: FontWeight.w700,
-            color: SetuColors.primaryGreen,
+            color: AppColors.primaryGreen,
           ),
           sourceLanguage: 'en',
         ),
@@ -85,7 +85,7 @@ class TranslatedUIUtils {
             text: subtitle,
             style: GoogleFonts.poppins(
               fontSize: 14.sp * sizeFactor,
-              color: SetuColors.textSecondary,
+              color: AppColors.textSecondary,
               fontWeight: FontWeight.w400,
             ),
             sourceLanguage: 'en',
@@ -117,7 +117,7 @@ class TranslatedUIUtils {
           style: GoogleFonts.poppins(
             fontSize: 16.sp * sizeFactor,
             fontWeight: FontWeight.w600,
-            color: SetuColors.textPrimary,
+            color: AppColors.textPrimary,
           ),
           sourceLanguage: sourceLanguage,
         ),
@@ -142,32 +142,32 @@ class TranslatedUIUtils {
                   decoration: InputDecoration(
                     hintText: translatedHint,
                     prefixIcon: Icon(icon,
-                        color: SetuColors.primaryGreen,
+                        color: AppColors.primaryGreen,
                         size: 20.w * sizeFactor),
                     filled: true,
-                    fillColor: SetuColors.background,
+                    fillColor: AppColors.background,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r * sizeFactor),
                       borderSide: BorderSide(
-                          color: SetuColors.lightGreen.withOpacity(0.3)),
+                          color: AppColors.lightGreen.withOpacity(0.3)),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r * sizeFactor),
                       borderSide: BorderSide(
-                          color: SetuColors.lightGreen.withOpacity(0.3)),
+                          color: AppColors.lightGreen.withOpacity(0.3)),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r * sizeFactor),
                       borderSide:
-                      BorderSide(color: SetuColors.primaryGreen, width: 2),
+                      BorderSide(color: AppColors.primaryGreen, width: 2),
                     ),
                     errorBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r * sizeFactor),
-                      borderSide: BorderSide(color: SetuColors.error, width: 1),
+                      borderSide: BorderSide(color: AppColors.error, width: 1),
                     ),
                     focusedErrorBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r * sizeFactor),
-                      borderSide: BorderSide(color: SetuColors.error, width: 2),
+                      borderSide: BorderSide(color: AppColors.error, width: 2),
                     ),
                     contentPadding: EdgeInsets.symmetric(
                         horizontal: 16.w * sizeFactor,
@@ -191,9 +191,9 @@ class TranslatedUIUtils {
     return Container(
       padding: EdgeInsets.all(16.w * TranslatedUIUtils.sizeFactor),
       decoration: BoxDecoration(
-        color: SetuColors.background,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(12.r * TranslatedUIUtils.sizeFactor),
-        border: Border.all(color: SetuColors.lightGreen.withOpacity(0.3)),
+        border: Border.all(color: AppColors.lightGreen.withOpacity(0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -203,7 +203,7 @@ class TranslatedUIUtils {
             style: GoogleFonts.poppins(
               fontSize: 16.sp * TranslatedUIUtils.sizeFactor,
               fontWeight: FontWeight.w600,
-              color: SetuColors.textPrimary,
+              color: AppColors.textPrimary,
             ),
           ),
           Gap(16.h * TranslatedUIUtils.sizeFactor),
@@ -249,13 +249,13 @@ class TranslatedUIUtils {
         ),
         decoration: BoxDecoration(
           color: isSelected
-              ? SetuColors.primaryGreen.withOpacity(0.1)
+              ? AppColors.primaryGreen.withOpacity(0.1)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(8.r * TranslatedUIUtils.sizeFactor),
           border: Border.all(
             color: isSelected
-                ? SetuColors.primaryGreen
-                : SetuColors.lightGreen.withOpacity(0.5),
+                ? AppColors.primaryGreen
+                : AppColors.lightGreen.withOpacity(0.5),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -265,8 +265,8 @@ class TranslatedUIUtils {
             Icon(
               icon,
               color: isSelected
-                  ? SetuColors.primaryGreen
-                  : SetuColors.textSecondary,
+                  ? AppColors.primaryGreen
+                  : AppColors.textSecondary,
               size: 18.w * TranslatedUIUtils.sizeFactor,
             ),
             Gap(8.w * TranslatedUIUtils.sizeFactor),
@@ -276,8 +276,8 @@ class TranslatedUIUtils {
                 fontSize: 14.sp * TranslatedUIUtils.sizeFactor,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 color: isSelected
-                    ? SetuColors.primaryGreen
-                    : SetuColors.textSecondary,
+                    ? AppColors.primaryGreen
+                    : AppColors.textSecondary,
               ),
             ),
           ],
@@ -303,7 +303,7 @@ class TranslatedUIUtils {
           style: GoogleFonts.poppins(
             fontSize: 16.sp * sizeFactor,
             fontWeight: FontWeight.w600,
-            color: SetuColors.textPrimary,
+            color: AppColors.textPrimary,
           ),
           sourceLanguage: sourceLanguage,
         ),
@@ -335,24 +335,24 @@ class TranslatedUIUtils {
                   onChanged: onChanged,
                   decoration: InputDecoration(
                     prefixIcon: Icon(icon,
-                        color: SetuColors.primaryGreen,
+                        color: AppColors.primaryGreen,
                         size: 20.w * sizeFactor),
                     filled: true,
-                    fillColor: SetuColors.background,
+                    fillColor: AppColors.background,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r * sizeFactor),
                       borderSide: BorderSide(
-                          color: SetuColors.lightGreen.withOpacity(0.3)),
+                          color: AppColors.lightGreen.withOpacity(0.3)),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r * sizeFactor),
                       borderSide: BorderSide(
-                          color: SetuColors.lightGreen.withOpacity(0.3)),
+                          color: AppColors.lightGreen.withOpacity(0.3)),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r * sizeFactor),
                       borderSide:
-                      BorderSide(color: SetuColors.primaryGreen, width: 2),
+                      BorderSide(color: AppColors.primaryGreen, width: 2),
                     ),
                     contentPadding: EdgeInsets.symmetric(
                         horizontal: 16.w * sizeFactor,
@@ -406,7 +406,7 @@ class TranslatedUIUtils {
                   text: subtitle,
                   style: GoogleFonts.poppins(
                     fontSize: 12.sp * sizeFactor,
-                    color: SetuColors.textSecondary,
+                    color: AppColors.textSecondary,
                   ),
                   sourceLanguage: sourceLanguage,
                 ),
@@ -449,7 +449,7 @@ class TranslatedUIUtils {
             ),
             child: Card(
               elevation: 20,
-              shadowColor: SetuColors.primaryGreen.withOpacity(0.3),
+              shadowColor: AppColors.primaryGreen.withOpacity(0.3),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20.r * sizeFactor),
               ),
@@ -473,7 +473,7 @@ class TranslatedUIUtils {
                     Container(
                       padding: EdgeInsets.all(20.w * sizeFactor),
                       decoration: BoxDecoration(
-                        color: (iconColor ?? SetuColors.primaryGreen)
+                        color: (iconColor ?? AppColors.primaryGreen)
                             .withOpacity(0.1),
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(20.r * sizeFactor),
@@ -486,14 +486,14 @@ class TranslatedUIUtils {
                             Container(
                               padding: EdgeInsets.all(12.w * sizeFactor),
                               decoration: BoxDecoration(
-                                color: (iconColor ?? SetuColors.primaryGreen)
+                                color: (iconColor ?? AppColors.primaryGreen)
                                     .withOpacity(0.2),
                                 borderRadius:
                                 BorderRadius.circular(50.r * sizeFactor),
                               ),
                               child: Icon(
                                 icon,
-                                color: iconColor ?? SetuColors.primaryGreen,
+                                color: iconColor ?? AppColors.primaryGreen,
                                 size: 28.w * sizeFactor,
                               ),
                             ),
@@ -505,7 +505,7 @@ class TranslatedUIUtils {
                               style: GoogleFonts.poppins(
                                 fontSize: 20.sp * sizeFactor,
                                 fontWeight: FontWeight.w700,
-                                color: SetuColors.textPrimary,
+                                color: AppColors.textPrimary,
                               ),
                               sourceLanguage: sourceLanguage,
                             ),
@@ -519,7 +519,7 @@ class TranslatedUIUtils {
                                 padding: EdgeInsets.all(8.w * sizeFactor),
                                 child: Icon(
                                   Icons.close,
-                                  color: SetuColors.textSecondary,
+                                  color: AppColors.textSecondary,
                                   size: 20.w * sizeFactor,
                                 ),
                               ),
@@ -542,7 +542,7 @@ class TranslatedUIUtils {
                               text: message,
                               style: GoogleFonts.poppins(
                                 fontSize: 16.sp * sizeFactor,
-                                color: SetuColors.textSecondary,
+                                color: AppColors.textSecondary,
                                 height: 1.5,
                               ),
                               sourceLanguage: sourceLanguage,
@@ -560,7 +560,7 @@ class TranslatedUIUtils {
                                     onPressed: onSecondaryPressed ??
                                             () => Navigator.of(context).pop(),
                                     backgroundColor: Colors.grey.shade100,
-                                    textColor: SetuColors.textSecondary,
+                                    textColor: AppColors.textSecondary,
                                     borderColor: Colors.grey.shade300,
                                     sourceLanguage: sourceLanguage,
                                   ),
@@ -573,7 +573,7 @@ class TranslatedUIUtils {
                                   onPressed: onPrimaryPressed ??
                                           () => Navigator.of(context).pop(),
                                   backgroundColor: primaryButtonColor ??
-                                      SetuColors.primaryGreen,
+                                      AppColors.primaryGreen,
                                   textColor: Colors.white,
                                   sourceLanguage: sourceLanguage,
                                 ),
@@ -605,7 +605,7 @@ class TranslatedUIUtils {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: backgroundColor ?? SetuColors.primaryGreen,
+        backgroundColor: backgroundColor ?? AppColors.primaryGreen,
         elevation: 0,
         padding: EdgeInsets.symmetric(vertical: 14.h * sizeFactor),
         shape: RoundedRectangleBorder(

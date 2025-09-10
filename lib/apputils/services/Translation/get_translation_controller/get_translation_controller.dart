@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 
-import '../Translation/translation_service.dart';
+import '../translation_service.dart';
 
 /// Comprehensive GetX Controller for Translation Management
 class TranslationController extends GetxController {

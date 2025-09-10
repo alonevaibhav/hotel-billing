@@ -82,7 +82,7 @@ class _PopToExitGetXState extends State<PopToExitGetX> {
       primaryButtonText: 'Exit',
       secondaryButtonText: 'Cancel',
       icon: PhosphorIcons.warning(PhosphorIconsStyle.regular),
-      iconColor: SetuColors.primaryGreen,
+      iconColor: AppColors.primaryGreen,
       onPrimaryPressed: () {
         Navigator.of(Get.context!).pop(true);
       },
@@ -111,7 +111,7 @@ class ExitConfirmationUtils {
       primaryButtonText: 'Exit',
       secondaryButtonText: 'Cancel',
       icon: PhosphorIcons.warning(PhosphorIconsStyle.regular),
-      iconColor: SetuColors.primaryGreen,
+      iconColor: AppColors.primaryGreen,
       onPrimaryPressed: () {
         Navigator.of(Get.context!).pop(true);
       },
