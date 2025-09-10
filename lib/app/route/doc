@@ -1,0 +1,236 @@
+// app_routes.dart
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+// Data Models
+class UserData {
+  final String id;
+  final String name;
+  final String email;
+
+  UserData({required this.id, required this.name, required this.email});
+}
+
+class ProductData {
+  final String id;
+  final String name;
+  final double price;
+
+  ProductData({required this.id, required this.name, required this.price});
+}
+
+class AppRoutes {
+  // Route paths
+  static const splash = '/';
+  static const login = '/login';
+  static const register = '/register';
+  static const home = '/home';
+  static const profile = '/profile';
+  static const settings = '/settings';
+  static const userDetail = '/user-detail';
+  static const productDetail = '/product'; // Will use path parameter
+  static const orderHistory = '/orders';
+  static const orderDetail = '/order-detail';
+  static const forgotPassword = '/forgot-password';
+
+  static final GoRouter router = GoRouter(
+    initialLocation: splash,
+    routes: [
+      // 1. Simple Route (no parameters)
+      GoRoute(
+        path: splash,
+        builder: (context, state) => const SplashScreen(),
+      ),
+
+      // 2. Simple Route with query parameters
+      GoRoute(
+        path: login,
+        builder: (context, state) {
+          final redirectPath = state.uri.queryParameters['redirect'];
+          return LoginScreen(redirectPath: redirectPath);
+        },
+      ),
+
+      // 3. Route with path parameters
+      GoRoute(
+        path: '$productDetail/:productId',
+        builder: (context, state) {
+          final productId = state.pathParameters['productId']!;
+          final productData = state.extra as ProductData?;
+          return ProductDetailScreen(
+            productId: productId,
+            productData: productData,
+          );
+        },
+      ),
+
+      // 4. Route with extra object (complex data)
+      GoRoute(
+        path: userDetail,
+        builder: (context, state) {
+          final userData = state.extra as UserData?;
+          return UserDetailScreen(userData: userData);
+        },
+      ),
+
+      // 5. Route with both path and query parameters
+      GoRoute(
+        path: '$orderDetail/:orderId',
+        builder: (context, state) {
+          final orderId = state.pathParameters['orderId']!;
+          final status = state.uri.queryParameters['status'];
+          final trackingId = state.uri.queryParameters['trackingId'];
+          return OrderDetailScreen(
+            orderId: orderId,
+            status: status,
+            trackingId: trackingId,
+          );
+        },
+      ),
+
+      // 6. Nested routes (Shell Route for bottom navigation)
+      ShellRoute(
+        builder: (context, state, child) => MainShellScreen(child: child),
+        routes: [
+          GoRoute(
+            path: home,
+            builder: (context, state) => const HomeScreen(),
+          ),
+          GoRoute(
+            path: profile,
+            builder: (context, state) => const ProfileScreen(),
+          ),
+          GoRoute(
+            path: settings,
+            builder: (context, state) => const SettingsScreen(),
+          ),
+        ],
+      ),
+
+      // 7. Simple routes
+      GoRoute(
+        path: register,
+        builder: (context, state) => const RegisterScreen(),
+      ),
+
+      GoRoute(
+        path: orderHistory,
+        builder: (context, state) => const OrderHistoryScreen(),
+      ),
+
+      GoRoute(
+        path: forgotPassword,
+        builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+    ],
+  );
+}
+
+// navigation_service.dart
+class NavigationService {
+  static final GoRouter _router = AppRoutes.router;
+
+  // =========== GO ROUTER METHODS EXPLANATION ===========
+
+  // 1. go() = Get.offAllNamed() - Replace entire stack
+  static void goToLogin({String? redirectPath}) {
+    if (redirectPath != null) {
+      _router.go('${AppRoutes.login}?redirect=$redirectPath');
+    } else {
+      _router.go(AppRoutes.login);
+    }
+  }
+
+  static void goToHome() {
+    _router.go(AppRoutes.home); // Replaces current route
+  }
+
+  // 2. push() = Get.toNamed() - Add to stack
+  static void pushToUserDetail(UserData userData) {
+    _router.push(AppRoutes.userDetail, extra: userData);
+  }
+
+  static void pushToSettings() {
+    _router.push(AppRoutes.settings);
+  }
+
+  // 3. pushReplacement() = Get.offNamed() - Replace current route
+  static void replaceWithHome() {
+    _router.pushReplacement(AppRoutes.home);
+  }
+
+  static void replaceWithLogin() {
+    _router.pushReplacement(AppRoutes.login);
+  }
+
+  // 4. Navigation with Path Parameters
+  static void goToProductDetail(String productId, {ProductData? productData}) {
+    _router.go('${AppRoutes.productDetail}/$productId', extra: productData);
+  }
+
+  static void pushToProductDetail(String productId, {ProductData? productData}) {
+    _router.push('${AppRoutes.productDetail}/$productId', extra: productData);
+  }
+
+  // 5. Navigation with Query Parameters
+  static void goToOrderDetail(String orderId, {String? status, String? trackingId}) {
+    String path = '${AppRoutes.orderDetail}/$orderId';
+    List<String> queryParams = [];
+
+    if (status != null) queryParams.add('status=$status');
+    if (trackingId != null) queryParams.add('trackingId=$trackingId');
+
+    if (queryParams.isNotEmpty) {
+      path += '?${queryParams.join('&')}';
+    }
+
+    _router.go(path);
+  }
+
+  // 6. Navigation with Complex Data
+  static void pushToUserDetail(UserData userData) {
+    _router.push(AppRoutes.userDetail, extra: userData);
+  }
+
+  // 7. Back navigation
+  static void goBack() {
+    if (_router.canPop()) {
+      _router.pop();
+    }
+  }
+
+  // 8. Pop until specific route
+  static void popUntilHome() {
+    while (_router.canPop()) {
+      _router.pop();
+    }
+    _router.go(AppRoutes.home);
+  }
+
+  // 9. Clear stack and go to route (like Get.offAllNamed)
+  static void clearStackAndGoToLogin() {
+    _router.go(AppRoutes.login); // This clears the stack automatically
+  }
+
+  // Utility methods
+  static bool canGoBack() => _router.canPop();
+  static String getCurrentLocation() => _router.routerDelegate.currentConfiguration.uri.toString();
+}
+
+// =========== GO ROUTER VS GETX COMPARISON ===========
+
+/*
+GetX Method              →    Go Router Equivalent
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Get.to()                →    router.push()           // Add to stack
+Get.toNamed()           →    router.push('/route')   // Add to stack with name
+Get.off()               →    router.pushReplacement() // Replace current
+Get.offNamed()          →    router.pushReplacement('/route') // Replace with name
+Get.offAll()            →    router.go()             // Clear stack and go
+Get.offAllNamed()       →    router.go('/route')     // Clear stack and go to route
+Get.back()              →    router.pop()            // Go back
+Get.until()             →    Multiple router.pop()   // Pop until condition
+
+ARGUMENTS:
+Get.toNamed('/route', arguments: data)  →  router.push('/route', extra: data)
+Get.toNamed('/route', parameters: {})   →  router.push('/route?key=value')
