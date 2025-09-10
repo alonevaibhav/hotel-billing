@@ -64,12 +64,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'app/core/services/api_service.dart';
 import 'app/route/app_routes.dart';
+import 'demo/Service/table_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize API Service
   await ApiService.init();
+
 
   // Initialize bindings for Go Router
   AppRoutes.initializeBindings();

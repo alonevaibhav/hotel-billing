@@ -1,19 +1,20 @@
-
 import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../modules/auth/login_view.dart';
+import '../modules/view/TakeOrder/take_order.dart';
+import '../modules/view/homepage/home_page.dart';
+import '../modules/view/ready_order/ready_order.dart';
 import 'app_bindings.dart';
-
 
 class AppRoutes {
   // Route names - keep same naming convention
   static const login = '/login';
   static const forgotPassword = '/forgotPassword';
-  static const mainDashboard = '/mainDashboard';
-  static const userDetail = '/user-detail';
-  static const userDetailInfo = '/user-userDetailInfo';
+  static const mainDashboard = '/restaurant';
 
+  static const takeOrders = '/restaurant/take-orders';
+  static const readyOrders = '/restaurant/ready-orders';
 
   // Initialize bindings once at app start
   static void initializeBindings() {
@@ -36,11 +37,20 @@ class AppRoutes {
 
       GoRoute(
         path: mainDashboard,
-        builder: (context, state) => const Placeholder(),
+        builder: (context, state) => const RestaurantView(),
       ),
 
+      // Take Orders route (to be implemented later)
+      // GoRoute(
+      //   path: takeOrders,
+      //   builder: (context, state)  => const TakeOrder(),
+      // ),
 
-
+      // Ready Orders route (to be implemented later)
+      GoRoute(
+        path: readyOrders,
+        builder: (context, state)  => const ReadyOrder(),
+      ),
     ],
   );
 }
@@ -55,7 +65,15 @@ class NavigationService {
   }
 
   static void goToMainDashboard() {
-    _router.go(AppRoutes.mainDashboard);
+    _router.push(AppRoutes.mainDashboard);
+  }
+
+  static void goToTakeOrders() {
+    _router.push(AppRoutes.takeOrders);
+  }
+
+  static void goToReadyOrders() {
+    _router.push(AppRoutes.readyOrders);
   }
 
   static void goBack() {
@@ -63,7 +81,6 @@ class NavigationService {
       _router.pop();
     }
   }
-
 
   static bool canGoBack() => _router.canPop();
 }
