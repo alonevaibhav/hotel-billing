@@ -623,7 +623,7 @@ class CommonUiUtils {
           style: GoogleFonts.poppins(
             fontSize: 22.sp * sizeFactor,
             fontWeight: FontWeight.w700,
-            color: AppColors.primaryGreen,
+            color: AppColors.primaryLight,
           ),
         ),
         if (subtitle != null && subtitle.trim().isNotEmpty) ...[
@@ -692,7 +692,7 @@ class CommonUiUtils {
           decoration: InputDecoration(
             hintText: hint,
             prefixIcon: Icon(icon,
-                color: AppColors.primaryGreen, size: 20.w * sizeFactor),
+                color: AppColors.primaryLight, size: 20.w * sizeFactor),
             suffixIcon: Icon(
               PhosphorIcons.caretDown(PhosphorIconsStyle.regular),
               color: AppColors.textSecondary,
@@ -703,16 +703,16 @@ class CommonUiUtils {
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r * sizeFactor),
               borderSide:
-              BorderSide(color: AppColors.lightGreen.withOpacity(0.3)),
+              BorderSide(color: AppColors.lightColor.withOpacity(0.3)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r * sizeFactor),
               borderSide:
-              BorderSide(color: AppColors.lightGreen.withOpacity(0.3)),
+              BorderSide(color: AppColors.lightColor.withOpacity(0.3)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r * sizeFactor),
-              borderSide: BorderSide(color: AppColors.primaryGreen, width: 2),
+              borderSide: BorderSide(color: AppColors.primaryLight, width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r * sizeFactor),
@@ -754,7 +754,7 @@ class CommonUiUtils {
               borderRadius: BorderRadius.circular(20.r * sizeFactor),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primaryGreen.withOpacity(0.1),
+                  color: AppColors.primaryLight.withOpacity(0.1),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -767,7 +767,7 @@ class CommonUiUtils {
                 Container(
                   padding: EdgeInsets.all(20.w * sizeFactor),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryGreen.withOpacity(0.1),
+                    color: AppColors.primaryLight.withOpacity(0.1),
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(20.r * sizeFactor),
                       topRight: Radius.circular(20.r * sizeFactor),
@@ -777,7 +777,7 @@ class CommonUiUtils {
                     children: [
                       Icon(
                         PhosphorIcons.calendar(PhosphorIconsStyle.fill),
-                        color: AppColors.primaryGreen,
+                        color: AppColors.primaryLight,
                         size: 24.w * sizeFactor,
                       ),
                       Gap(12.w * sizeFactor),
@@ -786,7 +786,7 @@ class CommonUiUtils {
                         style: GoogleFonts.poppins(
                           fontSize: 18.sp * sizeFactor,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.primaryGreen,
+                          color: AppColors.primaryLight,
                         ),
                       ),
                       const Spacer(),
@@ -812,7 +812,7 @@ class CommonUiUtils {
                   child: Theme(
                     data: Theme.of(context).copyWith(
                       colorScheme: ColorScheme.light(
-                        primary: AppColors.primaryGreen,
+                        primary: AppColors.primaryLight,
                         onPrimary: Colors.white,
                         surface: Colors.white,
                         onSurface: AppColors.textPrimary,
@@ -890,22 +890,22 @@ class CommonUiUtils {
           decoration: InputDecoration(
             hintText: hint,
             prefixIcon: Icon(icon,
-                color: AppColors.primaryGreen, size: 20.w * sizeFactor),
+                color: AppColors.primaryLight, size: 20.w * sizeFactor),
             filled: true,
             fillColor: AppColors.background,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r * sizeFactor),
               borderSide:
-              BorderSide(color: AppColors.lightGreen.withOpacity(0.3)),
+              BorderSide(color: AppColors.lightColor.withOpacity(0.3)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r * sizeFactor),
               borderSide:
-              BorderSide(color: AppColors.lightGreen.withOpacity(0.3)),
+              BorderSide(color: AppColors.lightColor.withOpacity(0.3)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r * sizeFactor),
-              borderSide: BorderSide(color: AppColors.primaryGreen, width: 2),
+              borderSide: BorderSide(color: AppColors.primaryLight, width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r * sizeFactor),
@@ -946,8 +946,8 @@ class CommonUiUtils {
       prefixIcon: icon,
       validator: validator,
       isRequired: isRequired,
-      borderColor: AppColors.lightGreen.withOpacity(0.3),
-      focusedBorderColor: AppColors.primaryGreen,
+      borderColor: AppColors.lightColor.withOpacity(0.3),
+      focusedBorderColor: AppColors.primaryLight,
       fillColor: AppColors.background,
       borderRadius: 12.r * sizeFactor,
       labelStyle: GoogleFonts.poppins(
@@ -991,7 +991,7 @@ class CommonUiUtils {
             ),
             child: Card(
               elevation: 20,
-              shadowColor: AppColors.primaryGreen.withOpacity(0.3),
+              shadowColor: AppColors.primaryLight.withOpacity(0.3),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20.r * sizeFactor),
               ),
@@ -1015,7 +1015,7 @@ class CommonUiUtils {
                     Container(
                       padding: EdgeInsets.all(20.w * sizeFactor),
                       decoration: BoxDecoration(
-                        color: (iconColor ?? AppColors.primaryGreen)
+                        color: (iconColor ?? AppColors.primaryLight)
                             .withOpacity(0.1),
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(20.r * sizeFactor),
@@ -1028,14 +1028,14 @@ class CommonUiUtils {
                             Container(
                               padding: EdgeInsets.all(12.w * sizeFactor),
                               decoration: BoxDecoration(
-                                color: (iconColor ?? AppColors.primaryGreen)
+                                color: (iconColor ?? AppColors.primaryLight)
                                     .withOpacity(0.2),
                                 borderRadius:
                                 BorderRadius.circular(50.r * sizeFactor),
                               ),
                               child: Icon(
                                 icon,
-                                color: iconColor ?? AppColors.primaryGreen,
+                                color: iconColor ?? AppColors.primaryLight,
                                 size: 28.w * sizeFactor,
                               ),
                             ),
@@ -1112,7 +1112,7 @@ class CommonUiUtils {
                                   onPressed: onPrimaryPressed ??
                                           () => Navigator.of(context).pop(),
                                   backgroundColor: primaryButtonColor ??
-                                      AppColors.primaryGreen,
+                                      AppColors.primaryLight,
                                   textColor: Colors.white,
                                 ),
                               ),
@@ -1142,7 +1142,7 @@ class CommonUiUtils {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: backgroundColor ?? AppColors.primaryGreen,
+        backgroundColor: backgroundColor ?? AppColors.primaryLight,
         elevation: 0,
         padding: EdgeInsets.symmetric(vertical: 14.h * sizeFactor),
         shape: RoundedRectangleBorder(

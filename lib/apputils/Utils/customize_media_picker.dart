@@ -68,15 +68,15 @@ class ImagePickerUtil {
         vertical: 12.h * sizeFactor,
       ),
       decoration: BoxDecoration(
-        color: AppColors.primaryGreen.withOpacity(0.1),
+        color: AppColors.primaryLight.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8.r * sizeFactor),
-        border: Border.all(color: AppColors.primaryGreen.withOpacity(0.3)),
+        border: Border.all(color: AppColors.primaryLight.withOpacity(0.3)),
       ),
       child: Row(
         children: [
           Icon(
             icon,
-            color: AppColors.primaryGreen,
+            color: AppColors.primaryLight,
             size: 20.sp * sizeFactor,
           ),
           Gap(8.w * sizeFactor),
@@ -85,7 +85,7 @@ class ImagePickerUtil {
             style: GoogleFonts.poppins(
               fontSize: 16.sp * sizeFactor,
               fontWeight: FontWeight.w600,
-              color: AppColors.primaryGreen,
+              color: AppColors.primaryLight,
             ),
           ),
         ],
@@ -116,8 +116,8 @@ class ImagePickerUtil {
           borderRadius: BorderRadius.circular(12.r * sizeFactor),
           border: Border.all(
             color: uploadedFiles.isEmpty
-                ? AppColors.lightGreen.withOpacity(0.3)
-                : AppColors.primaryGreen.withOpacity(0.5),
+                ? AppColors.lightColor.withOpacity(0.3)
+                : AppColors.primaryLight.withOpacity(0.5),
             width: uploadedFiles.isEmpty ? 1 : 2,
           ),
         ),
@@ -125,7 +125,7 @@ class ImagePickerUtil {
           children: [
             Icon(
               icon,
-              color: AppColors.primaryGreen,
+              color: AppColors.primaryLight,
               size: 20.w * sizeFactor,
             ),
             Gap(12.w * sizeFactor),
@@ -141,7 +141,7 @@ class ImagePickerUtil {
                       fontSize: 16.sp * sizeFactor,
                       color: uploadedFiles.isEmpty
                           ? AppColors.textSecondary
-                          : AppColors.primaryGreen,
+                          : AppColors.primaryLight,
                       fontWeight: uploadedFiles.isEmpty
                           ? FontWeight.w400
                           : FontWeight.w600,
@@ -166,7 +166,7 @@ class ImagePickerUtil {
                   : PhosphorIcons.checkCircle(PhosphorIconsStyle.fill),
               color: uploadedFiles.isEmpty
                   ? AppColors.textSecondary
-                  : AppColors.primaryGreen,
+                  : AppColors.primaryLight,
               size: 20.w * sizeFactor,
             ),
           ],
@@ -180,9 +180,9 @@ class ImagePickerUtil {
     return Container(
       padding: EdgeInsets.all(12.w * sizeFactor),
       decoration: BoxDecoration(
-        color: AppColors.primaryGreen.withOpacity(0.05),
+        color: AppColors.primaryLight.withOpacity(0.05),
         borderRadius: BorderRadius.circular(8.r * sizeFactor),
-        border: Border.all(color: AppColors.primaryGreen.withOpacity(0.2)),
+        border: Border.all(color: AppColors.primaryLight.withOpacity(0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -191,7 +191,7 @@ class ImagePickerUtil {
             children: [
               Icon(
                 PhosphorIcons.files(PhosphorIconsStyle.regular),
-                color: AppColors.primaryGreen,
+                color: AppColors.primaryLight,
                 size: 16.w * sizeFactor,
               ),
               Gap(8.w * sizeFactor),
@@ -200,7 +200,7 @@ class ImagePickerUtil {
                 style: GoogleFonts.poppins(
                   fontSize: 14.sp * sizeFactor,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.primaryGreen,
+                  color: AppColors.primaryLight,
                 ),
               ),
               const Spacer(),
@@ -320,7 +320,7 @@ class ImagePickerUtil {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24.r * sizeFactor)),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primaryGreen.withOpacity(0.1),
+            color: AppColors.primaryLight.withOpacity(0.1),
             blurRadius: 20,
             offset: const Offset(0, -5),
           ),
@@ -335,7 +335,7 @@ class ImagePickerUtil {
             width: 40.w * sizeFactor,
             height: 4.h * sizeFactor,
             decoration: BoxDecoration(
-              color: AppColors.lightGreen.withOpacity(0.3),
+              color: AppColors.lightColor.withOpacity(0.3),
               borderRadius: BorderRadius.circular(2.r * sizeFactor),
             ),
           ),
@@ -347,7 +347,7 @@ class ImagePickerUtil {
               children: [
                 Icon(
                   PhosphorIcons.upload(PhosphorIconsStyle.fill),
-                  color: AppColors.primaryGreen,
+                  color: AppColors.primaryLight,
                   size: 24.w * sizeFactor,
                 ),
                 Gap(12.w * sizeFactor),
@@ -444,10 +444,10 @@ class ImagePickerUtil {
         Container(
           padding: EdgeInsets.all(8.w * sizeFactor),
           decoration: BoxDecoration(
-            color: AppColors.primaryGreen.withOpacity(0.1),
+            color: AppColors.primaryLight.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8.r * sizeFactor),
           ),
-          child: Icon(icon, color: AppColors.primaryGreen, size: 20.w * sizeFactor),
+          child: Icon(icon, color: AppColors.primaryLight, size: 20.w * sizeFactor),
         ),
         Gap(12.w * sizeFactor),
         buildTranslatableText(
@@ -455,14 +455,14 @@ class ImagePickerUtil {
           style: GoogleFonts.poppins(
             fontSize: 16.sp * sizeFactor,
             fontWeight: FontWeight.w600,
-            color: AppColors.primaryGreen,
+            color: AppColors.primaryLight,
           ),
         ),
         Expanded(
           child: Container(
             height: 1.h * sizeFactor,
             margin: EdgeInsets.only(left: 12.w * sizeFactor),
-            color: AppColors.primaryGreen.withOpacity(0.2),
+            color: AppColors.primaryLight.withOpacity(0.2),
           ),
         ),
       ],
@@ -480,7 +480,7 @@ class ImagePickerUtil {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12.r * sizeFactor),
-        border: Border.all(color: AppColors.lightGreen.withOpacity(0.3)),
+        border: Border.all(color: AppColors.lightColor.withOpacity(0.3)),
         color: AppColors.background,
       ),
       child: InkWell(
@@ -494,12 +494,12 @@ class ImagePickerUtil {
                 width: 48.w * sizeFactor,
                 height: 48.h * sizeFactor,
                 decoration: BoxDecoration(
-                  color: (iconColor ?? AppColors.primaryGreen).withOpacity(0.1),
+                  color: (iconColor ?? AppColors.primaryLight).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12.r * sizeFactor),
                 ),
                 child: Icon(
                   icon,
-                  color: iconColor ?? AppColors.primaryGreen,
+                  color: iconColor ?? AppColors.primaryLight,
                   size: 24.w * sizeFactor,
                 ),
               ),
@@ -610,7 +610,7 @@ class ImagePickerUtil {
       'Success',
       message,
       snackPosition: SnackPosition.TOP,
-      backgroundColor: AppColors.primaryGreen,
+      backgroundColor: AppColors.primaryLight,
       colorText: Colors.white,
       duration: const Duration(seconds: 2),
       margin: EdgeInsets.all(16.w * sizeFactor),
@@ -675,7 +675,7 @@ class ImagePickerUtil {
                 width: 20.w * sizeFactor,
                 child: CircularProgressIndicator(
                   strokeWidth: 1,
-                  color: style.color ?? AppColors.primaryGreen,
+                  color: style.color ?? AppColors.primaryLight,
                 ),
               ),
           useQueuedTranslation: true,

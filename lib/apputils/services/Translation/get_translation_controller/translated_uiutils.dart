@@ -55,7 +55,7 @@ class TranslatedUIUtils {
                 width: 20.w * sizeFactor,
                 child: CircularProgressIndicator(
                   strokeWidth: 1,
-                  color: style.color ?? AppColors.primaryGreen,
+                  color: style.color ?? AppColors.primaryLight,
                 ),
               ),
           useQueuedTranslation: true,
@@ -75,7 +75,7 @@ class TranslatedUIUtils {
           style: GoogleFonts.poppins(
             fontSize: 22.sp * sizeFactor,
             fontWeight: FontWeight.w700,
-            color: AppColors.primaryGreen,
+            color: AppColors.primaryLight,
           ),
           sourceLanguage: 'en',
         ),
@@ -142,24 +142,24 @@ class TranslatedUIUtils {
                   decoration: InputDecoration(
                     hintText: translatedHint,
                     prefixIcon: Icon(icon,
-                        color: AppColors.primaryGreen,
+                        color: AppColors.primaryLight,
                         size: 20.w * sizeFactor),
                     filled: true,
                     fillColor: AppColors.background,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r * sizeFactor),
                       borderSide: BorderSide(
-                          color: AppColors.lightGreen.withOpacity(0.3)),
+                          color: AppColors.lightColor.withOpacity(0.3)),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r * sizeFactor),
                       borderSide: BorderSide(
-                          color: AppColors.lightGreen.withOpacity(0.3)),
+                          color: AppColors.lightColor.withOpacity(0.3)),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r * sizeFactor),
                       borderSide:
-                      BorderSide(color: AppColors.primaryGreen, width: 2),
+                      BorderSide(color: AppColors.primaryLight, width: 2),
                     ),
                     errorBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r * sizeFactor),
@@ -193,7 +193,7 @@ class TranslatedUIUtils {
       decoration: BoxDecoration(
         color: AppColors.background,
         borderRadius: BorderRadius.circular(12.r * TranslatedUIUtils.sizeFactor),
-        border: Border.all(color: AppColors.lightGreen.withOpacity(0.3)),
+        border: Border.all(color: AppColors.lightColor.withOpacity(0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -249,13 +249,13 @@ class TranslatedUIUtils {
         ),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.primaryGreen.withOpacity(0.1)
+              ? AppColors.primaryLight.withOpacity(0.1)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(8.r * TranslatedUIUtils.sizeFactor),
           border: Border.all(
             color: isSelected
-                ? AppColors.primaryGreen
-                : AppColors.lightGreen.withOpacity(0.5),
+                ? AppColors.primaryLight
+                : AppColors.lightColor.withOpacity(0.5),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -265,7 +265,7 @@ class TranslatedUIUtils {
             Icon(
               icon,
               color: isSelected
-                  ? AppColors.primaryGreen
+                  ? AppColors.primaryLight
                   : AppColors.textSecondary,
               size: 18.w * TranslatedUIUtils.sizeFactor,
             ),
@@ -276,7 +276,7 @@ class TranslatedUIUtils {
                 fontSize: 14.sp * TranslatedUIUtils.sizeFactor,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 color: isSelected
-                    ? AppColors.primaryGreen
+                    ? AppColors.primaryLight
                     : AppColors.textSecondary,
               ),
             ),
@@ -335,24 +335,24 @@ class TranslatedUIUtils {
                   onChanged: onChanged,
                   decoration: InputDecoration(
                     prefixIcon: Icon(icon,
-                        color: AppColors.primaryGreen,
+                        color: AppColors.primaryLight,
                         size: 20.w * sizeFactor),
                     filled: true,
                     fillColor: AppColors.background,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r * sizeFactor),
                       borderSide: BorderSide(
-                          color: AppColors.lightGreen.withOpacity(0.3)),
+                          color: AppColors.lightColor.withOpacity(0.3)),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r * sizeFactor),
                       borderSide: BorderSide(
-                          color: AppColors.lightGreen.withOpacity(0.3)),
+                          color: AppColors.lightColor.withOpacity(0.3)),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r * sizeFactor),
                       borderSide:
-                      BorderSide(color: AppColors.primaryGreen, width: 2),
+                      BorderSide(color: AppColors.primaryLight, width: 2),
                     ),
                     contentPadding: EdgeInsets.symmetric(
                         horizontal: 16.w * sizeFactor,
@@ -449,7 +449,7 @@ class TranslatedUIUtils {
             ),
             child: Card(
               elevation: 20,
-              shadowColor: AppColors.primaryGreen.withOpacity(0.3),
+              shadowColor: AppColors.primaryLight.withOpacity(0.3),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20.r * sizeFactor),
               ),
@@ -473,7 +473,7 @@ class TranslatedUIUtils {
                     Container(
                       padding: EdgeInsets.all(20.w * sizeFactor),
                       decoration: BoxDecoration(
-                        color: (iconColor ?? AppColors.primaryGreen)
+                        color: (iconColor ?? AppColors.primaryLight)
                             .withOpacity(0.1),
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(20.r * sizeFactor),
@@ -486,14 +486,14 @@ class TranslatedUIUtils {
                             Container(
                               padding: EdgeInsets.all(12.w * sizeFactor),
                               decoration: BoxDecoration(
-                                color: (iconColor ?? AppColors.primaryGreen)
+                                color: (iconColor ?? AppColors.primaryLight)
                                     .withOpacity(0.2),
                                 borderRadius:
                                 BorderRadius.circular(50.r * sizeFactor),
                               ),
                               child: Icon(
                                 icon,
-                                color: iconColor ?? AppColors.primaryGreen,
+                                color: iconColor ?? AppColors.primaryLight,
                                 size: 28.w * sizeFactor,
                               ),
                             ),
@@ -573,7 +573,7 @@ class TranslatedUIUtils {
                                   onPressed: onPrimaryPressed ??
                                           () => Navigator.of(context).pop(),
                                   backgroundColor: primaryButtonColor ??
-                                      AppColors.primaryGreen,
+                                      AppColors.primaryLight,
                                   textColor: Colors.white,
                                   sourceLanguage: sourceLanguage,
                                 ),
@@ -605,7 +605,7 @@ class TranslatedUIUtils {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: backgroundColor ?? AppColors.primaryGreen,
+        backgroundColor: backgroundColor ?? AppColors.primaryLight,
         elevation: 0,
         padding: EdgeInsets.symmetric(vertical: 14.h * sizeFactor),
         shape: RoundedRectangleBorder(
