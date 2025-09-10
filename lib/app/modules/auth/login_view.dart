@@ -32,11 +32,6 @@ class LoginView extends StatelessWidget {
             children: [
               SizedBox(height: 20.h),
 
-              // Hotel Info Section
-              _buildHotelInfo(),
-
-              SizedBox(height: 40.h),
-
               // Login Form Container
               _buildLoginForm(controller, context),
 
@@ -49,30 +44,6 @@ class LoginView extends StatelessWidget {
     );
   }
 
-  Widget _buildHotelInfo() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Alpani Hotel',
-          style: TextStyle(
-            fontSize: 24.sp,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
-        ),
-        SizedBox(height: 4.h),
-        Text(
-          '2672 Westheimer Rd. Santa Ana, Illinois 85486',
-          style: TextStyle(
-            fontSize: 14.sp,
-            color: Colors.grey[600],
-            height: 1.3,
-          ),
-        ),
-      ],
-    );
-  }
 
   Widget _buildLoginForm(LoginViewController controller, BuildContext context) {
     return Container(

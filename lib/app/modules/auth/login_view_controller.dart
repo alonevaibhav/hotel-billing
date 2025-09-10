@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:developer' as developer;
 
+import '../../route/app_routes.dart';
+
 class LoginViewController extends GetxController {
   // Form key for validation
   final formKey = GlobalKey<FormState>();
@@ -127,10 +129,7 @@ class LoginViewController extends GetxController {
         passwordController.clear();
       }
 
-      // Navigate to dashboard using Go Router
-      if (context.mounted) {
-        context.go('/dashboard', );
-      }
+      NavigationService.goToMainDashboard();
 
     } catch (e) {
       developer.log('Login submission error: ${e.toString()}', name: 'Login.Error');
@@ -155,13 +154,6 @@ class LoginViewController extends GetxController {
     context.go('/forgot-password');
   }
 
-  // Navigate back
-  void navigateBack(BuildContext context) {
-    if (context.canPop()) {
-      developer.log('Navigating back', name: 'Login.Navigation');
-      context.pop();
-    }
-  }
 
   // Get API payload for login
   Map<String, dynamic> getLoginPayload() {

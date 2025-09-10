@@ -1,22 +1,3 @@
-// import 'package:get/get.dart';
-// import '../modules/auth/login_view.dart';
-// import 'app_bindings.dart';
-//
-// class AppRoutes {
-//   // Route names
-//   static const login = '/login';
-//
-//   static const mainDashboard = '/mainDashboard';
-//
-//
-//   static final routes = <GetPage>[
-//     GetPage(
-//       name: login,
-//       page: () => const LoginView(),
-//       binding: AppBindings(),
-//     ),
-//   ];
-// }
 
 import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
@@ -24,11 +5,15 @@ import 'package:go_router/go_router.dart';
 import '../modules/auth/login_view.dart';
 import 'app_bindings.dart';
 
+
 class AppRoutes {
   // Route names - keep same naming convention
   static const login = '/login';
   static const forgotPassword = '/forgotPassword';
   static const mainDashboard = '/mainDashboard';
+  static const userDetail = '/user-detail';
+  static const userDetailInfo = '/user-userDetailInfo';
+
 
   // Initialize bindings once at app start
   static void initializeBindings() {
@@ -54,7 +39,8 @@ class AppRoutes {
         builder: (context, state) => const Placeholder(),
       ),
 
-      // Add more routes as needed
+
+
     ],
   );
 }
@@ -77,6 +63,7 @@ class NavigationService {
       _router.pop();
     }
   }
+
 
   static bool canGoBack() => _router.canPop();
 }
