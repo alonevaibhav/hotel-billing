@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:developer' as developer;
 import '../../core/utils/snakbar_utils.dart';
+import '../../route/app_routes.dart';
 
 // Table-specific state model
 class TableOrderState {
@@ -223,12 +224,7 @@ class OrderManagementController extends GetxController {
     try {
       final state = getTableState(tableId);
 
-      Get.context!.go('/add-items', extra: {
-        'tableData': tableData,
-        'currentOrders': state.orderItems.toList(),
-        'tableId': tableId,
-        'tableNumber': tableData?['tableNumber'] ?? tableId,
-      });
+      NavigationService.addItems();
 
       developer.log('Navigating to add items for table $tableId');
     } catch (e) {

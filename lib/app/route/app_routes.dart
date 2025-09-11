@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../modules/auth/login_view.dart';
-import '../modules/view/TakeOrder/components/select_dish.dart';
+import '../modules/view/TakeOrder/components/add_items_view.dart';
 import '../modules/view/TakeOrder/components/select_item.dart';
 import '../modules/view/homepage/home_page.dart';
 import 'app_bindings.dart';
@@ -13,6 +13,8 @@ class AppRoutes {
   static const mainDashboard = '/restaurant';
 
   static const selectItem = '/restaurant/selectItem';
+  static const addItems = '/restaurant/selectItem/addItems';
+
   static const selectDish = '/restaurant/selectDish';
 
 
@@ -44,12 +46,12 @@ class AppRoutes {
         path: selectItem,
         builder: (context, state) {
           final table = state.extra as Map<String, dynamic>?; // Retrieve extra here
-          return SelectItem(table: table); // Pass to widget
+          return OrderManagementView(table: table); // Pass to widget
         },
       ),
       GoRoute(
-        path: selectDish,
-        builder: (context, state) => const SelectDish(),
+        path: addItems,
+        builder: (context, state) => const AddItemsView(),
       ),
 
     ],
@@ -73,8 +75,8 @@ class NavigationService {
     _router.push(AppRoutes.selectItem, extra: table);
   }
 
-  static void selectDish() {
-    _router.push(AppRoutes.selectDish);
+  static void addItems() {
+    _router.push(AppRoutes.addItems);
   }
 
 

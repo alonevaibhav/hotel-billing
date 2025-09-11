@@ -8,11 +8,11 @@ import '../../../controllers/select_item_controller.dart';
 import '../../../widgets/drawer.dart';
 import '../../../widgets/header.dart';
 
-class SelectItem extends StatelessWidget {
+class OrderManagementView extends StatelessWidget {
   final Map<String, dynamic>? table;
   final double scaleFactor = 0.8;
 
-  const SelectItem({super.key, this.table});
+  const OrderManagementView({super.key, this.table});
 
   @override
   Widget build(BuildContext context) {
