@@ -1,17 +1,13 @@
-
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
-
 import '../../../../../../apputils/Utils/common_utils.dart';
 import '../../../../controllers/select_item_controller.dart'; // Updated import
 
-Widget buildRecipientSection( tableState) {
-  // final tableState = controller.getTableState(tableId);
+Widget buildRecipientSection(tableState) {
 
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -47,7 +43,8 @@ Widget buildRecipientSection( tableState) {
   );
 }
 
-Widget buildBottomSection(OrderManagementController controller, int tableId, double scaleFactor, BuildContext context,table) {
+Widget buildBottomSection(OrderManagementController controller, int tableId,
+    double scaleFactor, BuildContext context, table) {
   final tableState = controller.getTableState(tableId);
 
   return Container(
@@ -67,34 +64,34 @@ Widget buildBottomSection(OrderManagementController controller, int tableId, dou
       children: [
         // Total amount display
         Obx(() => Container(
-          padding: EdgeInsets.all(16.w * scaleFactor),
-          decoration: BoxDecoration(
-            color: Colors.grey[50],
-            borderRadius: BorderRadius.circular(8.r * scaleFactor),
-            border: Border.all(color: Colors.grey[300]!),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Total Amount:',
-                style: TextStyle(
-                  fontSize: 16.sp * scaleFactor,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
+              padding: EdgeInsets.all(16.w * scaleFactor),
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+                borderRadius: BorderRadius.circular(8.r * scaleFactor),
+                border: Border.all(color: Colors.grey[300]!),
               ),
-              Text(
-                '₹${tableState.finalCheckoutTotal.value.toStringAsFixed(2)}',
-                style: TextStyle(
-                  fontSize: 18.sp * scaleFactor,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF2196F3),
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Total Amount:',
+                    style: TextStyle(
+                      fontSize: 16.sp * scaleFactor,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  Text(
+                    '₹${tableState.finalCheckoutTotal.value.toStringAsFixed(2)}',
+                    style: TextStyle(
+                      fontSize: 18.sp * scaleFactor,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF2196F3),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        )),
+            )),
         Gap(16.h * scaleFactor),
         // Action buttons
         Row(
@@ -102,7 +99,8 @@ Widget buildBottomSection(OrderManagementController controller, int tableId, dou
             Expanded(
               flex: 1,
               child: OutlinedButton(
-                onPressed: () => controller.clearAllItemsForTable(tableId, context, table),
+                onPressed: () =>
+                    controller.clearAllItemsForTable(tableId, context, table),
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: Colors.red),
                   shape: RoundedRectangleBorder(
@@ -124,35 +122,37 @@ Widget buildBottomSection(OrderManagementController controller, int tableId, dou
             Expanded(
               flex: 2,
               child: Obx(() => ElevatedButton(
-                onPressed: controller.canProceedToCheckout(tableId)
-                    ? () => controller.proceedToCheckout(tableId, context, table)
-                    : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4CAF50),
-                  foregroundColor: Colors.white,
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.r * scaleFactor),
-                  ),
-                  padding: EdgeInsets.symmetric(vertical: 14.h * scaleFactor),
-                ),
-                child: controller.isLoading.value
-                    ? SizedBox(
-                  height: 20.h * scaleFactor,
-                  width: 20.w * scaleFactor,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
-                    : Text(
-                  'Proceed to Checkout',
-                  style: TextStyle(
-                    fontSize: 14.sp * scaleFactor,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              )),
+                    onPressed: controller.canProceedToCheckout(tableId)
+                        ? () => controller.proceedToCheckout(
+                            tableId, context, table)
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4CAF50),
+                      foregroundColor: Colors.white,
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.r * scaleFactor),
+                      ),
+                      padding:
+                          EdgeInsets.symmetric(vertical: 14.h * scaleFactor),
+                    ),
+                    child: controller.isLoading.value
+                        ? SizedBox(
+                            height: 20.h * scaleFactor,
+                            width: 20.w * scaleFactor,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Text(
+                            'Proceed to Checkout',
+                            style: TextStyle(
+                              fontSize: 14.sp * scaleFactor,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                  )),
             ),
           ],
         ),

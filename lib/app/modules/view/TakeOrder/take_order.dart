@@ -10,7 +10,6 @@ class TakeOrderContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     final controller = Get.put(TakeOrdersController());
 
     return Container(
@@ -74,7 +73,7 @@ class TakeOrderContent extends StatelessWidget {
                       price: table['price'] ?? 0,
                       time: table['time'] ?? 0,
                       isOccupied: table['isOccupied'] ?? false,
-                      onTap: () => controller.handleTableTap(index,context),
+                      onTap: () => controller.handleTableTap(index, context),
                     );
                   },
                 );
