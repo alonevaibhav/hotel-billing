@@ -1,0 +1,560 @@
+//
+// import 'package:flutter/material.dart';
+// import 'package:flutter/services.dart';
+// import 'package:get/get.dart';
+// import 'package:flutter_screenutil/flutter_screenutil.dart';
+// import 'package:gap/gap.dart';
+// import 'package:hotelbilling/app/modules/view/TakeOrder/components/widgets/select%20_item_widgets.dart';
+// import '../../../controllers/select_item_controller.dart';
+// import '../../../widgets/drawer.dart';
+// import '../../../widgets/header.dart';
+//
+// class SelectItem extends StatelessWidget {
+//   final Map<String, dynamic>? table;
+//   final double scaleFactor = 0.8;
+//
+//   const SelectItem({super.key, this.table});
+//
+//   // Create unique controller tag for each table
+//   String get controllerTag => 'select_item_${table?['id'] ?? 0}';
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     // Use unique tag for each table's controller instance
+//     final controller = Get.put(
+//       SelectItemController(),
+//       tag: controllerTag,
+//     );
+//
+//     // Pass table data to controller if not already set
+//     if (controller.selectedTable.value == null && table != null) {
+//       controller.setTableData(table!);
+//     }
+//
+//     return Scaffold(
+//       backgroundColor: Colors.white,
+//       drawer: const CommonDrawerWidget(),
+//       resizeToAvoidBottomInset: false,
+//       body: Form(
+//         key: controller.formKey,
+//         child: Column(
+//           children: [
+//             CommonHeaderWidget(
+//               customTitle: _getTableTitle(),
+//               onBackPressed: () => controller.navigateBack(controllerTag),
+//               showDrawerButton: true,
+//             ),
+//             Expanded(
+//               child: SingleChildScrollView(
+//                 padding: EdgeInsets.all(16.w * scaleFactor),
+//                 child: Column(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: [
+//                     buildRecipientSection(controller),
+//                     Gap(24.h * scaleFactor),
+//                     _buildItemsHeader(controller, context),
+//                     Gap(16.h * scaleFactor),
+//                     _buildItemsArea(controller),
+//                     Gap(120.h * scaleFactor),
+//                   ],
+//                 ),
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//       bottomNavigationBar: buildBottomSection(controller, scaleFactor, context),
+//     );
+//   }
+//
+//   String _getTableTitle() {
+//     final tableNo = table?['tableNumber']?.toString() ?? 'Unknown';
+//     return 'Table no - $tableNo';
+//   }
+//
+//   Widget _buildItemsHeader(SelectItemController controller, context) {
+//     return Row(
+//       children: [
+//         Text(
+//           'Items :',
+//           style: TextStyle(
+//             fontSize: 14.sp * scaleFactor,
+//             fontWeight: FontWeight.w500,
+//             color: Colors.black87,
+//           ),
+//         ),
+//         const Spacer(),
+//         GetBuilder<SelectItemController>(
+//           tag: controllerTag, // Use the same tag here
+//           builder: (controller) => OutlinedButton(
+//             onPressed: () => controller.toggleUrgentStatus(context),
+//             style: OutlinedButton.styleFrom(
+//               backgroundColor: controller.isMarkAsUrgent.value
+//                   ? Colors.orange.withOpacity(0.1)
+//                   : Colors.transparent,
+//               side: BorderSide(
+//                 color: controller.isMarkAsUrgent.value
+//                     ? Colors.orange
+//                     : Colors.grey[400]!,
+//                 width: 1 * scaleFactor,
+//               ),
+//               shape: RoundedRectangleBorder(
+//                 borderRadius: BorderRadius.circular(8.r * scaleFactor),
+//               ),
+//               padding: EdgeInsets.symmetric(
+//                 horizontal: 16.w * scaleFactor,
+//                 vertical: 10.h * scaleFactor,
+//               ),
+//               minimumSize: Size.zero,
+//             ),
+//             child: Text(
+//               'mark as urgent',
+//               style: TextStyle(
+//                 fontSize: 12.sp * scaleFactor,
+//                 fontWeight: FontWeight.w500,
+//                 color: controller.isMarkAsUrgent.value
+//                     ? Colors.orange[700]
+//                     : Colors.grey[600],
+//               ),
+//             ),
+//           ),
+//         ),
+//         Gap(8.w * scaleFactor),
+//         ElevatedButton(
+//           onPressed: controller.navigateToAddItems,
+//           style: ElevatedButton.styleFrom(
+//             backgroundColor: const Color(0xFF2196F3),
+//             foregroundColor: Colors.white,
+//             elevation: 2,
+//             shape: RoundedRectangleBorder(
+//               borderRadius: BorderRadius.circular(8.r * scaleFactor),
+//             ),
+//             padding: EdgeInsets.symmetric(
+//               horizontal: 16.w * scaleFactor,
+//               vertical: 10.h * scaleFactor,
+//             ),
+//             minimumSize: Size.zero,
+//           ),
+//           child: Row(
+//             mainAxisSize: MainAxisSize.min,
+//             children: [
+//               Icon(Icons.add, size: 16.sp * scaleFactor),
+//               Gap(4.w * scaleFactor),
+//               Text(
+//                 'add items',
+//                 style: TextStyle(
+//                   fontSize: 12.sp * scaleFactor,
+//                   fontWeight: FontWeight.w600,
+//                 ),
+//               ),
+//             ],
+//           ),
+//         ),
+//       ],
+//     );
+//   }
+//
+//   Widget _buildItemsArea(SelectItemController controller) {
+//     return Container(
+//       height: 300.h * scaleFactor,
+//       width: double.infinity,
+//       decoration: BoxDecoration(
+//         color: Colors.grey[50],
+//         borderRadius: BorderRadius.circular(8.r * scaleFactor),
+//         border: Border.all(
+//           color: Colors.grey[300]!,
+//           width: 1 * scaleFactor,
+//         ),
+//       ),
+//       child: GetBuilder<SelectItemController>(
+//         tag: controllerTag, // Use the same tag here too
+//         builder: (controller) {
+//           if (controller.orderItems.isEmpty) {
+//             return Center(
+//               child: Column(
+//                 mainAxisAlignment: MainAxisAlignment.center,
+//                 children: [
+//                   Icon(
+//                     Icons.restaurant_menu,
+//                     size: 48.sp * scaleFactor,
+//                     color: Colors.grey[400],
+//                   ),
+//                   Gap(12.h * scaleFactor),
+//                   Text(
+//                     'No items added yet',
+//                     style: TextStyle(
+//                       fontSize: 14.sp * scaleFactor,
+//                       color: Colors.grey[500],
+//                       fontWeight: FontWeight.w500,
+//                     ),
+//                   ),
+//                   Gap(4.h * scaleFactor),
+//                   Text(
+//                     'Tap "add items" to start building your order',
+//                     style: TextStyle(
+//                       fontSize: 12.sp * scaleFactor,
+//                       color: Colors.grey[400],
+//                     ),
+//                   ),
+//                 ],
+//               ),
+//             );
+//           }
+//           return ListView.builder(
+//             padding: EdgeInsets.all(12.w * scaleFactor),
+//             itemCount: controller.orderItems.length,
+//             itemBuilder: (context, index) {
+//               final item = controller.orderItems[index];
+//               return Container(
+//                 margin: EdgeInsets.only(bottom: 8.h * scaleFactor),
+//                 padding: EdgeInsets.all(12.w * scaleFactor),
+//                 decoration: BoxDecoration(
+//                   color: Colors.white,
+//                   borderRadius: BorderRadius.circular(8.r * scaleFactor),
+//                   border: Border.all(color: Colors.grey[200]!),
+//                 ),
+//                 child: Row(
+//                   children: [
+//                     Expanded(
+//                       child: Column(
+//                         crossAxisAlignment: CrossAxisAlignment.start,
+//                         children: [
+//                           Text(
+//                             item['name'] ?? 'Unknown Item',
+//                             style: TextStyle(
+//                               fontSize: 14.sp * scaleFactor,
+//                               fontWeight: FontWeight.w600,
+//                               color: Colors.black87,
+//                             ),
+//                           ),
+//                           Gap(4.h * scaleFactor),
+//                           Text(
+//                             '₹${(item['price'] ?? 0.0).toStringAsFixed(2)}',
+//                             style: TextStyle(
+//                               fontSize: 12.sp * scaleFactor,
+//                               color: Colors.grey[600],
+//                             ),
+//                           ),
+//                         ],
+//                       ),
+//                     ),
+//                     IconButton(
+//                       onPressed: () => controller.removeItemFromOrder(index, context),
+//                       icon: Icon(
+//                         Icons.delete_outline,
+//                         color: Colors.red[400],
+//                         size: 20.sp * scaleFactor,
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               );
+//             },
+//           );
+//         },
+//       ),
+//     );
+//   }
+// }
+//
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gap/gap.dart';
+import 'package:hotelbilling/app/modules/view/TakeOrder/components/widgets/select%20_item_widgets.dart';
+import '../../../controllers/select_item_controller.dart';
+import '../../../widgets/drawer.dart';
+import '../../../widgets/header.dart';
+
+class SelectItem extends StatelessWidget {
+  final Map<String, dynamic>? table;
+  final double scaleFactor = 0.8;
+
+  const SelectItem({super.key, this.table});
+
+  @override
+  Widget build(BuildContext context) {
+    // Use single controller instance - initialize if not exists
+    final controller = Get.put(OrderManagementController());
+    final tableId = table?['id'] ?? 0;
+
+    // Set active table context
+    controller.setActiveTable(tableId, table);
+
+    // Get table state for this specific table
+    final tableState = controller.getTableState(tableId);
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      drawer: const CommonDrawerWidget(),
+      resizeToAvoidBottomInset: false,
+      body: Form(
+        key: controller.formKey,
+        child: Column(
+          children: [
+            CommonHeaderWidget(
+              customTitle: _getTableTitle(),
+              onBackPressed: controller.navigateBack,
+              showDrawerButton: true,
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.all(16.w * scaleFactor),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    buildRecipientSection(tableState),
+                    Gap(24.h * scaleFactor),
+                    _buildItemsHeader(controller, tableId, context),
+                    Gap(16.h * scaleFactor),
+                    _buildItemsArea(controller, tableId),
+                    Gap(120.h * scaleFactor),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar:
+          buildBottomSection(controller, tableId, scaleFactor, context,table),
+    );
+  }
+
+  String _getTableTitle() {
+    final tableNo = table?['tableNumber']?.toString() ?? 'Unknown';
+    return 'Table no - $tableNo';
+  }
+
+  Widget _buildItemsHeader(
+      OrderManagementController controller, int tableId, BuildContext context) {
+    final tableState = controller.getTableState(tableId);
+
+    return Row(
+      children: [
+        Text(
+          'Items :',
+          style: TextStyle(
+            fontSize: 14.sp * scaleFactor,
+            fontWeight: FontWeight.w500,
+            color: Colors.black87,
+          ),
+        ),
+        const Spacer(),
+        // Fixed urgent button with proper reactive updates
+        Obx(() => AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              child: OutlinedButton(
+                onPressed: () =>
+                    controller.toggleUrgentForTable(tableId, context, table),
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: tableState.isMarkAsUrgent.value
+                      ? Colors.orange.withOpacity(0.15)
+                      : Colors.transparent,
+                  side: BorderSide(
+                    color: tableState.isMarkAsUrgent.value
+                        ? Colors.orange[600]!
+                        : Colors.grey[400]!,
+                    width: 1.5 * scaleFactor,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.r * scaleFactor),
+                  ),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.w * scaleFactor,
+                    vertical: 10.h * scaleFactor,
+                  ),
+                  minimumSize: Size.zero,
+                  elevation: tableState.isMarkAsUrgent.value ? 2 : 0,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      tableState.isMarkAsUrgent.value
+                          ? Icons.priority_high
+                          : Icons.schedule,
+                      size: 14.sp * scaleFactor,
+                      color: tableState.isMarkAsUrgent.value
+                          ? Colors.orange[700]
+                          : Colors.grey[600],
+                    ),
+                    Gap(4.w * scaleFactor),
+                    Text(
+                      tableState.isMarkAsUrgent.value
+                          ? 'urgent'
+                          : 'mark as urgent',
+                      style: TextStyle(
+                        fontSize: 12.sp * scaleFactor,
+                        fontWeight: FontWeight.w600,
+                        color: tableState.isMarkAsUrgent.value
+                            ? Colors.orange[700]
+                            : Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )),
+        Gap(8.w * scaleFactor),
+        ElevatedButton(
+          onPressed: () => controller.navigateToAddItems(tableId, table),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF2196F3),
+            foregroundColor: Colors.white,
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8.r * scaleFactor),
+            ),
+            padding: EdgeInsets.symmetric(
+              horizontal: 16.w * scaleFactor,
+              vertical: 10.h * scaleFactor,
+            ),
+            minimumSize: Size.zero,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.add,
+                size: 16.sp * scaleFactor,
+              ),
+              Gap(4.w * scaleFactor),
+              Text(
+                'add items',
+                style: TextStyle(
+                  fontSize: 12.sp * scaleFactor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildItemsArea(OrderManagementController controller, int tableId) {
+    final tableState = controller.getTableState(tableId);
+
+    return Container(
+      height: 300.h * scaleFactor,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(8.r * scaleFactor),
+        border: Border.all(
+          color: Colors.grey[300]!,
+          width: 1 * scaleFactor,
+        ),
+      ),
+      child: Obx(() {
+        if (tableState.orderItems.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.restaurant_menu,
+                  size: 48.sp * scaleFactor,
+                  color: Colors.grey[400],
+                ),
+                Gap(12.h * scaleFactor),
+                Text(
+                  'No items added yet',
+                  style: TextStyle(
+                    fontSize: 14.sp * scaleFactor,
+                    color: Colors.grey[500],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Gap(4.h * scaleFactor),
+                Text(
+                  'Tap "add items" to start building your order',
+                  style: TextStyle(
+                    fontSize: 12.sp * scaleFactor,
+                    color: Colors.grey[400],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+        return ListView.builder(
+          padding: EdgeInsets.all(12.w * scaleFactor),
+          itemCount: tableState.orderItems.length,
+          itemBuilder: (context, index) {
+            final item = tableState.orderItems[index];
+            return Container(
+              margin: EdgeInsets.only(bottom: 8.h * scaleFactor),
+              padding: EdgeInsets.all(12.w * scaleFactor),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8.r * scaleFactor),
+                border: Border.all(color: Colors.grey[200]!),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item['name'] ?? 'Unknown Item',
+                          style: TextStyle(
+                            fontSize: 14.sp * scaleFactor,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        Gap(4.h * scaleFactor),
+                        Row(
+                          children: [
+                            Text(
+                              '₹${(item['price'] ?? 0.0).toStringAsFixed(2)}',
+                              style: TextStyle(
+                                fontSize: 12.sp * scaleFactor,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                            Gap(8.w * scaleFactor),
+                            Text(
+                              'Qty: ${item['quantity'] ?? 1}',
+                              style: TextStyle(
+                                fontSize: 12.sp * scaleFactor,
+                                color: Colors.blue[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => controller.removeItemFromTable(
+                        tableId, index, context, table),
+                    icon: Icon(
+                      Icons.delete_outline,
+                      color: Colors.red[400],
+                      size: 20.sp * scaleFactor,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      }),
+    );
+  }
+}

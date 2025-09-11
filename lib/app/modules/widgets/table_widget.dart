@@ -1,5 +1,5 @@
-// lib/features/take_orders/views/widgets/table_card_widget.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 
 class TableCardWidget extends StatelessWidget {
@@ -37,9 +37,9 @@ class TableCardWidget extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: cardColor,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(8.r),
         ),
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.all(12.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -47,32 +47,32 @@ class TableCardWidget extends StatelessWidget {
             // Table number
             Text(
               tableNumber.toString(),
-              style: const TextStyle(
-                fontSize: 16,
+              style: TextStyle(
+                fontSize: 10.sp,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
               ),
             ),
 
-            Gap(8),
+            Gap(8.h),
 
             // Price
             Text(
               price > 0 ? '₹ $price' : '₹ 00',
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
+              style: TextStyle(
+                fontSize: 12.sp,
+                fontWeight: FontWeight.bold,
                 color: Colors.black87,
               ),
             ),
 
-            Gap(4),
+            Gap(4.h),
 
             // Time
             Text(
               'time:$time',
-              style: const TextStyle(
-                fontSize: 12,
+              style: TextStyle(
+                fontSize: 8.sp,
                 fontWeight: FontWeight.w400,
                 color: Colors.black87,
               ),

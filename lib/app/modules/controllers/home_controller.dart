@@ -1,5 +1,4 @@
 
-// lib/features/restaurant/controllers/restaurant_controller.dart
 import 'package:get/get.dart';
 import 'dart:developer' as developer;
 
@@ -60,6 +59,8 @@ class RestaurantController extends GetxController {
 
   void handleLogout() {
     developer.log('Logout button pressed', name: 'Restaurant');
+    // Add logout logic here
+    // Get.offAllNamed('/login'); // Example navigation to login
   }
 
   // Sidebar navigation
@@ -86,17 +87,28 @@ class RestaurantController extends GetxController {
     developer.log('Restaurant menu pressed', name: 'Restaurant');
   }
 
-  // Main action buttons
+  // Main action buttons - Fixed navigation methods
   void handleTakeOrders() {
     selectedMainButton.value = 'take_orders';
-
-    NavigationService.goToTakeOrders();
   }
 
   void handleReadyOrders() {
     selectedMainButton.value = 'ready_orders';
-    developer.log('Ready Orders button pressed', name: 'Restaurant');
-    NavigationService.goToReadyOrders();
+  }
 
+  // Additional utility methods
+  void refreshData() {
+    isLoading.value = true;
+    // Simulate loading
+    Future.delayed(const Duration(seconds: 2), () {
+      _initializeData();
+      isLoading.value = false;
+      Get.snackbar('Success', 'Data refreshed successfully');
+    });
+  }
+
+  void showError(String message) {
+    errorMessage.value = message;
+    Get.snackbar('Error', message, snackPosition: SnackPosition.BOTTOM);
   }
 }

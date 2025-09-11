@@ -1,10 +1,9 @@
-import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../modules/auth/login_view.dart';
-import '../modules/view/TakeOrder/take_order.dart';
+import '../modules/view/TakeOrder/components/select_dish.dart';
+import '../modules/view/TakeOrder/components/select_item.dart';
 import '../modules/view/homepage/home_page.dart';
-import '../modules/view/ready_order/ready_order.dart';
 import 'app_bindings.dart';
 
 class AppRoutes {
@@ -13,8 +12,10 @@ class AppRoutes {
   static const forgotPassword = '/forgotPassword';
   static const mainDashboard = '/restaurant';
 
-  static const takeOrders = '/restaurant/take-orders';
-  static const readyOrders = '/restaurant/ready-orders';
+  static const selectItem = '/restaurant/selectItem';
+  static const selectDish = '/restaurant/selectDish';
+
+
 
   // Initialize bindings once at app start
   static void initializeBindings() {
@@ -37,20 +38,20 @@ class AppRoutes {
 
       GoRoute(
         path: mainDashboard,
-        builder: (context, state) => const RestaurantView(),
+        builder: (context, state) => const WaiterDashboardView(),
       ),
-
-      // Take Orders route (to be implemented later)
-      // GoRoute(
-      //   path: takeOrders,
-      //   builder: (context, state)  => const TakeOrder(),
-      // ),
-
-      // Ready Orders route (to be implemented later)
       GoRoute(
-        path: readyOrders,
-        builder: (context, state)  => const ReadyOrder(),
+        path: selectItem,
+        builder: (context, state) {
+          final table = state.extra as Map<String, dynamic>?; // Retrieve extra here
+          return SelectItem(table: table); // Pass to widget
+        },
       ),
+      GoRoute(
+        path: selectDish,
+        builder: (context, state) => const SelectDish(),
+      ),
+
     ],
   );
 }
@@ -68,13 +69,14 @@ class NavigationService {
     _router.push(AppRoutes.mainDashboard);
   }
 
-  static void goToTakeOrders() {
-    _router.push(AppRoutes.takeOrders);
+  static void selectItem(Map<String, dynamic> table) {
+    _router.push(AppRoutes.selectItem, extra: table);
   }
 
-  static void goToReadyOrders() {
-    _router.push(AppRoutes.readyOrders);
+  static void selectDish() {
+    _router.push(AppRoutes.selectDish);
   }
+
 
   static void goBack() {
     if (_router.canPop()) {
