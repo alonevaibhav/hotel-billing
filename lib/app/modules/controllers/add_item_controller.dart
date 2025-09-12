@@ -461,6 +461,7 @@ class AddItemsController extends GetxController {
     });
   }
 
+  // will implement clear all later
   void clearAllSelections() {
     for (var item in allItems) {
       item['quantity'] = 0;

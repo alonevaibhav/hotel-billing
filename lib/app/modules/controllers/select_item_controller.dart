@@ -21,6 +21,8 @@ class TableOrderState {
     phoneController.dispose();
   }
 
+
+  // Clear all later when needed
   void clearOrderData() {
     fullNameController.clear();
     phoneController.clear();
@@ -219,6 +221,7 @@ class OrderManagementController extends GetxController {
         title: 'Sent to Chef',
         duration: const Duration(seconds: 2),
       );
+      NavigationService.goBack();
 
       developer.log('KOT successfully sent to chef for table $tableId');
     } catch (e) {
@@ -260,8 +263,6 @@ class OrderManagementController extends GetxController {
         duration: const Duration(seconds: 3),
       );
 
-      // Clear the order after successful submission
-      state.clearOrderData();
       NavigationService.goBack();
       developer.log('Order successfully submitted for table $tableId');
     } catch (e) {
