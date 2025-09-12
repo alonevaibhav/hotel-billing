@@ -1,5 +1,6 @@
-import 'dart:developer' as develeoper;
 
+
+import 'dart:developer' as develeoper;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hotelbilling/app/modules/controllers/select_item_controller.dart';
@@ -376,28 +377,41 @@ class AddItemsController extends GetxController {
     }
 
     try {
-      // Get the OrderManagementController
-      final orderController = Get.find<OrderManagementController>();
       final tableId = currentTableId.value;
 
-      develeoper.log('Adding items to table $tableId');
+      // Get the OrderManagementController instance
+      final orderController = Get.find<OrderManagementController>();
+      final tableState = orderController.getTableState(tableId);
 
+      developer.log('Adding items to table $tableId');
+
+      // Add selected items to the order management controller
       for (var item in selectedItems) {
         final quantity = item['quantity'] as int;
-        for (int i = 0; i < quantity; i++) {
-          final orderItem = {
-            'id': item['id'],
-            'name': item['item_name'],
-            'price': double.parse(item['price'].toString()),
-            'quantity': 1, // Each individual item
-            'category': item['category_display'],
-            'description': item['description'],
-            'preparation_time': item['preparation_time'],
-            'is_vegetarian': item['is_vegetarian'],
-          };
 
-        }
+        // Create order item structure
+        final orderItem = {
+          'id': item['id'],
+          'item_name': item['item_name'],
+          'price': double.parse(item['price'].toString()),
+          'quantity': quantity,
+          'category': item['category_display'],
+          'description': item['description'] ?? '',
+          'preparation_time': item['preparation_time'] ?? 0,
+          'is_vegetarian': item['is_vegetarian'] ?? 0,
+          'is_featured': item['is_featured'] ?? 0,
+          'total_price': double.parse(item['price'].toString()) * quantity,
+          'added_at': DateTime.now().toIso8601String(),
+        };
+
+        // Add to table's order items
+        tableState.orderItems.add(orderItem);
+
+        developer.log('Added item: ${orderItem['item_name']} x ${orderItem['quantity']} to table $tableId');
       }
+
+      // Update total price
+      _updateTableTotal(tableState);
 
       final tableNumber = currentTable.value?['tableNumber'] ?? tableId;
       final totalItems = selectedItems.fold<int>(0, (sum, item) => sum + (item['quantity'] as int));
@@ -409,10 +423,13 @@ class AddItemsController extends GetxController {
         duration: const Duration(seconds: 1),
       );
 
+      // Clear selections after adding
+      clearAllSelections();
+
       // Navigate back to order management
       NavigationService.goBack();
 
-      developer.log('Added $totalItems items to table $tableId');
+      developer.log('Successfully added $totalItems items to table $tableId');
     } catch (e) {
       developer.log('Error adding items to table: $e');
       SnackBarUtil.showError(
@@ -423,6 +440,17 @@ class AddItemsController extends GetxController {
       );
     }
   }
+
+// Helper method to update table total
+  void _updateTableTotal(TableOrderState tableState) {
+    double total = 0.0;
+    for (var item in tableState.orderItems) {
+      total += item['total_price'] as double;
+    }
+    tableState.finalCheckoutTotal.value = total;
+    developer.log('Updated table total: ₹${total.toStringAsFixed(2)}');
+  }
+
 
   int get totalSelectedItems {
     return selectedItems.fold<int>(

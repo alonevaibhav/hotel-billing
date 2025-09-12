@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gap/gap.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import '../../../../apputils/Utils/double_tap_to_exit.dart';
 import '../../controllers/home_controller.dart';
 import '../../widgets/drawer.dart';
 import '../../widgets/header.dart';
@@ -15,29 +16,31 @@ class WaiterDashboardView extends StatelessWidget {
   Widget build(BuildContext context) {
     final RestaurantController controller = Get.put(RestaurantController());
 
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        drawer: const CommonDrawerWidget(), // Use the centralized drawer
-        body: Column(
-          children: [
-            // Common Header
-            const CommonHeaderWidget(
-              showBackButton: false,
-              showDrawerButton: true,
-            ),
-            // Main Content Area
-            Expanded(
-              child: Obx(() {
-                // Show content based on selection
-                if (controller.selectedMainButton.value == 'take_orders') {
-                  return _buildTakeOrderContent(controller);
-                } else {
-                  return _buildReadyOrderContent(controller);
-                }
-              }),
-            ),
-          ],
+    return DoubleBackToExit(
+      child: SafeArea(
+        child: Scaffold(
+          backgroundColor: Colors.white,
+          drawer: const CommonDrawerWidget(), // Use the centralized drawer
+          body: Column(
+            children: [
+              // Common Header
+              const CommonHeaderWidget(
+                showBackButton: false,
+                showDrawerButton: true,
+              ),
+              // Main Content Area
+              Expanded(
+                child: Obx(() {
+                  // Show content based on selection
+                  if (controller.selectedMainButton.value == 'take_orders') {
+                    return _buildTakeOrderContent(controller);
+                  } else {
+                    return _buildReadyOrderContent(controller);
+                  }
+                }),
+              ),
+            ],
+          ),
         ),
       ),
     );

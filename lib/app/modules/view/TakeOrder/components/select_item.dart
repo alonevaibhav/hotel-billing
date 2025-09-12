@@ -183,10 +183,10 @@ class OrderManagementView extends StatelessWidget {
     final tableState = controller.getTableState(tableId);
 
     return Container(
-      height: 350.h * scaleFactor,
+      height: 400.h * scaleFactor,
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: Colors.white,
         borderRadius: BorderRadius.circular(8.r * scaleFactor),
         border: Border.all(
           color: Colors.grey[300]!,
@@ -226,8 +226,211 @@ class OrderManagementView extends StatelessWidget {
           );
         }
 
-        return Container();
+        return Column(
+          children: [
+            // Items list
+            Expanded(
+              child: ListView.builder(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 16.w * scaleFactor,
+                  vertical: 12.h * scaleFactor,
+                ),
+                itemCount: tableState.orderItems.length,
+                itemBuilder: (context, index) {
+                  final item = tableState.orderItems[index];
+                  return _buildOrderItemCard(
+                      item, index, controller, tableId, context);
+                },
+              ),
+            ),
+          ],
+        );
       }),
+    );
+  }
+
+  Widget _buildOrderItemCard(Map<String, dynamic> item, int index,
+      OrderManagementController controller, int tableId, context) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 12.h * scaleFactor),
+      padding: EdgeInsets.all(12.w * scaleFactor),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(8.r * scaleFactor),
+        border: Border.all(
+          color: Colors.grey[200]!,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          // Delete button (blue circle with trash icon)
+          GestureDetector(
+            onTap: () =>
+                controller.removeItemFromTable(tableId, index, context),
+            child: Container(
+              width: 32.w * scaleFactor,
+              height: 32.w * scaleFactor,
+              decoration: const BoxDecoration(
+                color: Color(0xFF2196F3),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.delete_outline,
+                color: Colors.white,
+                size: 18.sp * scaleFactor,
+              ),
+            ),
+          ),
+
+          Gap(12.w * scaleFactor),
+
+          // Item details
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item['item_name'] ?? 'Unknown Item',
+                  style: TextStyle(
+                    fontSize: 14.sp * scaleFactor,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (item['description'] != null &&
+                    item['description'].toString().isNotEmpty) ...[
+                  Gap(2.h * scaleFactor),
+                  Text(
+                    item['description'],
+                    style: TextStyle(
+                      fontSize: 11.sp * scaleFactor,
+                      color: Colors.grey[600],
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
+            ),
+          ),
+
+          Gap(12.w * scaleFactor),
+
+          // Quantity controls
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Decrement button
+              GestureDetector(
+                onTap: () =>
+                    controller.decrementItemQuantity(tableId, index, context),
+                child: Container(
+                  width: 28.w * scaleFactor,
+                  height: 28.w * scaleFactor,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(4.r * scaleFactor),
+                    border: Border.all(
+                      color: const Color(0xFF2196F3),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.remove,
+                    color: const Color(0xFF2196F3),
+                    size: 16.sp * scaleFactor,
+                  ),
+                ),
+              ),
+
+              Gap(8.w * scaleFactor),
+
+              // Quantity display
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 12.w * scaleFactor,
+                  vertical: 4.h * scaleFactor,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2196F3),
+                  borderRadius: BorderRadius.circular(4.r * scaleFactor),
+                ),
+                child: Text(
+                  '${item['quantity']}',
+                  style: TextStyle(
+                    fontSize: 14.sp * scaleFactor,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+
+              Gap(8.w * scaleFactor),
+
+              // Increment button
+              GestureDetector(
+                onTap: () => controller.incrementItemQuantity(tableId, index),
+                child: Container(
+                  width: 28.w * scaleFactor,
+                  height: 28.w * scaleFactor,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2196F3),
+                    borderRadius: BorderRadius.circular(4.r * scaleFactor),
+                  ),
+                  child: Icon(
+                    Icons.add,
+                    color: Colors.white,
+                    size: 16.sp * scaleFactor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          Gap(12.w * scaleFactor),
+
+          // Price and total
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                'price',
+                style: TextStyle(
+                  fontSize: 10.sp * scaleFactor,
+                  color: Colors.grey[500],
+                ),
+              ),
+              Text(
+                '₹${(item['price'] as double).toStringAsFixed(0)}',
+                style: TextStyle(
+                  fontSize: 12.sp * scaleFactor,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black87,
+                ),
+              ),
+              Gap(2.h * scaleFactor),
+              Text(
+                'total',
+                style: TextStyle(
+                  fontSize: 10.sp * scaleFactor,
+                  color: Colors.grey[500],
+                ),
+              ),
+              Text(
+                '₹${(item['total_price'] as double).toStringAsFixed(0)}',
+                style: TextStyle(
+                  fontSize: 12.sp * scaleFactor,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF2196F3),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

@@ -8,9 +8,9 @@ import '../../route/app_routes.dart';
 // Table-specific state model
 class TableOrderState {
   final int tableId;
-  final orderItems = <Map<String, dynamic>>[].obs; // Empty for now, will be used later
+  final orderItems = <Map<String, dynamic>>[].obs; // This will now store actual items
   final isMarkAsUrgent = false.obs;
-  final finalCheckoutTotal = 0.0.obs; // Always 0 for now, will be calculated later
+  final finalCheckoutTotal = 0.0.obs; // This will be calculated from items
   final fullNameController = TextEditingController();
   final phoneController = TextEditingController();
 
@@ -27,7 +27,9 @@ class TableOrderState {
     orderItems.clear();
     finalCheckoutTotal.value = 0.0;
     isMarkAsUrgent.value = false;
+    developer.log('Cleared order data for table $tableId');
   }
+
 }
 
 // Main Order Management Controller
@@ -72,6 +74,48 @@ class OrderManagementController extends GetxController {
     }
     return tableOrders[tableId]!;
   }
+
+  // Add item to specific table
+  void addItemToTable(int tableId, Map<String, dynamic> item) {
+    final state = getTableState(tableId);
+    state.orderItems.add(item);
+    _updateTableTotal(state);
+    developer.log('Item added to table $tableId: ${item['item_name']}');
+  }
+
+
+// Update quantity of specific item
+  void updateItemQuantity(int tableId, int itemIndex, int newQuantity) {
+    final state = getTableState(tableId);
+    if (itemIndex >= 0 &&
+        itemIndex < state.orderItems.length &&
+        newQuantity > 0) {
+      final item = state.orderItems[itemIndex];
+      final price = item['price'] as double;
+
+      item['quantity'] = newQuantity;
+      item['total_price'] = price * newQuantity;
+
+      state.orderItems[itemIndex] = item;
+      _updateTableTotal(state);
+      developer.log(
+          'Updated quantity for ${item['item_name']} in table $tableId: $newQuantity');
+    }
+  }
+
+// Calculate and update table total
+  void _updateTableTotal(TableOrderState state) {
+    double total = 0.0;
+    for (var item in state.orderItems) {
+      total += item['total_price'] as double;
+    }
+    state.finalCheckoutTotal.value = total;
+  }
+
+
+
+
+
 
   // Safe table context setting - can be called from initState
   void setActiveTable(int tableId, Map<String, dynamic>? tableData) {
@@ -155,8 +199,8 @@ class OrderManagementController extends GetxController {
   }
 
   // Send to chef method
-  Future<void> sendToChef(int tableId,  context,
-      Map<String, dynamic>? tableData) async {
+  Future<void> sendToChef(
+      int tableId, context, Map<String, dynamic>? tableData) async {
     try {
       isLoading.value = true;
       await Future.delayed(const Duration(seconds: 1));
@@ -187,8 +231,8 @@ class OrderManagementController extends GetxController {
   }
 
   // Basic checkout process
-  Future<void> proceedToCheckout(int tableId,  context,
-      Map<String, dynamic>? tableData) async {
+  Future<void> proceedToCheckout(
+      int tableId, context, Map<String, dynamic>? tableData) async {
     try {
       isLoading.value = true;
       await Future.delayed(const Duration(seconds: 2));
@@ -245,5 +289,73 @@ class OrderManagementController extends GetxController {
   bool canProceedToCheckout(int tableId) {
     // Since you removed form validation, we'll just check if not loading
     return !isLoading.value;
+  }
+
+
+  //After Adding Items from AddItemsView, increment/decrement/remove items in the order list
+
+  // Increment item quantity in the order list
+  void incrementItemQuantity(int tableId, int itemIndex) {
+    final state = getTableState(tableId);
+    if (itemIndex >= 0 && itemIndex < state.orderItems.length) {
+      final item = state.orderItems[itemIndex];
+      final price = item['price'] as double;
+      final currentQuantity = item['quantity'] as int;
+      final newQuantity = currentQuantity + 1;
+
+      item['quantity'] = newQuantity;
+      item['total_price'] = price * newQuantity;
+
+      state.orderItems[itemIndex] = item;
+      _updateTableTotal(state);
+
+      developer.log(
+          'Incremented ${item['item_name']} to quantity $newQuantity in table $tableId');
+    }
+  }
+
+// Decrement item quantity in the order list
+  void decrementItemQuantity(int tableId, int itemIndex, context) {
+    final state = getTableState(tableId);
+    if (itemIndex >= 0 && itemIndex < state.orderItems.length) {
+      final item = state.orderItems[itemIndex];
+      final currentQuantity = item['quantity'] as int;
+
+      if (currentQuantity > 1) {
+        final price = item['price'] as double;
+        final newQuantity = currentQuantity - 1;
+
+        item['quantity'] = newQuantity;
+        item['total_price'] = price * newQuantity;
+
+        state.orderItems[itemIndex] = item;
+        _updateTableTotal(state);
+
+        developer.log(
+            'Decremented ${item['item_name']} to quantity $newQuantity in table $tableId');
+      } else {
+        // Remove item if quantity becomes 0
+        removeItemFromTable(tableId, itemIndex, context);
+      }
+    }
+  }
+
+// Remove item completely from the order
+  void removeItemFromTable(int tableId, int itemIndex, context) {
+    final state = getTableState(tableId);
+    if (itemIndex >= 0 && itemIndex < state.orderItems.length) {
+      final removedItem = state.orderItems.removeAt(itemIndex);
+      _updateTableTotal(state);
+
+      developer.log('Removed ${removedItem['item_name']} from table $tableId');
+
+      // Show confirmation snackbar
+      SnackBarUtil.showInfo(
+        context,
+        '${removedItem['item_name']} removed from order',
+        title: 'Item Removed',
+        duration: const Duration(seconds: 1),
+      );
+    }
   }
 }
