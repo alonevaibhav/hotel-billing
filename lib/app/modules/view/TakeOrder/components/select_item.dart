@@ -48,7 +48,7 @@ class OrderManagementView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    buildRecipientSection( tableState),
+                    buildRecipientSection(tableState),
                     Gap(24.h * scaleFactor),
                     _buildItemsHeader(controller, tableId, context),
                     Gap(16.h * scaleFactor),
@@ -70,7 +70,6 @@ class OrderManagementView extends StatelessWidget {
     final tableNo = table?['tableNumber']?.toString() ?? 'Unknown';
     return 'Table no - $tableNo';
   }
-
 
   Widget _buildItemsHeader(
       OrderManagementController controller, int tableId, BuildContext context) {
@@ -231,6 +230,4 @@ class OrderManagementView extends StatelessWidget {
       }),
     );
   }
-
-
 }

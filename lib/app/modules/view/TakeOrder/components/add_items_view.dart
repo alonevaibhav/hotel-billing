@@ -5,6 +5,7 @@ import 'package:gap/gap.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../../route/app_routes.dart';
 import '../../../controllers/add_item_controller.dart';
+import '../../../widgets/drawer.dart';
 import '../../../widgets/header.dart';
 import 'widgets/category_filter_widget.dart';
 import 'widgets/menu_item_card.dart';
@@ -22,13 +23,14 @@ class AddItemsView extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      drawer: const CommonDrawerWidget(), // Use the centralized drawer
       resizeToAvoidBottomInset: false,
       body: Column(
         children: [
           CommonHeaderWidget(
             customTitle: 'Add Items',
             onBackPressed: () => NavigationService.goBack(),
-            showDrawerButton: false,
+            showDrawerButton: true,
           ),
           Expanded(
             child: Column(
