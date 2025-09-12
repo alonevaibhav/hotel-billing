@@ -198,14 +198,20 @@ class OrderManagementController extends GetxController {
     }
   }
 
-  // Send to chef method
-  Future<void> sendToChef(
-      int tableId, context, Map<String, dynamic>? tableData) async {
+// Send to chef method - now includes actual order items
+  Future<void> sendToChef(int tableId,  context,
+      Map<String, dynamic>? table, List<Map<String, dynamic>> orderItems) async {
     try {
       isLoading.value = true;
-      await Future.delayed(const Duration(seconds: 1));
 
-      final tableNumber = tableData?['tableNumber'] ?? tableId;
+      final tableNumber = table?['tableNumber'] ?? tableId;
+      final orderData = _prepareOrderData(tableId, table, orderItems, 'chef');
+
+      developer.log('Sending KOT to chef for table $tableId:');
+      developer.log('Order Dataa: ${orderData.toString()}');
+
+      // Simulate API call
+      await Future.delayed(const Duration(seconds: 1));
 
       SnackBarUtil.showSuccess(
         context,
@@ -214,10 +220,10 @@ class OrderManagementController extends GetxController {
         duration: const Duration(seconds: 2),
       );
 
-      developer.log('KOT sent to chef for table $tableId');
+      developer.log('KOT successfully sent to chef for table $tableId');
     } catch (e) {
       developer.log('Send to chef error for table $tableId: $e');
-      final tableNumber = tableData?['tableNumber'] ?? tableId;
+      final tableNumber = table?['tableNumber'] ?? tableId;
 
       SnackBarUtil.showError(
         context,
@@ -230,27 +236,22 @@ class OrderManagementController extends GetxController {
     }
   }
 
-  // Basic checkout process
-  Future<void> proceedToCheckout(
-      int tableId, context, Map<String, dynamic>? tableData) async {
+// Checkout process - now includes actual order items
+  Future<void> proceedToCheckout(int tableId,  context,
+      Map<String, dynamic>? table, List<Map<String, dynamic>> orderItems) async {
     try {
       isLoading.value = true;
+
+      final tableNumber = table?['tableNumber'] ?? tableId;
+      final orderData = _prepareOrderData(tableId, table, orderItems, 'manager');
+
+      developer.log('Processing checkout for table $tableId:');
+      developer.log('Order Data: ${orderData.toString()}');
+
+      // Simulate API call
       await Future.delayed(const Duration(seconds: 2));
 
       final state = getTableState(tableId);
-      final tableNumber = tableData?['tableNumber'] ?? tableId;
-
-      final orderData = {
-        'orderId': 'ORD_${tableId}_${DateTime.now().millisecondsSinceEpoch}',
-        'tableId': tableId,
-        'tableNumber': tableData?['tableNumber'],
-        'table': tableData,
-        'recipientName': state.fullNameController.text.trim(),
-        'phoneNumber': state.phoneController.text.trim(),
-        'isUrgent': state.isMarkAsUrgent.value,
-        'orderTime': DateTime.now().toIso8601String(),
-        'status': 'pending',
-      };
 
       SnackBarUtil.showSuccess(
         context,
@@ -259,13 +260,13 @@ class OrderManagementController extends GetxController {
         duration: const Duration(seconds: 3),
       );
 
+      // Clear the order after successful submission
       state.clearOrderData();
-      Get.context!.go('/order-confirmation', extra: orderData);
-
-      developer.log('Order submitted for table $tableId: $orderData');
+      NavigationService.goBack();
+      developer.log('Order successfully submitted for table $tableId');
     } catch (e) {
       developer.log('Checkout error for table $tableId: $e');
-      final tableNumber = tableData?['tableNumber'] ?? tableId;
+      final tableNumber = table?['tableNumber'] ?? tableId;
 
       SnackBarUtil.showError(
         context,
@@ -278,6 +279,49 @@ class OrderManagementController extends GetxController {
     }
   }
 
+// Helper method to prepare order data with actual items
+  Map<String, dynamic> _prepareOrderData(
+      int tableId,
+      Map<String, dynamic>? table,
+      List<Map<String, dynamic>> orderItems,
+      String destination,
+      ) {
+    final state = getTableState(tableId);
+
+    return {
+      'orderId': 'ORD_${tableId}_${DateTime.now().millisecondsSinceEpoch}',
+      'tableId': tableId,
+      'tableNumber': table?['tableNumber'],
+      'table': table,
+      'recipientName': state.fullNameController.text.trim(),
+      'phoneNumber': state.phoneController.text.trim(),
+      'isUrgent': state.isMarkAsUrgent.value,
+      'orderTime': DateTime.now().toIso8601String(),
+      'status': 'pending',
+      'destination': destination, // 'chef' or 'manager'
+      'items': orderItems.map((item) => {
+        'id': item['id'],
+        'name': item['item_name'],
+        'quantity': item['quantity'],
+        'price': item['price'],
+        'total_price': item['total_price'],
+        'category': item['category'],
+        'description': item['description'],
+        'is_vegetarian': item['is_vegetarian'],
+        'is_featured': item['is_featured'],
+      }).toList(),
+      'itemCount': orderItems.length,
+      'totalAmount': state.finalCheckoutTotal.value,
+    };
+  }
+
+// Updated can proceed check
+  bool canProceedToCheckout(int tableId) {
+    final state = getTableState(tableId);
+    return !isLoading.value && state.orderItems.isNotEmpty;
+  }
+
+
   void clearTableOrders(int tableId) {
     if (tableOrders.containsKey(tableId)) {
       tableOrders[tableId]?.dispose();
@@ -286,10 +330,10 @@ class OrderManagementController extends GetxController {
     }
   }
 
-  bool canProceedToCheckout(int tableId) {
-    // Since you removed form validation, we'll just check if not loading
-    return !isLoading.value;
-  }
+  // bool canProceedToCheckout(int tableId) {
+  //   // Since you removed form validation, we'll just check if not loading
+  //   return !isLoading.value;
+  // }
 
 
   //After Adding Items from AddItemsView, increment/decrement/remove items in the order list

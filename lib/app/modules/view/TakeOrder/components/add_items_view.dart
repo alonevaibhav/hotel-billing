@@ -133,7 +133,8 @@ class AddItemsView extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomSection(AddItemsController controller, BuildContext context) {
+  Widget _buildBottomSection(
+      AddItemsController controller, BuildContext context) {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -151,86 +152,88 @@ class AddItemsView extends StatelessWidget {
           children: [
             Expanded(
               child: Obx(() => OutlinedButton(
-                onPressed: controller.totalSelectedItems > 0
-                    ? () => controller.clearAllSelections()
-                    : null,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.grey[700],
-                  side: BorderSide(color: Colors.grey[400]!),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  padding: EdgeInsets.symmetric(vertical: 12.h),
-                ),
-                child: Text(
-                  'Clear All',
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              )),
-            ),
-            Gap(12.w),
-            Expanded(
-              flex: 2,
-              child: Obx(() => ElevatedButton(
-                onPressed: controller.totalSelectedItems > 0
-                    ? () => controller.addSelectedItemsToTable(context)
-                    : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2196F3),
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: Colors.grey[300],
-                  disabledForegroundColor: Colors.grey[600],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  padding: EdgeInsets.symmetric(vertical: 12.h),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (controller.totalSelectedItems > 0) ...[
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 8.w,
-                          vertical: 2.h,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                        child: Text(
-                          '${controller.totalSelectedItems}',
-                          style: TextStyle(
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                    onPressed: controller.totalSelectedItems > 0
+                        ? () => controller.clearAllSelections()
+                        : null,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.grey[700],
+                      side: BorderSide(color: Colors.grey[400]!),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.r),
                       ),
-                      Gap(8.w),
-                    ],
-                    Text(
-                      controller.totalSelectedItems > 0 ? 'Add to Order' : 'Select Items',
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
+                    ),
+                    child: Text(
+                      'Clear All',
                       style: TextStyle(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    if (controller.totalSelectedItems > 0) ...[
-                      Gap(8.w),
-                      Text(
-                        '₹${controller.totalSelectedPrice.toStringAsFixed(0)}',
-                        style: TextStyle(
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.w500,
-                        ),
+                  )),
+            ),
+            Gap(12.w),
+            Expanded(
+              flex: 2,
+              child: Obx(() => ElevatedButton(
+                    onPressed: controller.totalSelectedItems > 0
+                        ? () => controller.addSelectedItemsToTable(context)
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2196F3),
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor: Colors.grey[300],
+                      disabledForegroundColor: Colors.grey[600],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.r),
                       ),
-                    ],
-                  ],
-                ),
-              )),
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (controller.totalSelectedItems > 0) ...[
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 8.w,
+                              vertical: 2.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                            child: Text(
+                              '${controller.totalSelectedItems}',
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          Gap(8.w),
+                        ],
+                        Text(
+                          controller.totalSelectedItems > 0
+                              ? 'Add to Order'
+                              : 'Select Items',
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        if (controller.totalSelectedItems > 0) ...[
+                          Gap(8.w),
+                          Text(
+                            '₹${controller.totalSelectedPrice.toStringAsFixed(0)}',
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  )),
             ),
           ],
         ),

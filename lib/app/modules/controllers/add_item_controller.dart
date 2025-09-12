@@ -1,6 +1,3 @@
-
-
-import 'dart:developer' as develeoper;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hotelbilling/app/modules/controllers/select_item_controller.dart';
@@ -450,7 +447,6 @@ class AddItemsController extends GetxController {
     tableState.finalCheckoutTotal.value = total;
     developer.log('Updated table total: ₹${total.toStringAsFixed(2)}');
   }
-
 
   int get totalSelectedItems {
     return selectedItems.fold<int>(

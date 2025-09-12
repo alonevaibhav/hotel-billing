@@ -10,6 +10,7 @@ import '../../../widgets/drawer.dart';
 import '../../../widgets/header.dart';
 
 class OrderManagementView extends StatelessWidget {
+
   final Map<String, dynamic>? table;
   final double scaleFactor = 0.8;
 
@@ -61,8 +62,7 @@ class OrderManagementView extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar:
-          buildBottomSection(controller, tableId, scaleFactor, context, table),
+      bottomNavigationBar: buildBottomSection(controller, tableId, scaleFactor, context, table),
     );
   }
 
@@ -166,7 +166,7 @@ class OrderManagementView extends StatelessWidget {
               Icon(Icons.add, size: 16.sp * scaleFactor),
               Gap(4.w * scaleFactor),
               Text(
-                'add items +',
+                'add items',
                 style: TextStyle(
                   fontSize: 12.sp * scaleFactor,
                   fontWeight: FontWeight.w600,
@@ -238,8 +238,7 @@ class OrderManagementView extends StatelessWidget {
                 itemCount: tableState.orderItems.length,
                 itemBuilder: (context, index) {
                   final item = tableState.orderItems[index];
-                  return _buildOrderItemCard(
-                      item, index, controller, tableId, context);
+                  return _buildOrderItemCard(item, index, controller, tableId, context);
                 },
               ),
             ),
@@ -325,8 +324,7 @@ class OrderManagementView extends StatelessWidget {
             children: [
               // Decrement button
               GestureDetector(
-                onTap: () =>
-                    controller.decrementItemQuantity(tableId, index, context),
+                onTap: () => controller.decrementItemQuantity(tableId, index, context),
                 child: Container(
                   width: 28.w * scaleFactor,
                   height: 28.w * scaleFactor,
