@@ -378,6 +378,7 @@ class CommonUiUtils {
     bool barrierDismissible = true,
     Widget? customContent,
     double? maxWidth,
+    Form? content, // This will now be used properly
   }) async {
     return showDialog<T>(
       context: context,
@@ -433,7 +434,7 @@ class CommonUiUtils {
                                 color: (iconColor ?? AppColors.primaryLight)
                                     .withOpacity(0.2),
                                 borderRadius:
-                                    BorderRadius.circular(50.r * sizeFactor),
+                                BorderRadius.circular(50.r * sizeFactor),
                               ),
                               child: Icon(
                                 icon,
@@ -457,7 +458,7 @@ class CommonUiUtils {
                             InkWell(
                               onTap: () => Navigator.of(context).pop(),
                               borderRadius:
-                                  BorderRadius.circular(20.r * sizeFactor),
+                              BorderRadius.circular(20.r * sizeFactor),
                               child: Container(
                                 padding: EdgeInsets.all(8.w * sizeFactor),
                                 child: Icon(
@@ -478,17 +479,20 @@ class CommonUiUtils {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          if (customContent != null)
+                          // Priority order: content (Form) > customContent > message
+                          if (content != null)
+                            content
+                          else if (customContent != null)
                             customContent
-                          else
-                            buildText(
-                              text: message,
-                              style: GoogleFonts.poppins(
-                                fontSize: 16.sp * sizeFactor,
-                                color: AppColors.textSecondary,
-                                height: 1.5,
+                          else if (message.isNotEmpty)
+                              buildText(
+                                text: message,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 16.sp * sizeFactor,
+                                  color: AppColors.textSecondary,
+                                  height: 1.5,
+                                ),
                               ),
-                            ),
 
                           Gap(24.h * sizeFactor),
 
@@ -500,7 +504,7 @@ class CommonUiUtils {
                                   child: _buildDialogButton(
                                     text: secondaryButtonText,
                                     onPressed: onSecondaryPressed ??
-                                        () => Navigator.of(context).pop(),
+                                            () => Navigator.of(context).pop(),
                                     backgroundColor: Colors.grey.shade100,
                                     textColor: AppColors.textSecondary,
                                     borderColor: Colors.grey.shade300,
@@ -512,7 +516,7 @@ class CommonUiUtils {
                                 child: _buildDialogButton(
                                   text: primaryButtonText ?? 'OK',
                                   onPressed: onPrimaryPressed ??
-                                      () => Navigator.of(context).pop(),
+                                          () => Navigator.of(context).pop(),
                                   backgroundColor: primaryButtonColor ??
                                       AppColors.primaryLight,
                                   textColor: Colors.white,
