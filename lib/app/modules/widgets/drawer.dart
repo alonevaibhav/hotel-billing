@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gap/gap.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import '../controllers/home_controller.dart';
+import '../controllers/WaiterPanelController/home_controller.dart';
 
 class CommonDrawerWidget extends StatelessWidget {
   const CommonDrawerWidget({super.key});

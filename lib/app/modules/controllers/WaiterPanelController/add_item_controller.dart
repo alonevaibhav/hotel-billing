@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:hotelbilling/app/modules/controllers/select_item_controller.dart';
+import 'package:hotelbilling/app/modules/controllers/WaiterPanelController/select_item_controller.dart';
 import 'dart:developer' as developer;
-import '../../core/utils/snakbar_utils.dart';
-import '../../route/app_routes.dart';
+import '../../../core/utils/snakbar_utils.dart';
+import '../../../route/app_routes.dart';
 
 class AddItemsController extends GetxController {
   // Search functionality

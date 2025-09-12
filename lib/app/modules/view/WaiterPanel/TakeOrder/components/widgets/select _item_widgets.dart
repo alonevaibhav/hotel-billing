@@ -4,8 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
-import '../../../../../../apputils/Utils/common_utils.dart';
-import '../../../../controllers/select_item_controller.dart'; // Updated import
+import '../../../../../../../apputils/Utils/common_utils.dart';
+import '../../../../../controllers/WaiterPanelController/select_item_controller.dart';
 
 Widget buildRecipientSection(TableOrderState  tableState) {
 

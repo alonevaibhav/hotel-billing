@@ -2,8 +2,6 @@
 import 'package:get/get.dart';
 import 'dart:developer' as developer;
 
-import '../../route/app_routes.dart';
-
 class RestaurantController extends GetxController {
   // Reactive variables
   final isLoading = false.obs;

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gap/gap.dart';
-import '../../controllers/take_order_controller.dart';
-import '../../widgets/table_widget.dart';
+import '../../../controllers/WaiterPanelController/take_order_controller.dart';
+import '../../../widgets/table_widget.dart';
 
 // Content widget without Scaffold - can be reused
 class TakeOrderContent extends StatelessWidget {

@@ -3,11 +3,11 @@ import 'package:get/get.dart';
 import 'package:gap/gap.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../../apputils/Utils/double_tap_to_exit.dart';
-import '../../controllers/home_controller.dart';
+import '../../controllers/WaiterPanelController/home_controller.dart';
 import '../../widgets/drawer.dart';
 import '../../widgets/header.dart';
-import '../TakeOrder/take_order.dart';
-import '../ready_order/ready_order.dart';
+import 'ReadyOrder/ready_order.dart';
+import 'TakeOrder/take_order.dart';
 
 class WaiterDashboardView extends StatelessWidget {
   const WaiterDashboardView({super.key});
