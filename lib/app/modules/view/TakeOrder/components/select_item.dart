@@ -1,3 +1,4 @@
+import 'dart:developer' as deverloper;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -19,6 +20,8 @@ class OrderManagementView extends StatelessWidget {
     // Use single controller instance - initialize if not exists
     final controller = Get.put(OrderManagementController());
     final tableId = table?['id'] ?? 0;
+
+    deverloper.log('Rendering OrderManagementView for tableId: $tableId');
 
     // Set active table context
     controller.setActiveTable(tableId, table);
@@ -45,7 +48,7 @@ class OrderManagementView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    buildRecipientSection(tableState),
+                    buildRecipientSection( tableState),
                     Gap(24.h * scaleFactor),
                     _buildItemsHeader(controller, tableId, context),
                     Gap(16.h * scaleFactor),
@@ -68,6 +71,7 @@ class OrderManagementView extends StatelessWidget {
     return 'Table no - $tableNo';
   }
 
+
   Widget _buildItemsHeader(
       OrderManagementController controller, int tableId, BuildContext context) {
     final tableState = controller.getTableState(tableId);
@@ -83,7 +87,8 @@ class OrderManagementView extends StatelessWidget {
           ),
         ),
         const Spacer(),
-        // Fixed urgent button with proper reactive updates
+
+        // Mark as urgent button
         Obx(() => AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               child: OutlinedButton(
@@ -139,6 +144,8 @@ class OrderManagementView extends StatelessWidget {
               ),
             )),
         Gap(8.w * scaleFactor),
+
+        // Add items button
         ElevatedButton(
           onPressed: () => controller.navigateToAddItems(tableId, table),
           style: ElevatedButton.styleFrom(
@@ -157,13 +164,10 @@ class OrderManagementView extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.add,
-                size: 16.sp * scaleFactor,
-              ),
+              Icon(Icons.add, size: 16.sp * scaleFactor),
               Gap(4.w * scaleFactor),
               Text(
-                'add items',
+                'add items +',
                 style: TextStyle(
                   fontSize: 12.sp * scaleFactor,
                   fontWeight: FontWeight.w600,
@@ -180,7 +184,7 @@ class OrderManagementView extends StatelessWidget {
     final tableState = controller.getTableState(tableId);
 
     return Container(
-      height: 300.h * scaleFactor,
+      height: 350.h * scaleFactor,
       width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.grey[50],
@@ -222,79 +226,11 @@ class OrderManagementView extends StatelessWidget {
             ),
           );
         }
-        return ListView.builder(
-          padding: EdgeInsets.all(12.w * scaleFactor),
-          itemCount: tableState.orderItems.length,
-          itemBuilder: (context, index) {
-            final item = tableState.orderItems[index];
-            return Container(
-              margin: EdgeInsets.only(bottom: 8.h * scaleFactor),
-              padding: EdgeInsets.all(12.w * scaleFactor),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8.r * scaleFactor),
-                border: Border.all(color: Colors.grey[200]!),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item['name'] ?? 'Unknown Item',
-                          style: TextStyle(
-                            fontSize: 14.sp * scaleFactor,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        Gap(4.h * scaleFactor),
-                        Row(
-                          children: [
-                            Text(
-                              '₹${(item['price'] ?? 0.0).toStringAsFixed(2)}',
-                              style: TextStyle(
-                                fontSize: 12.sp * scaleFactor,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                            Gap(8.w * scaleFactor),
-                            Text(
-                              'Qty: ${item['quantity'] ?? 1}',
-                              style: TextStyle(
-                                fontSize: 12.sp * scaleFactor,
-                                color: Colors.blue[600],
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => controller.removeItemFromTable(
-                        tableId, index, context, table),
-                    icon: Icon(
-                      Icons.delete_outline,
-                      color: Colors.red[400],
-                      size: 20.sp * scaleFactor,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
+
+        return Container();
       }),
     );
   }
+
+
 }

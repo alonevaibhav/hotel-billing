@@ -49,10 +49,15 @@ class AppRoutes {
           return OrderManagementView(table: table); // Pass to widget
         },
       ),
+
       GoRoute(
         path: addItems,
-        builder: (context, state) => const AddItemsView(),
+        builder: (context, state) {
+          final table = state.extra as Map<String, dynamic>?; // Retrieve extra here
+          return AddItemsView(table: table); // Pass to widget
+        },
       ),
+
 
     ],
   );
@@ -75,9 +80,21 @@ class NavigationService {
     _router.push(AppRoutes.selectItem, extra: table);
   }
 
-  static void addItems() {
-    _router.push(AppRoutes.addItems);
+  static void addItems(Map<String, dynamic>? table) {
+    _router.push(AppRoutes.addItems, extra: table);
   }
+
+  // NEW: Go back to OrderManagement (selectItem) with fresh navigation
+  static void goBackToOrderManagement(Map<String, dynamic>? table) {
+    try {
+      // Use go() instead of push() to clear navigation stack and prevent setState issues
+      _router.pushReplacement(AppRoutes.selectItem, extra: table);
+    } catch (e) {
+      // Fallback to regular back navigation
+      goBack();
+    }
+  }
+
 
 
   static void goBack() {

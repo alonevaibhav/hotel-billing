@@ -69,6 +69,7 @@ class TakeOrderContent extends StatelessWidget {
                     final table = controller.commonAreaTables[index];
 
                     return TableCardWidget(
+                      id: table['id'] ?? '',
                       tableNumber: table['tableNumber'] ?? 1,
                       price: table['price'] ?? 0,
                       time: table['time'] ?? 0,

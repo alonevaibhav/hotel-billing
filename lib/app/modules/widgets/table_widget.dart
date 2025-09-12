@@ -16,6 +16,7 @@ class TableCardWidget extends StatelessWidget {
     required this.time,
     required this.isOccupied,
     required this.onTap,
+    required id,
   });
 
   @override
