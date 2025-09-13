@@ -2,6 +2,7 @@
 import 'package:get/get.dart';
 import 'dart:developer' as developer;
 
+import '../../data/models/ResponseModel/login_response_model.dart';
 import '../auth/login_view_controller.dart';
 
 class DrawerController extends GetxController {
@@ -12,6 +13,8 @@ class DrawerController extends GetxController {
 
   // Restaurant data
   final restaurantData = Rxn<Map<String, dynamic>>();
+
+
 
   // Hotel information
   final hotelName = 'Alpani Hotel'.obs;

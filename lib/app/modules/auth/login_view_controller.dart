@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
@@ -55,10 +54,13 @@ class LoginViewController extends GetxController {
     final authData = await TokenManager.checkAuthenticationWithRole();
 
     if (authData['isAuthenticated']) {
-      developer.log('User already authenticated, navigating based on role: ${authData['userRole']}', name: 'LoginController');
+      developer.log(
+          'User already authenticated, navigating based on role: ${authData['userRole']}',
+          name: 'LoginController');
       _navigateByRole(authData['userRole'], authData['userName']);
     } else {
-      developer.log('No valid authentication found, staying on login screen', name: 'LoginController');
+      developer.log('No valid authentication found, staying on login screen',
+          name: 'LoginController');
     }
   }
 
@@ -91,22 +93,26 @@ class LoginViewController extends GetxController {
   /// Navigate user based on their role - CLEAN VERSION
   void _navigateByRole(String? role, String? userName) {
     if (role == null) {
-      developer.log('No role found, staying on login', name: 'LoginController.Navigation');
+      developer.log('No role found, staying on login',
+          name: 'LoginController.Navigation');
       NavigationService.goToLogin();
       return;
     }
 
     switch (role.toLowerCase()) {
       case 'waiter':
-        developer.log('Navigating to Waiter Dashboard for: $userName', name: 'LoginController.Navigation');
+        developer.log('Navigating to Waiter Dashboard for: $userName',
+            name: 'LoginController.Navigation');
         NavigationService.goToWaiterDashboard();
         break;
       case 'chef':
-        developer.log('Navigating to Chef Dashboard for: $userName', name: 'LoginController.Navigation');
+        developer.log('Navigating to Chef Dashboard for: $userName',
+            name: 'LoginController.Navigation');
         NavigationService.goToChefDashboard();
         break;
       default:
-        developer.log('Unknown role: $role for $userName, staying on login', name: 'LoginController.Navigation');
+        developer.log('Unknown role: $role for $userName, staying on login',
+            name: 'LoginController.Navigation');
         NavigationService.goToLogin();
         break;
     }
@@ -115,12 +121,14 @@ class LoginViewController extends GetxController {
   // UI Methods
   void togglePasswordVisibility() {
     isPasswordVisible.value = !isPasswordVisible.value;
-    developer.log('Password visibility toggled: ${isPasswordVisible.value}', name: 'LoginController.UI');
+    developer.log('Password visibility toggled: ${isPasswordVisible.value}',
+        name: 'LoginController.UI');
   }
 
   void toggleRememberMe(bool? value) {
     rememberMe.value = value ?? false;
-    developer.log('Remember me toggled: ${rememberMe.value}', name: 'LoginController.UI');
+    developer.log('Remember me toggled: ${rememberMe.value}',
+        name: 'LoginController.UI');
   }
 
   // Validation Methods
@@ -148,7 +156,8 @@ class LoginViewController extends GetxController {
   Future<void> submitLogin(context) async {
     try {
       if (!formKey.currentState!.validate()) {
-        developer.log('Form validation failed', name: 'LoginController.Validation');
+        developer.log('Form validation failed',
+            name: 'LoginController.Validation');
         return;
       }
 
@@ -158,7 +167,8 @@ class LoginViewController extends GetxController {
       final username = usernameController.text.trim();
       final password = passwordController.text;
 
-      developer.log('Starting login for username: $username', name: 'LoginController');
+      developer.log('Starting login for username: $username',
+          name: 'LoginController');
 
       final apiResponse = await AuthRepository.login(
         username: username,
@@ -175,7 +185,9 @@ class LoginViewController extends GetxController {
         final userName = employee.employeeName;
         final organizationName = employee.organizationName;
 
-        developer.log('Authentication successful for $userName (Role: $userRole) at $organizationName', name: 'LoginController.Auth');
+        developer.log(
+            'Authentication successful for $userName (Role: $userRole) at $organizationName',
+            name: 'LoginController.Auth');
 
         // Success handling
         SnackBarUtil.showSuccess(
@@ -185,19 +197,13 @@ class LoginViewController extends GetxController {
           duration: const Duration(seconds: 3),
         );
 
-        // Clear form if not remembering credentials
-        if (!rememberMe.value) {
-          usernameController.clear();
-          passwordController.clear();
-        }
-
-
         // Navigate based on role using clean method
         _navigateByRole(userRole, userName);
       } else {
         // Authentication failed
         final errorMsg = apiResponse.errorMessage ?? 'Login failed';
-        developer.log('Authentication failed: $errorMsg', name: 'LoginController.Auth');
+        developer.log('Authentication failed: $errorMsg',
+            name: 'LoginController.Auth');
 
         errorMessage.value = errorMsg;
         SnackBarUtil.showError(
@@ -208,7 +214,8 @@ class LoginViewController extends GetxController {
         );
       }
     } catch (e) {
-      developer.log('Login submission error: ${e.toString()}', name: 'LoginController.Error');
+      developer.log('Login submission error: ${e.toString()}',
+          name: 'LoginController.Error');
 
       errorMessage.value = e.toString();
       SnackBarUtil.showError(
@@ -224,14 +231,16 @@ class LoginViewController extends GetxController {
 
   // Navigation Methods
   void navigateToForgotPassword(BuildContext context) {
-    developer.log('Navigating to forgot password', name: 'LoginController.Navigation');
+    developer.log('Navigating to forgot password',
+        name: 'LoginController.Navigation');
     context.go('/forgot-password');
   }
 
   // Logout method with session expired option
   Future<void> logout({bool sessionExpired = false}) async {
     try {
-      developer.log('Logging out user (sessionExpired: $sessionExpired)', name: 'LoginController.Auth');
+      developer.log('Logging out user (sessionExpired: $sessionExpired)',
+          name: 'LoginController.Auth');
 
       // Stop token monitoring
       TokenManager.stopTokenExpirationTimer();
@@ -247,29 +256,16 @@ class LoginViewController extends GetxController {
       rememberMe.value = false;
       errorMessage.value = '';
 
-      developer.log('User logged out successfully', name: 'LoginController.Auth');
+      developer.log('User logged out successfully',
+          name: 'LoginController.Auth');
 
       // Navigate to login
       NavigationService.goToLogin();
     } catch (e) {
-      developer.log('Logout error: ${e.toString()}', name: 'LoginController.Error');
+      developer.log('Logout error: ${e.toString()}',
+          name: 'LoginController.Error');
     }
   }
 
-  // Authentication helper methods
-  Future<bool> isAuthenticated() async {
-    return await AuthRepository.isAuthenticated();
-  }
 
-  Future<String?> getCurrentUserId() async {
-    return await AuthRepository.getCurrentUserId();
-  }
-
-  Future<String?> getCurrentUserRole() async {
-    return await AuthRepository.getCurrentUserRole();
-  }
-
-  Future<String?> getCurrentUserName() async {
-    return await AuthRepository.getCurrentUserName();
-  }
 }

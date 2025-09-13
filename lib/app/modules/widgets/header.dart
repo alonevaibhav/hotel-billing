@@ -64,16 +64,6 @@ class CommonHeaderWidget extends StatelessWidget implements PreferredSizeWidget 
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (customTitle != null)
-                    Text(
-                      customTitle!,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
-                      ),
-                    )
-                  else
                     Obx(() => Text(
                           controller.hotelName.value,
                           style: const TextStyle(
@@ -82,7 +72,6 @@ class CommonHeaderWidget extends StatelessWidget implements PreferredSizeWidget 
                             color: Colors.black87,
                           ),
                         )),
-                  if (customTitle == null) ...[
                     const Gap(2),
                     Obx(() => Text(
                           controller.hotelAddress.value,
@@ -93,7 +82,6 @@ class CommonHeaderWidget extends StatelessWidget implements PreferredSizeWidget 
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         )),
-                  ],
                 ],
               ),
             ),

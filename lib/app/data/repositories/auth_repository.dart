@@ -1,5 +1,3 @@
-
-// repositories/auth_repository.dart
 import 'dart:developer' as developer;
 import '../../core/constants/api_constant.dart';
 import '../../core/services/api_service.dart';
@@ -8,7 +6,6 @@ import '../models/RequestModel/login_request_model.dart';
 import '../models/ResponseModel/login_response_model.dart';
 
 class AuthRepository {
-
   /// Login user with username and password
   static Future<ApiResponse<LoginResponseModel>> login({
     required String username,
@@ -34,6 +31,7 @@ class AuthRepository {
           name: 'AuthRepository');
 
       if (response.success && response.data != null) {
+
         final employee = response.data!.data.employee;
         final token = response.data!.data.token;
         final uid = employee.id.toString();
@@ -54,7 +52,8 @@ class AuthRepository {
           // expirationTime: response.data!.data.tokenExpiration,
         );
 
-        developer.log('User data stored - ID: $uid, Role: $userRole, Name: $userName',
+        developer.log(
+            'User data stored - ID: $uid, Role: $userRole, Name: $userName',
             name: 'AuthRepository');
       }
 
@@ -87,30 +86,5 @@ class AuthRepository {
       developer.log('Logout error: ${e.toString()}',
           name: 'AuthRepository.Error');
     }
-  }
-
-  /// Check if user has valid authentication
-  static Future<bool> isAuthenticated() async {
-    return await TokenManager.hasValidToken();
-  }
-
-  /// Get current user ID
-  static Future<String?> getCurrentUserId() async {
-    return await TokenManager.getUserId();
-  }
-
-  /// Get current user role
-  static Future<String?> getCurrentUserRole() async {
-    return await TokenManager.getUserRole();
-  }
-
-  /// Get current user name
-  static Future<String?> getCurrentUserName() async {
-    return await TokenManager.getUserName();
-  }
-
-  /// Get complete current user data
-  static Future<Map<String, String?>> getCurrentUserData() async {
-    return await TokenManager.getUserData();
   }
 }
