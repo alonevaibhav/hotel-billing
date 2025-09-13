@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/utils/snakbar_utils.dart';
 
-class DoneOrderController extends GetxController {
+class ReadyOrderController extends GetxController {
   // Reactive state variables
   final isLoading = false.obs;
   final ordersData = <Map<String, dynamic>>[].obs;
@@ -122,7 +122,7 @@ class DoneOrderController extends GetxController {
 
       // Find the order
       final orderIndex =
-          ordersData.indexWhere((order) => order['tableId'] == tableId);
+      ordersData.indexWhere((order) => order['tableId'] == tableId);
       if (orderIndex == -1) return;
 
       final order = ordersData[orderIndex];
