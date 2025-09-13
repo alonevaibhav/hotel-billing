@@ -1,13 +1,11 @@
-
-
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide DrawerController;
 import 'package:get/get.dart';
 import 'package:gap/gap.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import '../controllers/WaiterPanelController/home_controller.dart';
 
-class CommonHeaderWidget extends StatelessWidget
-    implements PreferredSizeWidget {
+import '../controllers/drawer_controller.dart';
+
+class CommonHeaderWidget extends StatelessWidget implements PreferredSizeWidget {
   final bool showBackButton;
   final String? customTitle;
   final VoidCallback? onBackPressed;
@@ -23,7 +21,7 @@ class CommonHeaderWidget extends StatelessWidget
 
   @override
   Widget build(BuildContext context) {
-    final RestaurantController controller = Get.find<RestaurantController>();
+    final DrawerController controller = Get.put(DrawerController());
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -77,24 +75,24 @@ class CommonHeaderWidget extends StatelessWidget
                     )
                   else
                     Obx(() => Text(
-                      controller.hotelName.value,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
-                      ),
-                    )),
+                          controller.hotelName.value,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        )),
                   if (customTitle == null) ...[
                     const Gap(2),
                     Obx(() => Text(
-                      controller.hotelAddress.value,
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: Colors.grey.shade600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    )),
+                          controller.hotelAddress.value,
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Colors.grey.shade600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        )),
                   ],
                 ],
               ),
@@ -105,7 +103,7 @@ class CommonHeaderWidget extends StatelessWidget
               onTap: () => controller.handleLogout(),
               child: Container(
                 padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: const Color(0xFF5B73DF),
                   borderRadius: BorderRadius.circular(4),

@@ -1,16 +1,18 @@
-
-import 'package:flutter/material.dart';
+//
+import 'package:flutter/material.dart' hide DrawerController;
 import 'package:get/get.dart';
 import 'package:gap/gap.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import '../controllers/WaiterPanelController/home_controller.dart';
+// import '../controllers/WaiterPanelController/home_controller.dart';
+
+import '../controllers/drawer_controller.dart';
 
 class CommonDrawerWidget extends StatelessWidget {
   const CommonDrawerWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final RestaurantController controller = Get.find<RestaurantController>();
+    final DrawerController controller =Get.put(DrawerController());
 
     return Drawer(
       backgroundColor: Colors.white,
@@ -87,7 +89,7 @@ class CommonDrawerWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildDrawerHeader(RestaurantController controller) {
+  Widget _buildDrawerHeader(DrawerController controller) {
     return SafeArea(
       child: Container(
         width: double.infinity,
@@ -156,7 +158,7 @@ class CommonDrawerWidget extends StatelessWidget {
   }
 
   Widget _buildMenuItem({
-    required RestaurantController controller,
+    required DrawerController controller,
     required IconData icon,
     required String title,
     required bool isSelected,
@@ -189,7 +191,7 @@ class CommonDrawerWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildDrawerFooter(RestaurantController controller, BuildContext context) {
+  Widget _buildDrawerFooter(DrawerController controller, BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(

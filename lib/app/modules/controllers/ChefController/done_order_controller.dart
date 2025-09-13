@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/utils/snakbar_utils.dart';
 
-class AcceptOrderController extends GetxController {
+class DoneOrderController extends GetxController {
   // Reactive state variables
   final isLoading = false.obs;
   final ordersData = <Map<String, dynamic>>[].obs;
@@ -100,37 +100,6 @@ class AcceptOrderController extends GetxController {
         "itemCount": 6,
         "totalAmount": 2802.99
       },
-      {
-        "tableId": 2,
-        "tableNumber": 3,
-        "orderNumber": 2,
-        "items": [
-          {
-            "id": 3,
-            "name": "Paneer Makhani",
-            "quantity": 2,
-            "price": 249.0,
-            "total_price": 498.0,
-            "category": "Main Course",
-            "description": "Cottage cheese in rich tomato gravy",
-            "is_vegetarian": 1,
-            "is_featured": 1
-          },
-          {
-            "id": 4,
-            "name": "Fresh Lime Soda",
-            "quantity": 3,
-            "price": 89.0,
-            "total_price": 267.0,
-            "category": "Beverages",
-            "description": "Refreshing lime soda with mint",
-            "is_vegetarian": 1,
-            "is_featured": 0
-          }
-        ],
-        "itemCount": 7,
-        "totalAmount": 855.0
-      }
     ];
   }
 
@@ -146,14 +115,14 @@ class AcceptOrderController extends GetxController {
 
 
   // Accept order functionality
-  Future<void> acceptOrder( context, int tableId) async {
+  Future<void> markAsDoneOrder( context, int tableId) async {
     try {
       isLoading.value = true;
       errorMessage.value = '';
 
       // Find the order
       final orderIndex =
-          ordersData.indexWhere((order) => order['tableId'] == tableId);
+      ordersData.indexWhere((order) => order['tableId'] == tableId);
       if (orderIndex == -1) return;
 
       final order = ordersData[orderIndex];
@@ -201,100 +170,12 @@ class AcceptOrderController extends GetxController {
     }
   }
 
-  // Show rejection dialog
-  void showRejectDialog(int tableId) {
-    selectedOrderId.value = tableId;
-    isRejectDialogVisible.value = true;
-    reasonController.clear();
-    rejectionReason.value = '';
-  }
-
-  // Hide rejection dialog
-  void hideRejectDialog() {
-    isRejectDialogVisible.value = false;
-    selectedOrderId.value = null;
-    reasonController.clear();
-    rejectionReason.value = '';
-  }
 
   // Update rejection reason
   void updateRejectionReason(String reason) {
     rejectionReason.value = reason;
   }
 
-  // Reject order functionality
-  Future<void> rejectOrder(BuildContext context) async {
-    // Validate rejection reason
-    if (reasonController.text.trim().isEmpty) {
-      SnackBarUtil.showWarning(
-        context,
-        'Please provide a reason for cancelling the order',
-        title: 'Reason Required',
-        duration: const Duration(seconds: 2),
-      );
-      return;
-    }
-
-    if (selectedOrderId.value == null) return;
-
-    try {
-      isLoading.value = true;
-      errorMessage.value = '';
-
-      // Find the order
-      final orderIndex = ordersData
-          .indexWhere((order) => order['tableId'] == selectedOrderId.value);
-      if (orderIndex == -1) return;
-
-      final order = ordersData[orderIndex];
-
-      // Mock API call - simulate network delay
-      await Future.delayed(const Duration(seconds: 1));
-
-      // In production, make actual API call here
-      final response = {
-        'orderId': order['tableId'],
-        'status': 'rejected',
-        'reason': reasonController.text.trim(),
-        'timestamp': DateTime.now().millisecondsSinceEpoch,
-        'message': 'Order rejected successfully'
-      };
-
-      // Update order status
-      ordersData[orderIndex] = {
-        ...order,
-        'status': 'rejected',
-        'rejectionReason': reasonController.text.trim(),
-        'rejectedAt': DateTime.now().toIso8601String(),
-      };
-
-      // Hide dialog first
-      hideRejectDialog();
-
-      // Show success message
-      SnackBarUtil.showSuccess(
-        context,
-        'Order #${order['orderNumber']} has been cancelled',
-        title: 'Order Cancelled',
-        duration: const Duration(seconds: 2),
-      );
-
-      // Remove the rejected order from the list after a short delay
-      Future.delayed(const Duration(milliseconds: 1500), () {
-        ordersData.removeAt(orderIndex);
-      });
-    } catch (e) {
-      errorMessage.value = e.toString();
-      SnackBarUtil.showError(
-        context,
-        'Failed to reject order: ${e.toString()}',
-        title: 'Rejection Failed',
-        duration: const Duration(seconds: 3),
-      );
-    } finally {
-      isLoading.value = false;
-    }
-  }
 
   // Format currency
   String formatCurrency(double amount) {
@@ -302,19 +183,6 @@ class AcceptOrderController extends GetxController {
   }
 
 
-  // Validate rejection reason
-  String? validateRejectionReason(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Please provide a reason for cancellation';
-    }
-    if (value.trim().length < 10) {
-      return 'Reason must be at least 10 characters long';
-    }
-    if (value.trim().length > 500) {
-      return 'Reason cannot exceed 500 characters';
-    }
-    return null;
-  }
 
   // Get total items count for an order
   int getTotalItemsCount(List<dynamic> items) {
