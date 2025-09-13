@@ -10,7 +10,7 @@ Widget buildInfoChip(String text, IconData icon, double scaleFactor) {
     decoration: BoxDecoration(
       color: Colors.white,
       borderRadius: BorderRadius.circular((6 * scaleFactor).r),
-      border: Border.all(color: Colors.grey[300]!),
+      border: Border.all(color: Colors.black),
     ),
     child: Row(
       mainAxisSize: MainAxisSize.min,
@@ -18,14 +18,14 @@ Widget buildInfoChip(String text, IconData icon, double scaleFactor) {
         Icon(
           icon,
           size: (12 * scaleFactor).sp,
-          color: Colors.grey[600],
+          color: Colors.black,
         ),
         Gap((4 * scaleFactor).w),
         Text(
           text,
           style: GoogleFonts.inter(
             fontSize: (11 * scaleFactor).sp,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.bold,
             color: Colors.grey[700],
           ),
         ),

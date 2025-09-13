@@ -121,8 +121,7 @@ class ReadyOrderController extends GetxController {
       errorMessage.value = '';
 
       // Find the order
-      final orderIndex =
-      ordersData.indexWhere((order) => order['tableId'] == tableId);
+      final orderIndex = ordersData.indexWhere((order) => order['tableId'] == tableId);
       if (orderIndex == -1) return;
 
       final order = ordersData[orderIndex];

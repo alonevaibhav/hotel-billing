@@ -112,7 +112,7 @@ class ReadyOrder extends StatelessWidget {
                       'Order no. $orderNumber',
                       style: GoogleFonts.inter(
                         fontSize: (16 * scaleFactor).sp,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.bold,
                         color: Colors.black87,
                       ),
                     ),
@@ -145,8 +145,10 @@ class ReadyOrder extends StatelessWidget {
 
                 // Use Obx to watch for expansion changes
                 Obx(() {
-                  final isExpanded = controller.expandedOrders.contains(tableId);
-                  final itemsToShow = isExpanded ? items : items.take(2).toList();
+                  final isExpanded =
+                      controller.expandedOrders.contains(tableId);
+                  final itemsToShow =
+                      isExpanded ? items : items.take(2).toList();
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -235,32 +237,31 @@ class ReadyOrder extends StatelessWidget {
                 // Action Buttons
                 Row(
                   children: [
-                    // Reject Button
+                    // Accept Button
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: null,
+                        onPressed: () {
+                          // Do nothing or show a message
+                        },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.grey[700],
+                          backgroundColor: Colors.blue[500],
+                          foregroundColor: Colors.white,
                           elevation: 0,
-                          side: BorderSide(color: Colors.grey[300]!),
                           shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular((8 * scaleFactor).r),
+                            borderRadius: BorderRadius.circular((8 * scaleFactor).r),
                           ),
-                          padding: EdgeInsets.symmetric(
-                              vertical: (12 * scaleFactor).h),
+                          padding: EdgeInsets.symmetric(vertical: (12 * scaleFactor).h),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              PhosphorIcons.knife(PhosphorIconsStyle.regular),
+                              PhosphorIcons.bowlFood(PhosphorIconsStyle.bold),
                               size: (16 * scaleFactor).sp,
                             ),
                             Gap((6 * scaleFactor).w),
                             Text(
-                              'Preparing',
+                              'Order Ready',
                               style: GoogleFonts.inter(
                                 fontSize: (13 * scaleFactor).sp,
                                 fontWeight: FontWeight.w500,
@@ -269,58 +270,8 @@ class ReadyOrder extends StatelessWidget {
                           ],
                         ),
                       ),
-                    ),
-                    Gap((12 * scaleFactor).w),
-                    // Accept Button
-                    Expanded(
-                      child: Obx(
-                        () => ElevatedButton(
-                          onPressed: controller.isLoading.value
-                              ? null
-                              : () => controller.markAsDoneOrder(
-                                  context, order['tableId']),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue[500],
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.circular((8 * scaleFactor).r),
-                            ),
-                            padding: EdgeInsets.symmetric(
-                                vertical: (12 * scaleFactor).h),
-                          ),
-                          child: controller.isLoading.value
-                              ? SizedBox(
-                                  height: (18 * scaleFactor).h,
-                                  width: (18 * scaleFactor).w,
-                                  child: const CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.white),
-                                  ),
-                                )
-                              : Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      PhosphorIcons.check(
-                                          PhosphorIconsStyle.regular),
-                                      size: (16 * scaleFactor).sp,
-                                    ),
-                                    Gap((6 * scaleFactor).w),
-                                    Text(
-                                      'Mark as Done',
-                                      style: GoogleFonts.inter(
-                                        fontSize: (13 * scaleFactor).sp,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                        ),
-                      ),
-                    ),
+                    )
+
                   ],
                 ),
               ],
