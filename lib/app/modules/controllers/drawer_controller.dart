@@ -2,6 +2,8 @@
 import 'package:get/get.dart';
 import 'dart:developer' as developer;
 
+import '../auth/login_view_controller.dart';
+
 class DrawerController extends GetxController {
   // Reactive variables
   final isLoading = false.obs;
@@ -54,12 +56,13 @@ class DrawerController extends GetxController {
     isDrawerOpen.value = !isDrawerOpen.value;
     developer.log('Drawer toggled: ${isDrawerOpen.value}', name: 'Restaurant');
   }
-
   void handleLogout() {
     developer.log('Logout button pressed', name: 'Restaurant');
-    // Add logout logic here
-    // Get.offAllNamed('/login'); // Example navigation to login
+
+    final loginController = Get.find<LoginViewController>();
+    loginController.logout();
   }
+
 
   // Sidebar navigation
   void handleNotification() {
