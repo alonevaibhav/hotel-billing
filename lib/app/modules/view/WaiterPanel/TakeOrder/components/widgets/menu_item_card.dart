@@ -71,43 +71,45 @@ class MenuItemCard extends StatelessWidget {
           ),
 
           // Featured/Special indicators
-          if (item['is_featured'] == 1)
-            Positioned(
-              top: 4.w,
-              right: 4.w,
-              child: Container(
-                padding: EdgeInsets.all(2.w),
-                decoration: const BoxDecoration(
-                  color: Color(0xFF4CAF50),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  PhosphorIcons.star(PhosphorIconsStyle.fill),
-                  size: 8.sp,
-                  color: Colors.white,
-                ),
-              ),
+          Positioned(
+            top: 4.w,
+            right: 4.w,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end, // align to the right
+              children: [
+                if (item['is_featured'] == 1)
+                  Container(
+                    padding: EdgeInsets.all(2.w),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF4CAF50),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      PhosphorIcons.star(PhosphorIconsStyle.fill),
+                      size: 8.sp,
+                      color: Colors.white,
+                    ),
+                  ),
+                if (item['is_featured'] == 1 && item['is_vegetarian'] == 1)
+                  SizedBox(height: 4.h), // spacing between indicators
+                if (item['is_vegetarian'] == 1)
+                  Container(
+                    width: 12.w,
+                    height: 12.w,
+                    decoration: BoxDecoration(
+                      color: Colors.green,
+                      borderRadius: BorderRadius.circular(2.r),
+                    ),
+                    child: Icon(
+                      Icons.circle,
+                      size: 6.sp,
+                      color: Colors.white,
+                    ),
+                  ),
+              ],
             ),
+          ),
 
-          // Vegetarian indicator
-          if (item['is_vegetarian'] == 1)
-            Positioned(
-              top: 4.w,
-              left: 4.w,
-              child: Container(
-                width: 12.w,
-                height: 12.w,
-                decoration: BoxDecoration(
-                  color: Colors.green,
-                  borderRadius: BorderRadius.circular(2.r),
-                ),
-                child: Icon(
-                  Icons.circle,
-                  size: 6.sp,
-                  color: Colors.white,
-                ),
-              ),
-            ),
         ],
       ),
     );

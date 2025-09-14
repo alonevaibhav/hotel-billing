@@ -19,23 +19,21 @@ class AcceptOrder extends StatelessWidget {
     final controller = Get.put(AcceptOrderController());
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // Main Content
-            Column(
-              children: [
-                Expanded(
-                  child: buildOrdersList(controller, scaleFactor),
-                ),
-              ],
-            ),
-            // Rejection Dialog Overlay
-            Obx(() => controller.isRejectDialogVisible.value
-                ? buildRejectDialog(context, controller, scaleFactor)
-                : const SizedBox.shrink()),
-          ],
-        ),
+      body: Stack(
+        children: [
+          // Main Content
+          Column(
+            children: [
+              Expanded(
+                child: buildOrdersList(controller, scaleFactor),
+              ),
+            ],
+          ),
+          // Rejection Dialog Overlay
+          Obx(() => controller.isRejectDialogVisible.value
+              ? buildRejectDialog(context, controller, scaleFactor)
+              : const SizedBox.shrink()),
+        ],
       ),
     );
   }

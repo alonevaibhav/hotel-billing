@@ -120,31 +120,31 @@ class CategoryFilterWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      padding: EdgeInsets.symmetric(horizontal: 5.w),
       child: Row(
         children: [
           // Filter Icon with active filters indicator
-          Container(
-            padding: EdgeInsets.all(8.w),
-            decoration: BoxDecoration(
-              border: Border.all(
-                  color: controller.activeFilters.isNotEmpty
-                      ? const Color(0xFF2196F3)
-                      : Colors.grey[300]!
-              ),
-              borderRadius: BorderRadius.circular(8.r),
-              color: controller.activeFilters.isNotEmpty
-                  ? const Color(0xFF2196F3).withOpacity(0.1)
-                  : Colors.transparent,
-            ),
-            child: Icon(
-              Icons.tune,
-              size: 20.sp,
-              color: controller.activeFilters.isNotEmpty
-                  ? const Color(0xFF2196F3)
-                  : Colors.grey[600],
-            ),
-          ),
+          // Container(
+          //   padding: EdgeInsets.all(8.w),
+          //   decoration: BoxDecoration(
+          //     border: Border.all(
+          //         color: controller.activeFilters.isNotEmpty
+          //             ? const Color(0xFF2196F3)
+          //             : Colors.grey[300]!
+          //     ),
+          //     borderRadius: BorderRadius.circular(8.r),
+          //     color: controller.activeFilters.isNotEmpty
+          //         ? const Color(0xFF2196F3).withOpacity(0.1)
+          //         : Colors.transparent,
+          //   ),
+          //   child: Icon(
+          //     Icons.tune,
+          //     size: 20.sp,
+          //     color: controller.activeFilters.isNotEmpty
+          //         ? const Color(0xFF2196F3)
+          //         : Colors.grey[600],
+          //   ),
+          // ),
           Gap(12.w),
 
           // Category Filters - Dynamic based on actual categories

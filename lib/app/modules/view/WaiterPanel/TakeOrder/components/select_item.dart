@@ -68,7 +68,7 @@ class OrderManagementView extends StatelessWidget {
 
   String _getTableTitle() {
     final tableNo = table?['tableNumber']?.toString() ?? 'Unknown';
-    return 'Table no - $tableNo';
+    return 'Table No - $tableNo';
   }
 
   Widget _buildItemsHeader(

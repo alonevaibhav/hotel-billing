@@ -16,31 +16,28 @@ class ChefDashboard extends StatelessWidget {
     final ChefController controller = Get.put(ChefController());
 
     return DoubleBackToExit(
-      child: SafeArea(
-        child: Scaffold(
-
-          backgroundColor: Colors.white,
-          drawer: const CommonDrawerWidget(), // Use the centralized drawer
-          body: Column(
-            children: [
-              // Common Header
-              const CommonHeaderWidget(
-                showBackButton: false,
-                showDrawerButton: true,
-              ),
-              // Main Content Area
-              Expanded(
-                child: Obx(() {
-                  // Show content based on selection
-                  if (controller.selectedMainButton.value == 'take_orders') {
-                    return _buildTakeOrderContent(controller);
-                  } else {
-                    return _buildReadyOrderContent(controller);
-                  }
-                }),
-              ),
-            ],
-          ),
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        drawer: const CommonDrawerWidget(), // Use the centralized drawer
+        body: Column(
+          children: [
+            // Common Header
+            const CommonHeaderWidget(
+              showBackButton: false,
+              showDrawerButton: true,
+            ),
+            // Main Content Area
+            Expanded(
+              child: Obx(() {
+                // Show content based on selection
+                if (controller.selectedMainButton.value == 'take_orders') {
+                  return _buildTakeOrderContent(controller);
+                } else {
+                  return _buildReadyOrderContent(controller);
+                }
+              }),
+            ),
+          ],
         ),
       ),
     );
@@ -135,7 +132,7 @@ class ChefDashboard extends StatelessWidget {
                     ),
                     child: const Center(
                       child: Text(
-                        'Done Orders',
+                        'Accept Orders',
                         style: TextStyle(
                           color: Colors.black87,
                           fontSize: 16,
@@ -170,9 +167,9 @@ class ChefDashboard extends StatelessWidget {
             ],
           ),
         ),
-        // Ready orders content - Fixed: Removed incorrect nesting
-        Expanded(child:
-        DoneOrder(), // Make sure this widget exists and doesn't contain Scaffold
+        Expanded(
+          child:
+              DoneOrder(), // Make sure this widget exists and doesn't contain Scaffold
         ),
       ],
     );
