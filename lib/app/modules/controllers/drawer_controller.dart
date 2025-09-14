@@ -1,8 +1,6 @@
 
 import 'package:get/get.dart';
 import 'dart:developer' as developer;
-
-import '../../data/models/ResponseModel/login_response_model.dart';
 import '../auth/login_view_controller.dart';
 
 class DrawerController extends GetxController {

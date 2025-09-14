@@ -2,6 +2,7 @@ import 'dart:developer' as developer;
 import '../../core/constants/api_constant.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/session_manager_service.dart';
+import '../../core/services/storage_service.dart';
 import '../models/RequestModel/login_request_model.dart';
 import '../models/ResponseModel/login_response_model.dart';
 
@@ -37,10 +38,19 @@ class AuthRepository {
         final uid = employee.id.toString();
         final userRole = employee.designation;
         final userName = employee.employeeName;
+        final organizationName = employee.organizationName;
+        final organizationAddress = employee.address;
 
         // Store in ApiService (existing)
         await ApiService.setToken(token);
         await ApiService.setUid(uid);
+
+        // ✅ Store in storage - survives hot reload
+        StorageService.to.storeOrganizationData(
+          organizationName: organizationName ?? 'Hotel Name',
+          organizationAddress: organizationAddress ?? 'Hotel Address',
+          userName: userName ?? 'raju',
+        );
 
         // Store in enhanced TokenManager with all user data
         await TokenManager.saveToken(

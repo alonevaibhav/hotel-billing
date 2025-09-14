@@ -184,6 +184,7 @@ class LoginViewController extends GetxController {
         final userRole = employee.designation;
         final userName = employee.employeeName;
         final organizationName = employee.organizationName;
+        final organizationAddress = employee.address;
 
         developer.log(
             'Authentication successful for $userName (Role: $userRole) at $organizationName',
@@ -266,6 +267,7 @@ class LoginViewController extends GetxController {
           name: 'LoginController.Error');
     }
   }
+
 
 
 }

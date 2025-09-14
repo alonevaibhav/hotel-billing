@@ -2,7 +2,8 @@ import 'package:flutter/material.dart' hide DrawerController;
 import 'package:get/get.dart';
 import 'package:gap/gap.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-
+import '../../core/services/storage_service.dart';
+import '../auth/login_view_controller.dart';
 import '../controllers/drawer_controller.dart';
 
 class CommonHeaderWidget extends StatelessWidget implements PreferredSizeWidget {
@@ -22,6 +23,8 @@ class CommonHeaderWidget extends StatelessWidget implements PreferredSizeWidget 
   @override
   Widget build(BuildContext context) {
     final DrawerController controller = Get.put(DrawerController());
+    final LoginViewController loginController = Get.find<LoginViewController>(); // Access login controller
+
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -64,48 +67,48 @@ class CommonHeaderWidget extends StatelessWidget implements PreferredSizeWidget 
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                    Obx(() => Text(
-                          controller.hotelName.value,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
-                          ),
-                        )),
-                    const Gap(2),
-                    Obx(() => Text(
-                          controller.hotelAddress.value,
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.grey.shade600,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        )),
+                  Text(
+                    StorageService.to.getOrganizationName(),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const Gap(2),
+                  Text(
+                    StorageService.to.getOrganizationAddress(),
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.grey.shade600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ],
               ),
             ),
 
             // Logout Button
-            GestureDetector(
-              onTap: () => controller.handleLogout(),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF5B73DF),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: const Text(
-                  'logout',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ),
+            // GestureDetector(
+            //   onTap: () => controller.handleLogout(),
+            //   child: Container(
+            //     padding:
+            //         const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            //     decoration: BoxDecoration(
+            //       color: const Color(0xFF5B73DF),
+            //       borderRadius: BorderRadius.circular(4),
+            //     ),
+            //     child: const Text(
+            //       'logout',
+            //       style: TextStyle(
+            //         color: Colors.white,
+            //         fontSize: 15,
+            //         fontWeight: FontWeight.w500,
+            //       ),
+            //     ),
+            //   ),
+            // ),
           ],
         ),
       ),

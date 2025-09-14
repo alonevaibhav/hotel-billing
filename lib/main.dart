@@ -1,11 +1,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'dart:developer' as developer;
 import 'app/core/services/api_service.dart';
 import 'app/core/services/session_manager_service.dart';
+import 'app/core/services/storage_service.dart';
 import 'app/route/app_routes.dart';
 
 void main() async {
@@ -13,6 +16,7 @@ void main() async {
 
   // Initialize API Service
   await ApiService.init();
+  await Get.putAsync(() => StorageService().init());
 
   // Check authentication status with role using enhanced TokenManager
   final authData = await TokenManager.checkAuthenticationWithRole();
