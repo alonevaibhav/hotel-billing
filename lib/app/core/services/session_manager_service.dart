@@ -6,8 +6,8 @@ class TokenManager {
   // Storage keys
   static const String _tokenKey = 'auth_token';
   static const String _userIdKey = 'user_id';
-  static const String _userRoleKey = 'user_role'; // NEW: Added role key
-  static const String _userNameKey = 'user_name'; // NEW: Added name key
+  static const String _userRoleKey = 'user_role';
+  static const String _userNameKey = 'user_name';
   static const String _tokenExpirationKey = 'token_expiration';
   static const Duration _defaultExpirationDuration = Duration(days: 30);
 
@@ -48,8 +48,7 @@ class TokenManager {
       if (expirationTime != null) {
         await prefs.setString(_tokenExpirationKey, expirationTime);
       } else {
-        final defaultExpirationTime =
-            DateTime.now().add(_defaultExpirationDuration).toIso8601String();
+        final defaultExpirationTime = DateTime.now().add(_defaultExpirationDuration).toIso8601String();
         await prefs.setString(_tokenExpirationKey, defaultExpirationTime);
       }
 

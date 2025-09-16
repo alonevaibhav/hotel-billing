@@ -91,6 +91,15 @@ class AuthRepository {
       // Clear from enhanced TokenManager (includes role and name)
       await TokenManager.clearAuthData();
 
+      // Stop token expiration timer if running
+      TokenManager.stopTokenExpirationTimer();
+
+
+      // Clear organization data from StorageService
+      StorageService.to.clearOrganizationData();
+
+
+
       developer.log('User logged out successfully', name: 'AuthRepository');
     } catch (e) {
       developer.log('Logout error: ${e.toString()}',

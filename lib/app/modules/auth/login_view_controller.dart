@@ -74,6 +74,16 @@ class LoginViewController extends GetxController {
     );
   }
 
+  void clearAuthData() {
+    // Clear controller data
+    loginResponse.value = null;
+    currentEmployee.value = null;
+    usernameController.clear();
+    passwordController.clear();
+    rememberMe.value = false;
+    errorMessage.value = '';
+  }
+
   /// Handle token expiration during app usage
   void _handleTokenExpiration() async {
     developer.log('Token expired, logging out user', name: 'LoginController');
@@ -243,19 +253,11 @@ class LoginViewController extends GetxController {
       developer.log('Logging out user (sessionExpired: $sessionExpired)',
           name: 'LoginController.Auth');
 
-      // Stop token monitoring
-      TokenManager.stopTokenExpirationTimer();
-
       // Clear repository data (this will also clear TokenManager data)
       await AuthRepository.logout();
 
       // Clear controller data
-      loginResponse.value = null;
-      currentEmployee.value = null;
-      usernameController.clear();
-      passwordController.clear();
-      rememberMe.value = false;
-      errorMessage.value = '';
+      clearAuthData();
 
       developer.log('User logged out successfully',
           name: 'LoginController.Auth');
@@ -267,7 +269,4 @@ class LoginViewController extends GetxController {
           name: 'LoginController.Error');
     }
   }
-
-
-
 }

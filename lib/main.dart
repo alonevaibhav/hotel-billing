@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -20,7 +19,9 @@ void main() async {
 
   // Check authentication status with role using enhanced TokenManager
   final authData = await TokenManager.checkAuthenticationWithRole();
-  developer.log('Startup auth check - Authenticated: ${authData['isAuthenticated']}, Role: ${authData['userRole']}, User: ${authData['userName']}', name: 'Main');
+  developer.log(
+      'Startup auth check - Authenticated: ${authData['isAuthenticated']}, Role: ${authData['userRole']}, User: ${authData['userName']}',
+      name: 'Main');
 
   // Initialize bindings for Go Router
   AppRoutes.initializeBindings();

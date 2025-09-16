@@ -7,41 +7,43 @@ import 'package:get/get.dart';
 import '../../../../../../../apputils/Utils/common_utils.dart';
 import '../../../../../controllers/WaiterPanelController/select_item_controller.dart';
 
-Widget buildRecipientSection(TableOrderState  tableState) {
-
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
+Widget buildRecipientSection(TableOrderState tableState) {
+  return Row(
     children: [
-      // Full Name Field - No validation required
-      CommonUiUtils.buildTextFormField(
-        controller: tableState.fullNameController, // Access from tableState
-        label: 'Recipient name',
-        hint: 'Enter full name',
-        icon: Icons.person,
-        keyboardType: TextInputType.name,
-        textCapitalization: TextCapitalization.words,
-        // Remove validator to make it optional
-        validator: null,
+      // Recipient name field
+      Expanded(
+        child: CommonUiUtils.buildTextFormField(
+          controller: tableState.fullNameController,
+          label: 'Recipient name',
+          hint: 'Enter full name',
+          icon: Icons.person,
+          keyboardType: TextInputType.name,
+          textCapitalization: TextCapitalization.words,
+          validator: null, // Optional field
+        ),
       ),
-      Gap(16.h), // Use your existing scaleFactor
 
-      // Phone Number Field - No validation required
-      CommonUiUtils.buildTextFormField(
-        controller: tableState.phoneController, // Access from tableState
-        label: 'Phone number',
-        hint: 'Phone number',
-        icon: Icons.phone,
-        keyboardType: TextInputType.phone,
-        // Remove validator to make it optional
-        validator: null,
-        inputFormatters: [
-          FilteringTextInputFormatter.digitsOnly,
-          LengthLimitingTextInputFormatter(10),
-        ],
+      SizedBox(width: 16.w), // Space between fields
+
+      // Phone number field
+      Expanded(
+        child: CommonUiUtils.buildTextFormField(
+          controller: tableState.phoneController,
+          label: 'Phone number',
+          hint: 'Phone number',
+          icon: Icons.phone,
+          keyboardType: TextInputType.phone,
+          validator: null, // Optional field
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+            LengthLimitingTextInputFormatter(10),
+          ],
+        ),
       ),
     ],
   );
 }
+
 
 
 
