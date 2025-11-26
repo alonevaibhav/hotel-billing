@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
+import 'package:hotelbilling/app/data/models/ResponseModel/table_model.dart';
 import '../../../../../../../apputils/Utils/common_utils.dart';
 import '../../../../../controllers/WaiterPanelController/select_item_controller.dart';
 
@@ -118,7 +119,7 @@ Widget buildBottomSection(OrderManagementController controller, int tableId,
                 Expanded(
                   child: OutlinedButton(
                     onPressed: hasItems
-                        ? () => controller.sendToChef(tableId, context, table, orderItems,)
+                        ? () => controller.sendToChef(tableId, context, table as TableInfo?, orderItems,)
                         : null,
                     style: OutlinedButton.styleFrom(
                       foregroundColor: hasItems ? Colors.grey[700] : Colors.grey[400],
@@ -143,7 +144,7 @@ Widget buildBottomSection(OrderManagementController controller, int tableId,
                 Expanded(
                   child: ElevatedButton(
                     onPressed: hasItems && controller.canProceedToCheckout(tableId)
-                        ? () => controller.proceedToCheckout(tableId, context, table, orderItems)
+                        ? () => controller.proceedToCheckout(tableId, context, table as TableInfo?, orderItems)
                         : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2196F3),

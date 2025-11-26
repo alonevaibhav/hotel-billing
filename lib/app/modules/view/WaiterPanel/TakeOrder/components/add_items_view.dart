@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../../../route/app_routes.dart';
+import '../../../../../state/app-state.dart';
 import '../../../../controllers/WaiterPanelController/add_item_controller.dart';
 import '../../../../widgets/drawer.dart';
 import '../../../../widgets/header.dart';
@@ -23,62 +24,72 @@ class AddItemsView extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      drawer: const CommonDrawerWidget(), // Use the centralized drawer
+      drawer: const CommonDrawerWidget(),
       resizeToAvoidBottomInset: false,
-      body: Column(
-        children: [
-          CommonHeaderWidget(
-            customTitle: 'Add Items',
-            onBackPressed: () => NavigationService.goBack(),
-            showDrawerButton: true,
-          ),
-          Expanded(
-            child: Column(
-              children: [
-                // Search Section
-                Container(
-                  padding: EdgeInsets.all(16.w),
-                  child: SearchWidget(controller: controller),
-                ),
 
-                // Filter Section
-                Container(
-                  height: 60.h,
-                  child: CategoryFilterWidget(controller: controller),
-                ),
+      // ✔ SINGLE RefreshIndicator
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await controller.refreshCategories();
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            children: [
+              CommonHeaderWidget(
+                customTitle: 'Add Items',
+                onBackPressed: () => NavigationService.goBack(),
+                showDrawerButton: true,
+              ),
 
-                // Items Grid - Fixed GetX issue
-                Expanded(
-                  child: _buildItemsGrid(controller),
-                ),
-              ],
-            ),
+              // Search Section
+              Padding(
+                padding: EdgeInsets.all(16.w),
+                child: SearchWidget(controller: controller),
+              ),
+
+              // Category Filter
+              SizedBox(
+                height: 60.h,
+                child: CategoryFilterWidget(controller: controller),
+              ),
+
+              // ✔ Grid section wrapped in sized box for scroll
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.85,
+                child: _buildItemsGrid(controller),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
+
       bottomNavigationBar: _buildBottomSection(controller, context),
     );
   }
-
   // Separate widget for the grid to properly scope the Obx
   Widget _buildItemsGrid(AddItemsController controller) {
     return Obx(() {
-      // Check loading state
+
       if (controller.isLoading.value) {
-        return const Center(
-          child: CircularProgressIndicator(
-            color: Color(0xFF2196F3),
-          ),
+        return const AppLoadingState(
+          message: 'Loading existing order...',
         );
       }
 
+
       // Get the filtered items list
       final items = controller.filteredItems;
-
-      // Check if empty
       if (items.isEmpty) {
-        return _buildEmptyState();
+        return const AppEmptyState(
+          icon: Icons.restaurant_menu,
+          title: 'No items added yet',
+          subtitle: 'Tap "add items" to start building your order',
+        );
       }
+
+
+
 
       // Build the grid
       return GridView.builder(
@@ -101,37 +112,7 @@ class AddItemsView extends StatelessWidget {
     });
   }
 
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            PhosphorIcons.magnifyingGlass(PhosphorIconsStyle.regular),
-            size: 48.sp,
-            color: Colors.grey[400],
-          ),
-          Gap(12.h),
-          Text(
-            'No items found',
-            style: TextStyle(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w500,
-              color: Colors.grey[600],
-            ),
-          ),
-          Gap(4.h),
-          Text(
-            'Try adjusting your search or filters',
-            style: TextStyle(
-              fontSize: 14.sp,
-              color: Colors.grey[500],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+
 
   Widget _buildBottomSection(
       AddItemsController controller, BuildContext context) {

@@ -6,11 +6,7 @@ import '../../core/services/storage_service.dart';
 import '../models/RequestModel/login_request_model.dart';
 import '../models/ResponseModel/login_response_model.dart';
 
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-
 class AuthRepository {
-
   /// Login user with username and password
   static Future<ApiResponse<LoginResponseModel>> login({
     required String username,
@@ -25,31 +21,29 @@ class AuthRepository {
         password: password,
       );
 
-      // Make HTTP POST request
-      final response = await http.post(
-        Uri.parse('$baseUrl$hostelBillingLogin'), // Replace with your actual base URL
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: jsonEncode(loginRequest.toJson()),
+      final response = await ApiService.post<LoginResponseModel>(
+        endpoint: ApiConstants.hostelBillingLogin,
+        body: loginRequest.toJson(),
+        fromJson: (json) => LoginResponseModel.fromJson(json),
+        includeToken: false,
       );
 
-      developer.log('Login API response - Status: ${response.statusCode}',
+      developer.log('Login API response - Success: ${response.success}',
           name: 'AuthRepository');
 
-      // Parse response
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final jsonResponse = jsonDecode(response.body);
-        final loginResponse = LoginResponseModel.fromJson(jsonResponse);
+      if (response.success && response.data != null) {
 
-        final employee = loginResponse.data.employee;
-        final token = loginResponse.data.token;
+        final employee = response.data!.data.employee;
+        final token = response.data!.data.token;
         final uid = employee.id.toString();
         final userRole = employee.designation;
         final userName = employee.employeeName;
         final organizationName = employee.organizationName;
         final organizationAddress = employee.address;
+
+        // Store in ApiService (existing)
+        await ApiService.setToken(token);
+        await ApiService.setUid(uid);
 
         // ✅ Store in storage - survives hot reload
         StorageService.to.storeOrganizationData(
@@ -64,29 +58,16 @@ class AuthRepository {
           userId: uid,
           userRole: userRole,
           userName: userName,
+          // Optional: Add custom expiration if your API provides it
+          // expirationTime: response.data!.data.tokenExpiration,
         );
 
         developer.log(
             'User data stored - ID: $uid, Role: $userRole, Name: $userName',
             name: 'AuthRepository');
-
-        return ApiResponse<LoginResponseModel>(
-          success: true,
-          data: loginResponse,
-          statusCode: response.statusCode,
-        );
-      } else {
-        // Handle error response
-        final errorMessage = response.body.isNotEmpty
-            ? jsonDecode(response.body)['message'] ?? 'Login failed'
-            : 'Login failed';
-
-        return ApiResponse<LoginResponseModel>(
-          success: false,
-          errorMessage: errorMessage,
-          statusCode: response.statusCode,
-        );
       }
+
+      return response;
     } catch (e) {
       developer.log('Login API call failed: ${e.toString()}',
           name: 'AuthRepository.Error');

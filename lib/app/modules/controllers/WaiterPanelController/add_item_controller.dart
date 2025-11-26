@@ -1,8 +1,13 @@
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hotelbilling/app/modules/controllers/WaiterPanelController/select_item_controller.dart';
 import 'dart:developer' as developer;
+import '../../../core/constants/api_constant.dart';
+import '../../../core/services/api_service.dart';
 import '../../../core/utils/snakbar_utils.dart';
+import '../../../data/models/ResponseModel/category_model.dart';
+import '../../../data/models/ResponseModel/subcategory_model.dart';
 import '../../../route/app_routes.dart';
 
 class AddItemsController extends GetxController {
@@ -12,20 +17,19 @@ class AddItemsController extends GetxController {
 
   // Categories and filtering
   final categories = <String>[].obs;
+  final categoryObjects = <Category>[].obs;
   final selectedCategory = 'All'.obs;
+  final selectedCategoryId = Rxn<int>();
   final activeFilters = <String>[].obs;
 
   // Menu data
-  final menuData = Rxn<Map<String, dynamic>>();
   final filteredItems = <Map<String, dynamic>>[].obs;
   final allItems = <Map<String, dynamic>>[].obs;
-
-  // Cart/Selected items for current session
   final selectedItems = <Map<String, dynamic>>[].obs;
 
   // Loading states
   final isLoading = false.obs;
-  final isSearching = false.obs;
+  final isLoadingItems = false.obs;
 
   // Table context
   final currentTable = Rxn<Map<String, dynamic>>();
@@ -34,8 +38,8 @@ class AddItemsController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _loadMenuData();
     _setupSearchListener();
+    loadCategoriesFromAPI();
     developer.log('AddItemsController initialized');
   }
 
@@ -58,228 +62,191 @@ class AddItemsController extends GetxController {
     });
   }
 
-  void _loadMenuData() {
+  // Load categories from API
+  Future<void> loadCategoriesFromAPI() async {
     try {
       isLoading.value = true;
+      developer.log('Fetching categories from API...');
 
-      // Enhanced dummy data with more variety
-      final mockMenuData = {
-        "message": "Menu retrieved successfully",
-        "success": true,
-        "data": {
-          "categories": [
-            {
-              "category_id": 1,
-              "category_name": "Main Course",
-              "category_description": "Hearty main dishes",
-              "items": [
-                {
-                  "id": 1,
-                  "hotel_owner_id": 1,
-                  "item_name": "Chicken Biryani",
-                  "description": "Aromatic basmati rice with spiced chicken",
-                  "category": "Main Course",
-                  "menu_category_id": 1,
-                  "image_url": "https://example.com/images/chicken-biryani.jpg",
-                  "price": "299.00",
-                  "preparation_time": 25,
-                  "is_active": 1,
-                  "is_featured": 1,
-                  "is_vegetarian": 0,
-                  "display_order": 1,
-                  "created_at": "2025-08-20T08:48:39.000Z",
-                  "updated_at": "2025-08-21T11:57:43.000Z"
-                },
-                {
-                  "id": 2,
-                  "hotel_owner_id": 1,
-                  "item_name": "Butter Chicken",
-                  "description": "Creamy tomato-based chicken curry",
-                  "category": "Main Course",
-                  "menu_category_id": 1,
-                  "image_url": "https://example.com/images/butter-chicken.jpg",
-                  "price": "319.99",
-                  "preparation_time": 18,
-                  "is_active": 1,
-                  "is_featured": 0,
-                  "is_vegetarian": 0,
-                  "display_order": 2,
-                  "created_at": "2025-08-22T06:29:24.000Z",
-                  "updated_at": "2025-08-22T06:38:08.000Z"
-                },
-                {
-                  "id": 3,
-                  "hotel_owner_id": 1,
-                  "item_name": "Paneer Makhani",
-                  "description": "Cottage cheese in rich tomato gravy",
-                  "category": "Main Course",
-                  "menu_category_id": 1,
-                  "image_url": "https://example.com/images/paneer-makhani.jpg",
-                  "price": "249.00",
-                  "preparation_time": 15,
-                  "is_active": 1,
-                  "is_featured": 1,
-                  "is_vegetarian": 1,
-                  "display_order": 3,
-                  "created_at": "2025-08-20T08:48:39.000Z",
-                  "updated_at": "2025-08-21T11:57:43.000Z"
-                }
-              ]
-            },
-            {
-              "category_id": 2,
-              "category_name": "Beverages",
-              "category_description": "Refreshing drinks",
-              "items": [
-                {
-                  "id": 4,
-                  "hotel_owner_id": 1,
-                  "item_name": "Fresh Lime Soda",
-                  "description": "Refreshing lime soda with mint",
-                  "category": "Beverages",
-                  "menu_category_id": 2,
-                  "image_url": "https://example.com/images/lime-soda.jpg",
-                  "price": "89.00",
-                  "preparation_time": 5,
-                  "is_active": 1,
-                  "is_featured": 0,
-                  "is_vegetarian": 1,
-                  "display_order": 1,
-                  "created_at": "2025-08-20T08:48:39.000Z",
-                  "updated_at": "2025-08-21T11:57:43.000Z"
-                },
-                {
-                  "id": 5,
-                  "hotel_owner_id": 1,
-                  "item_name": "Masala Chai",
-                  "description": "Traditional spiced tea",
-                  "category": "Beverages",
-                  "menu_category_id": 2,
-                  "image_url": "https://example.com/images/masala-chai.jpg",
-                  "price": "45.00",
-                  "preparation_time": 8,
-                  "is_active": 1,
-                  "is_featured": 1,
-                  "is_vegetarian": 1,
-                  "display_order": 2,
-                  "created_at": "2025-08-20T08:48:39.000Z",
-                  "updated_at": "2025-08-21T11:57:43.000Z"
-                }
-              ]
-            },
-            {
-              "category_id": 3,
-              "category_name": "Appetizers",
-              "category_description": "Start your meal right",
-              "items": [
-                {
-                  "id": 6,
-                  "hotel_owner_id": 1,
-                  "item_name": "Chicken Wings",
-                  "description": "Spicy chicken wings with ranch dip",
-                  "category": "Appetizers",
-                  "menu_category_id": 3,
-                  "image_url": "https://example.com/images/chicken-wings.jpg",
-                  "price": "189.00",
-                  "preparation_time": 12,
-                  "is_active": 1,
-                  "is_featured": 0,
-                  "is_vegetarian": 0,
-                  "display_order": 1,
-                  "created_at": "2025-08-20T08:48:39.000Z",
-                  "updated_at": "2025-08-21T11:57:43.000Z"
-                },
-                {
-                  "id": 7,
-                  "hotel_owner_id": 1,
-                  "item_name": "Vegetable Samosa",
-                  "description": "Crispy pastry filled with spiced vegetables",
-                  "category": "Appetizers",
-                  "menu_category_id": 3,
-                  "image_url": "https://example.com/images/samosa.jpg",
-                  "price": "59.00",
-                  "preparation_time": 10,
-                  "is_active": 1,
-                  "is_featured": 1,
-                  "is_vegetarian": 1,
-                  "display_order": 2,
-                  "created_at": "2025-08-20T08:48:39.000Z",
-                  "updated_at": "2025-08-21T11:57:43.000Z"
-                }
-              ]
-            }
-          ],
-          "restaurant_info": {
-            "id": 1,
-            "organization_name": "Grand Hotel & Restaurant",
-            "organization_type": "both",
-            "address": "123 Main Street, City, State, 12345",
-            "restaurant_address": "123 Main Street, Restaurant Block, City"
-          }
-        },
-        "errors": []
-      };
-
-      menuData.value = mockMenuData;
-      _processMenuData();
-
-      developer.log('Menu data loaded successfully');
-    } catch (e) {
-      developer.log('Error loading menu data: $e');
-      SnackBarUtil.showError(
-        Get.context!,
-        'Failed to load menu items',
-        title: 'Error',
-        duration: const Duration(seconds: 2),
+      final apiResponse = await ApiService.get<CategoryResponse>(
+        endpoint: ApiConstants.waiterGetMenuCategory,
+        fromJson: (json) => CategoryResponse.fromJson(json),
+        includeToken: true,
       );
+
+      if (apiResponse?.data?.success == true &&
+          apiResponse!.data!.data.isNotEmpty) {
+
+        categoryObjects.value = apiResponse.data!.data
+            .where((cat) => cat.isActive == 1)
+            .toList();
+
+        // Build category names list
+        categories.value = [
+          'All',
+          ...categoryObjects.map((cat) => cat.categoryName).toList()
+            ..sort()
+        ];
+
+        developer.log('Categories loaded: ${categories.length}');
+
+        // Load all items initially
+        await _loadAllItems();
+      } else {
+        _showErrorAndUseFallback('Failed to load categories');
+      }
+    } catch (e) {
+      developer.log('Error loading categories: $e');
+      _showErrorAndUseFallback('Error loading categories: $e');
     } finally {
       isLoading.value = false;
     }
   }
 
-  void _processMenuData() {
-    if (menuData.value == null) return;
+  void _showErrorAndUseFallback(String message) {
+    SnackBarUtil.showError(
+      Get.context!,
+      message,
+      title: 'Error',
+      duration: const Duration(seconds: 2),
+    );
+    categories.value = ['All'];
+  }
 
-    final data = menuData.value!['data'] as Map<String, dynamic>;
-    final categoriesData = data['categories'] as List<dynamic>;
+  // Load all items across all categories
+  Future<void> _loadAllItems() async {
+    try {
+      allItems.clear();
 
-    // Extract categories - Always start with "All"
-    final categorySet = <String>['All'];
-    final itemsList = <Map<String, dynamic>>[];
-
-    for (var categoryData in categoriesData) {
-      final categoryName = categoryData['category_name'] as String;
-      categorySet.add(categoryName);
-
-      final items = categoryData['items'] as List<dynamic>;
-      for (var item in items) {
-        final processedItem = Map<String, dynamic>.from(item);
-        processedItem['category_display'] = categoryName;
-        processedItem['quantity'] = 0; // Initialize quantity
-        itemsList.add(processedItem);
+      for (var category in categoryObjects) {
+        await _loadItemsForCategory(category.id, category.categoryName);
       }
+
+      _sortAndFilterItems();
+      developer.log('All items loaded: ${allItems.length}');
+    } catch (e) {
+      developer.log('Error loading all items: $e');
+    }
+  }
+
+  // Load items for specific category (called when category is clicked)
+  Future<void> selectCategory(String categoryName) async {
+    if (selectedCategory.value == categoryName) return;
+
+    selectedCategory.value = categoryName;
+    developer.log('Category selected: $categoryName');
+
+    if (categoryName == 'All') {
+      selectedCategoryId.value = null;
+      _filterItems();
+      return;
     }
 
-    // Sort categories alphabetically (except "All" which stays first)
-    final otherCategories = categorySet.skip(1).toList();
-    otherCategories.sort();
-    categories.value = ['All', ...otherCategories];
+    // Find category object
+    final category = categoryObjects.firstWhereOrNull(
+            (cat) => cat.categoryName == categoryName
+    );
 
-    // Sort items alphabetically when showing "All"
-    itemsList.sort((a, b) =>
-        (a['item_name'] as String).compareTo(b['item_name'] as String));
+    if (category == null) {
+      developer.log('Category not found: $categoryName');
+      return;
+    }
 
-    allItems.value = itemsList;
+    selectedCategoryId.value = category.id;
 
-    // Set initial filtered items
+    // Check if items for this category are already loaded
+    final hasItems = allItems.any(
+            (item) => item['menu_category_id'] == category.id
+    );
+
+    if (!hasItems) {
+      // Load items from API
+      await _loadItemsForCategory(category.id, categoryName);
+    }
+
     _filterItems();
+  }
 
-    developer.log(
-        'Processed ${itemsList.length} items in ${categories.length} categories');
+  // Fetch items for a specific category
+  Future<void> _loadItemsForCategory(int categoryId, String categoryName) async {
+    try {
+      isLoadingItems.value = true;
+      developer.log('Fetching items for category: $categoryName (ID: $categoryId)');
+
+      final apiResponse = await ApiService.get<MenuItemResponse>(
+        endpoint: ApiConstants.getCleanerMenuSubcategory(categoryId),
+        fromJson: (json) => MenuItemResponse.fromJson(json),
+        includeToken: true,
+      );
+
+      if (apiResponse?.data?.success == true &&
+          apiResponse!.data!.data.isNotEmpty) {
+
+        // Remove old items from this category
+        allItems.removeWhere(
+                (item) => item['menu_category_id'] == categoryId
+        );
+
+        // Process and add new items
+        for (var item in apiResponse.data!.data) {
+          if (item.isActive == 1 && item.isAvailable == 1) {
+            final processedItem = _processMenuItem(item, categoryName);
+            allItems.add(processedItem);
+          }
+        }
+
+        developer.log('Loaded ${apiResponse.data!.data.length} items for $categoryName');
+      } else {
+        developer.log('No items found for category: $categoryName');
+      }
+    } catch (e) {
+      developer.log('Error loading items for category $categoryName: $e');
+      SnackBarUtil.showError(
+        Get.context!,
+        'Failed to load items for $categoryName',
+        title: 'Error',
+        duration: const Duration(seconds: 2),
+      );
+    } finally {
+      isLoadingItems.value = false;
+    }
+  }
+
+  // Process menu item from API response
+  Map<String, dynamic> _processMenuItem(MenuItem item, String categoryName) {
+    return {
+      'id': item.id,
+      'hotel_owner_id': item.hotelOwnerId,
+      'item_name': item.itemName,
+      'description': item.description,
+      'category_display': categoryName,
+      'menu_category_id': item.menuCategoryId,
+      'image_url': item.imageUrl,
+      'price': item.price,
+      'preparation_time': item.preparationTime,
+      'is_active': item.isActive,
+      'is_featured': item.isFeatured,
+      'is_vegetarian': item.isVegetarian,
+      'display_order': item.displayOrder,
+      'menu_code': item.menuCode,
+      'is_available': item.isAvailable,
+      'spice_level': item.spiceLevel,
+      'quantity': 0, // Initialize quantity
+    };
+  }
+
+  void _sortAndFilterItems() {
+    allItems.sort((a, b) =>
+        (a['item_name'] as String).compareTo(b['item_name'] as String)
+    );
+    _filterItems();
   }
 
   void _filterItems() {
-    if (allItems.isEmpty) return;
+    if (allItems.isEmpty) {
+      filteredItems.value = [];
+      return;
+    }
 
     var filtered = allItems.where((item) {
       // Category filter
@@ -292,7 +259,7 @@ class AddItemsController extends GetxController {
               .toLowerCase()
               .contains(searchQuery.value.toLowerCase());
 
-      // Active filters (vegetarian, featured, etc.)
+      // Active filters
       bool matchesFilters = true;
       if (activeFilters.contains('Vegetarian')) {
         matchesFilters = matchesFilters && (item['is_vegetarian'] == 1);
@@ -304,22 +271,12 @@ class AddItemsController extends GetxController {
       return matchesCategory && matchesSearch && matchesFilters;
     }).toList();
 
-    // Sort filtered items alphabetically by name
+    // Sort filtered items
     filtered.sort((a, b) =>
         (a['item_name'] as String).compareTo(b['item_name'] as String));
 
     filteredItems.value = filtered;
-
-    developer
-        .log('Filtered items: ${filtered.length} out of ${allItems.length}');
-  }
-
-  void selectCategory(String category) {
-    if (selectedCategory.value != category) {
-      selectedCategory.value = category;
-      _filterItems();
-      developer.log('Category selected: $category');
-    }
+    developer.log('Filtered: ${filtered.length}/${allItems.length} items');
   }
 
   void toggleFilter(String filter) {
@@ -329,30 +286,28 @@ class AddItemsController extends GetxController {
       activeFilters.add(filter);
     }
     _filterItems();
-    developer.log('Filter toggled: $filter, Active filters: $activeFilters');
+    developer.log('Filter toggled: $filter');
   }
 
   void incrementItemQuantity(Map<String, dynamic> item) {
-    final index = allItems.indexWhere((element) => element['id'] == item['id']);
+    final index = allItems.indexWhere((el) => el['id'] == item['id']);
     if (index != -1) {
       allItems[index]['quantity'] = (allItems[index]['quantity'] as int) + 1;
       _updateSelectedItems();
-      _filterItems(); // Refresh filtered list
-      developer.log(
-          'Incremented ${item['item_name']} to ${allItems[index]['quantity']}');
+      _filterItems();
+      developer.log('Incremented ${item['item_name']}');
     }
   }
 
   void decrementItemQuantity(Map<String, dynamic> item) {
-    final index = allItems.indexWhere((element) => element['id'] == item['id']);
+    final index = allItems.indexWhere((el) => el['id'] == item['id']);
     if (index != -1) {
       final currentQty = allItems[index]['quantity'] as int;
       if (currentQty > 0) {
         allItems[index]['quantity'] = currentQty - 1;
         _updateSelectedItems();
-        _filterItems(); // Refresh filtered list
-        developer.log(
-            'Decremented ${item['item_name']} to ${allItems[index]['quantity']}');
+        _filterItems();
+        developer.log('Decremented ${item['item_name']}');
       }
     }
   }
@@ -375,43 +330,36 @@ class AddItemsController extends GetxController {
 
     try {
       final tableId = currentTableId.value;
-
-      // Get the OrderManagementController instance
       final orderController = Get.find<OrderManagementController>();
       final tableState = orderController.getTableState(tableId);
 
-      developer.log('Adding items to table $tableId');
-
-      // Add selected items to the order management controller
       for (var item in selectedItems) {
         final quantity = item['quantity'] as int;
+        final price = double.parse(item['price'].toString());
 
-        // Create order item structure
         final orderItem = {
           'id': item['id'],
           'item_name': item['item_name'],
-          'price': double.parse(item['price'].toString()),
+          'price': price,
           'quantity': quantity,
           'category': item['category_display'],
           'description': item['description'] ?? '',
           'preparation_time': item['preparation_time'] ?? 0,
           'is_vegetarian': item['is_vegetarian'] ?? 0,
           'is_featured': item['is_featured'] ?? 0,
-          'total_price': double.parse(item['price'].toString()) * quantity,
+          'total_price': price * quantity,
           'added_at': DateTime.now().toIso8601String(),
         };
 
-        // Add to table's order items
         tableState.orderItems.add(orderItem);
-
-        developer.log('Added item: ${orderItem['item_name']} x ${orderItem['quantity']} to table $tableId');
       }
 
-      // Update total price
       _updateTableTotal(tableState);
 
       final tableNumber = currentTable.value?['tableNumber'] ?? tableId;
-      final totalItems = selectedItems.fold<int>(0, (sum, item) => sum + (item['quantity'] as int));
+      final totalItems = selectedItems.fold<int>(
+          0, (sum, item) => sum + (item['quantity'] as int)
+      );
 
       SnackBarUtil.showSuccess(
         context,
@@ -420,13 +368,10 @@ class AddItemsController extends GetxController {
         duration: const Duration(seconds: 1),
       );
 
-      // Clear selections after adding
       clearAllSelections();
-
-      // Navigate back to order management
       NavigationService.goBack();
 
-      developer.log('Successfully added $totalItems items to table $tableId');
+      developer.log('Added $totalItems items to table $tableId');
     } catch (e) {
       developer.log('Error adding items to table: $e');
       SnackBarUtil.showError(
@@ -438,19 +383,18 @@ class AddItemsController extends GetxController {
     }
   }
 
-// Helper method to update table total
   void _updateTableTotal(TableOrderState tableState) {
     double total = 0.0;
     for (var item in tableState.orderItems) {
       total += item['total_price'] as double;
     }
     tableState.finalCheckoutTotal.value = total;
-    developer.log('Updated table total: ₹${total.toStringAsFixed(2)}');
   }
 
   int get totalSelectedItems {
     return selectedItems.fold<int>(
-        0, (sum, item) => sum + (item['quantity'] as int));
+        0, (sum, item) => sum + (item['quantity'] as int)
+    );
   }
 
   double get totalSelectedPrice {
@@ -461,7 +405,6 @@ class AddItemsController extends GetxController {
     });
   }
 
-  // will implement clear all later
   void clearAllSelections() {
     for (var item in allItems) {
       item['quantity'] = 0;
@@ -475,5 +418,9 @@ class AddItemsController extends GetxController {
     searchController.clear();
     searchQuery.value = '';
     _filterItems();
+  }
+
+  Future<void> refreshCategories() async {
+    await loadCategoriesFromAPI();
   }
 }

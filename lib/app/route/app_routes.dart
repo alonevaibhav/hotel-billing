@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:developer' as developer;
+import '../data/models/ResponseModel/table_model.dart';
 import '../modules/auth/login_view.dart';
 import '../modules/view/ChefPanel/dashboard.dart';
 import '../modules/view/WaiterPanel/home_page.dart';
@@ -60,11 +61,12 @@ class AppRoutes {
           path: waiterDashboard,
           builder: (context, state) => const WaiterDashboardView(),
         ),
+        // In AppRoutes class
         GoRoute(
           path: selectItem,
           builder: (context, state) {
-            final table = state.extra as Map<String, dynamic>?;
-            return OrderManagementView(table: table);
+            final tableInfo = state.extra as TableInfo?;
+            return OrderManagementView(tableInfo: tableInfo);
           },
         ),
         GoRoute(
@@ -129,8 +131,8 @@ class NavigationService {
     router.go(AppRoutes.chefDashboard); // Changed from push to go
   }
 
-  static void selectItem(Map<String, dynamic> table) {
-    router.push(AppRoutes.selectItem, extra: table);
+  static void selectItem(TableInfo tableInfo) {
+    router.push(AppRoutes.selectItem, extra: tableInfo);
   }
 
   static void addItems(Map<String, dynamic>? table) {

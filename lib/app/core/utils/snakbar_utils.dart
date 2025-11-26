@@ -1,9 +1,59 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+enum SnackBarType {
+  success,
+  error,
+  warning,
+  info,
+  custom,
+}
 
 class SnackBarUtil {
-  // Your existing methods remain the same
+  // NEW show() METHOD
+  static void show(
+      BuildContext context,
+      String message, {
+        String? title,
+        SnackBarType type = SnackBarType.info,
+        Duration duration = const Duration(seconds: 2),
+        IconData? icon,
+        Color? backgroundColor,
+        Color textColor = Colors.white,
+      }) {
+    switch (type) {
+      case SnackBarType.success:
+        showSuccess(context, message, title: title, duration: duration);
+        break;
+
+      case SnackBarType.error:
+        showError(context, message, title: title, duration: duration);
+        break;
+
+      case SnackBarType.warning:
+        showWarning(context, message, title: title, duration: duration);
+        break;
+
+      case SnackBarType.info:
+        showInfo(context, message, title: title, duration: duration);
+        break;
+
+      case SnackBarType.custom:
+        showCustom(
+          context: context,
+          message: message,
+          title: title,
+          icon: icon,
+          backgroundColor: backgroundColor,
+          textColor: textColor,
+          duration: duration,
+        );
+        break;
+    }
+  }
+
+  // EXISTING METHODS ------------------------------------------
+
   static void showSuccess(
       BuildContext context,
       String message, {
