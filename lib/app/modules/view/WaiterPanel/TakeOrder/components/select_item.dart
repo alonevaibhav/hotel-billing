@@ -18,10 +18,13 @@ class OrderManagementView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(OrderManagementController());
+
     final tableId = tableInfo?.table.id ?? 0;
+    final tableNumber = tableInfo?.table.tableNumber ?? 0;
 
     controller.setActiveTable(tableId, tableInfo);
     final tableState = controller.getTableState(tableId);
+
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -392,10 +395,8 @@ class _OrderItemCard extends StatelessWidget {
                 availableQty: availableQty,
                 canDecrement: canDecrement,
                 hasFrozen: hasFrozen,
-                onIncrement: () =>
-                    controller.incrementItemQuantity(tableId, index),
-                onDecrement: () =>
-                    controller.decrementItemQuantity(tableId, index, context),
+                onIncrement: () => controller.incrementItemQuantity(tableId, index),
+                onDecrement: () => controller.decrementItemQuantity(tableId, index, context),
               ),
               Gap(12.w * OrderManagementView.scaleFactor),
               _PriceColumn(item: item),

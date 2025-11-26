@@ -45,12 +45,8 @@ Widget buildRecipientSection(TableOrderState tableState) {
   );
 }
 
-
-
-
 Widget buildBottomSection(OrderManagementController controller, int tableId,
-    double scaleFactor, BuildContext context,
-    Map<String, dynamic>? table) {
+    double scaleFactor, BuildContext context, Map<String, dynamic>? table) {
   return Container(
     padding: EdgeInsets.all(16.w * scaleFactor),
     decoration: BoxDecoration(
@@ -109,17 +105,25 @@ Widget buildBottomSection(OrderManagementController controller, int tableId,
                   ],
                 ),
               ),
-
               Gap(16.h * scaleFactor),
             ],
 
-            // Action buttons
             Row(
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: hasItems
-                        ? () => controller.sendToChef(tableId, context, table as TableInfo?, orderItems,)
+                    onPressed: (hasItems && !controller.isLoading.value)
+                        ? () {
+                      TableInfo? tableInfo;
+                      if (table is Map<String, dynamic>) {
+                        tableInfo = controller.mapToTableInfo(table);
+                      } else if (table is TableInfo) {
+                        tableInfo = table;
+                      } else {
+                        tableInfo = null;
+                      }
+                      controller.sendToChef(tableId, context, tableInfo, orderItems);
+                    }
                         : null,
                     style: OutlinedButton.styleFrom(
                       foregroundColor: hasItems ? Colors.grey[700] : Colors.grey[400],
@@ -131,7 +135,16 @@ Widget buildBottomSection(OrderManagementController controller, int tableId,
                       ),
                       padding: EdgeInsets.symmetric(vertical: 14.h * scaleFactor),
                     ),
-                    child: Text(
+                    child: controller.isLoading.value
+                        ? SizedBox(
+                      width: 20.w * scaleFactor,
+                      height: 20.h * scaleFactor,
+                      child: CircularProgressIndicator(
+                        color: Colors.grey[700],
+                        strokeWidth: 2,
+                      ),
+                    )
+                        : Text(
                       'kot to chef',
                       style: TextStyle(
                         fontSize: 14.sp * scaleFactor,
@@ -143,8 +156,18 @@ Widget buildBottomSection(OrderManagementController controller, int tableId,
                 Gap(12.w * scaleFactor),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: hasItems && controller.canProceedToCheckout(tableId)
-                        ? () => controller.proceedToCheckout(tableId, context, table as TableInfo?, orderItems)
+                    onPressed: (hasItems && !controller.isLoading.value && controller.canProceedToCheckout(tableId))
+                        ? () {
+                      TableInfo? tableInfo;
+                      if (table is Map<String, dynamic>) {
+                        tableInfo = controller.mapToTableInfo(table);
+                      } else if (table is TableInfo) {
+                        tableInfo = table;
+                      } else {
+                        tableInfo = null;
+                      }
+                      controller.proceedToCheckout(tableId, context, tableInfo, orderItems);
+                    }
                         : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2196F3),
@@ -176,11 +199,10 @@ Widget buildBottomSection(OrderManagementController controller, int tableId,
                 ),
               ],
             ),
+
           ],
         );
       }),
     ),
   );
 }
-
-

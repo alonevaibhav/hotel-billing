@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hotelbilling/app/modules/controllers/WaiterPanelController/select_item_controller.dart';
@@ -76,16 +75,13 @@ class AddItemsController extends GetxController {
 
       if (apiResponse?.data?.success == true &&
           apiResponse!.data!.data.isNotEmpty) {
-
-        categoryObjects.value = apiResponse.data!.data
-            .where((cat) => cat.isActive == 1)
-            .toList();
+        categoryObjects.value =
+            apiResponse.data!.data.where((cat) => cat.isActive == 1).toList();
 
         // Build category names list
         categories.value = [
           'All',
-          ...categoryObjects.map((cat) => cat.categoryName).toList()
-            ..sort()
+          ...categoryObjects.map((cat) => cat.categoryName).toList()..sort()
         ];
 
         developer.log('Categories loaded: ${categories.length}');
@@ -143,9 +139,8 @@ class AddItemsController extends GetxController {
     }
 
     // Find category object
-    final category = categoryObjects.firstWhereOrNull(
-            (cat) => cat.categoryName == categoryName
-    );
+    final category = categoryObjects
+        .firstWhereOrNull((cat) => cat.categoryName == categoryName);
 
     if (category == null) {
       developer.log('Category not found: $categoryName');
@@ -155,9 +150,8 @@ class AddItemsController extends GetxController {
     selectedCategoryId.value = category.id;
 
     // Check if items for this category are already loaded
-    final hasItems = allItems.any(
-            (item) => item['menu_category_id'] == category.id
-    );
+    final hasItems =
+        allItems.any((item) => item['menu_category_id'] == category.id);
 
     if (!hasItems) {
       // Load items from API
@@ -168,10 +162,12 @@ class AddItemsController extends GetxController {
   }
 
   // Fetch items for a specific category
-  Future<void> _loadItemsForCategory(int categoryId, String categoryName) async {
+  Future<void> _loadItemsForCategory(
+      int categoryId, String categoryName) async {
     try {
       isLoadingItems.value = true;
-      developer.log('Fetching items for category: $categoryName (ID: $categoryId)');
+      developer
+          .log('Fetching items for category: $categoryName (ID: $categoryId)');
 
       final apiResponse = await ApiService.get<MenuItemResponse>(
         endpoint: ApiConstants.getCleanerMenuSubcategory(categoryId),
@@ -181,11 +177,8 @@ class AddItemsController extends GetxController {
 
       if (apiResponse?.data?.success == true &&
           apiResponse!.data!.data.isNotEmpty) {
-
         // Remove old items from this category
-        allItems.removeWhere(
-                (item) => item['menu_category_id'] == categoryId
-        );
+        allItems.removeWhere((item) => item['menu_category_id'] == categoryId);
 
         // Process and add new items
         for (var item in apiResponse.data!.data) {
@@ -195,7 +188,8 @@ class AddItemsController extends GetxController {
           }
         }
 
-        developer.log('Loaded ${apiResponse.data!.data.length} items for $categoryName');
+        developer.log(
+            'Loaded ${apiResponse.data!.data.length} items for $categoryName');
       } else {
         developer.log('No items found for category: $categoryName');
       }
@@ -237,8 +231,7 @@ class AddItemsController extends GetxController {
 
   void _sortAndFilterItems() {
     allItems.sort((a, b) =>
-        (a['item_name'] as String).compareTo(b['item_name'] as String)
-    );
+        (a['item_name'] as String).compareTo(b['item_name'] as String));
     _filterItems();
   }
 
@@ -333,12 +326,25 @@ class AddItemsController extends GetxController {
       final orderController = Get.find<OrderManagementController>();
       final tableState = orderController.getTableState(tableId);
 
+      // ✅ LOG: Check selected items before processing
+      developer.log('=== ADDING ITEMS ===');
+      developer.log('Total selected items: ${selectedItems.length}');
+      developer.log('Selected items: $selectedItems');
+
       for (var item in selectedItems) {
+        final id = item['id'];
         final quantity = item['quantity'] as int;
         final price = double.parse(item['price'].toString());
 
+        // ✅ VALIDATION: Check if id and quantity are valid
+        developer.log('Processing item:');
+        developer.log('  ID: $id (Type: ${id.runtimeType})');
+        developer.log('  Quantity: $quantity (Type: ${quantity.runtimeType})');
+        developer.log('  Price: $price');
+        developer.log('  Item Name: ${item['item_name']}');
+
         final orderItem = {
-          'id': item['id'],
+          'id': id,
           'item_name': item['item_name'],
           'price': price,
           'quantity': quantity,
@@ -351,6 +357,7 @@ class AddItemsController extends GetxController {
           'added_at': DateTime.now().toIso8601String(),
         };
 
+        developer.log('✅ Order item created: $orderItem');
         tableState.orderItems.add(orderItem);
       }
 
@@ -358,8 +365,10 @@ class AddItemsController extends GetxController {
 
       final tableNumber = currentTable.value?['tableNumber'] ?? tableId;
       final totalItems = selectedItems.fold<int>(
-          0, (sum, item) => sum + (item['quantity'] as int)
-      );
+          0, (sum, item) => sum + (item['quantity'] as int));
+
+      developer.log('✅ SUCCESS: Added $totalItems items to table $tableId');
+      developer.log('=== END ADD ITEMS ===');
 
       SnackBarUtil.showSuccess(
         context,
@@ -370,13 +379,11 @@ class AddItemsController extends GetxController {
 
       clearAllSelections();
       NavigationService.goBack();
-
-      developer.log('Added $totalItems items to table $tableId');
     } catch (e) {
-      developer.log('Error adding items to table: $e');
+      developer.log('❌ ERROR: $e');
       SnackBarUtil.showError(
         context,
-        'Failed to add items to order',
+        'Failed to add items to order: $e',
         title: 'Error',
         duration: const Duration(seconds: 2),
       );
@@ -393,8 +400,7 @@ class AddItemsController extends GetxController {
 
   int get totalSelectedItems {
     return selectedItems.fold<int>(
-        0, (sum, item) => sum + (item['quantity'] as int)
-    );
+        0, (sum, item) => sum + (item['quantity'] as int));
   }
 
   double get totalSelectedPrice {
