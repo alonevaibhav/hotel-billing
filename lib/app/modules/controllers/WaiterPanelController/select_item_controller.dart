@@ -666,9 +666,7 @@ class TableOrderState {
   int getFrozenQuantity(String itemId) {
     return frozenItems.firstWhereOrNull((item) => item.id == itemId)?.quantity ?? 0;
   }
-
   bool get hasFrozenItems => frozenItems.isNotEmpty;
-
   // Check if this is a reorder scenario (order already exists)
   bool get isReorderScenario => placedOrderId.value != null && placedOrderId.value! > 0;
 }
@@ -682,6 +680,8 @@ class OrderManagementController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+
+
     developer.log('OrderManagementController initialized');
   }
 
@@ -694,8 +694,7 @@ class OrderManagementController extends GetxController {
 
   TableOrderState getTableState(int tableId) {
     final state = tableOrders.putIfAbsent(
-      tableId,
-          () => TableOrderState(tableId: tableId),
+      tableId, () => TableOrderState(tableId: tableId),
     );
     developer.log("Table loaded ($tableId). Items: ${state.orderItems.length}",
         name: "TABLE_STATE");
@@ -703,55 +702,11 @@ class OrderManagementController extends GetxController {
   }
 
 
-  Future<void> fetchOrder(int orderId, int tableId) async {
+  void checkAndFetchExistingOrder(int tableId, TableInfo? tableInfo) {
     final state = getTableState(tableId);
-    if (state.hasLoadedOrder.value || orderId <= 0) {
-      state.hasLoadedOrder.value = true;
-      return;
-    }
-    try {
-      state.isLoadingOrder.value = true;
-      final response = await ApiService.get<OrderResponseModel>(
-        endpoint: ApiConstants.waiterGetTableOrder(orderId),
-        fromJson: (json) => OrderResponseModel.fromJson(json),
-        includeToken: true,
-      );
-      if (response.success && response.data != null) {
-        final orderData = response.data!;
-
-        // Store the placed order ID for reorder scenario
-        state.placedOrderId.value = orderData.data.order.id;
-
-        state.fullNameController.text = orderData.data.order.customerName ?? '';
-        state.phoneController.text = orderData.data.order.customerPhone ?? '';
-        state.orderItems.clear();
-        state.frozenItems.clear();
-        for (var apiItem in orderData.data.items) {
-          final localItem = apiItem.toLocalOrderItem();
-          state.orderItems.add(localItem);
-          state.frozenItems.add(FrozenItem(
-            id: apiItem.menuItemId.toString(),
-            name: apiItem.itemName,
-            quantity: apiItem.quantity,
-          ));
-        }
-        _updateTotal(state);
-        developer.log(
-            'Loaded ${orderData.data.items.length} items for table $tableId. Order ID: ${state.placedOrderId.value}',
-            name: 'FETCH_ORDER');
-      }
-    } catch (e) {
-      developer.log('Error fetching order: $e');
-      if (Get.context != null) {
-        SnackBarUtil.showError(
-          Get.context!,
-          'Failed to load existing order',
-          duration: const Duration(seconds: 2),
-        );
-      }
-    } finally {
-      state.isLoadingOrder.value = false;
-      state.hasLoadedOrder.value = true;
+    final orderId = tableInfo?.currentOrder?.orderId ?? 0;
+    if (orderId > 0) {
+      fetchOrder(orderId, tableId);
     }
   }
 
@@ -1179,6 +1134,60 @@ class OrderManagementController extends GetxController {
     }
   }
 
+
+  Future<void> fetchOrder(int orderId, int tableId) async {
+    final state = getTableState(tableId);
+    if (state.hasLoadedOrder.value || orderId <= 0) {
+      state.hasLoadedOrder.value = true;
+      return;
+    }
+    try {
+      state.isLoadingOrder.value = true;
+      final response = await ApiService.get<OrderResponseModel>(
+        endpoint: ApiConstants.waiterGetTableOrder(orderId),
+        fromJson: (json) => OrderResponseModel.fromJson(json),
+        includeToken: true,
+      );
+      if (response.success && response.data != null) {
+        final orderData = response.data!;
+
+        // Store the placed order ID for reorder scenario
+        state.placedOrderId.value = orderData.data.order.id;
+
+        state.fullNameController.text = orderData.data.order.customerName ?? '';
+        state.phoneController.text = orderData.data.order.customerPhone ?? '';
+        state.orderItems.clear();
+        state.frozenItems.clear();
+        for (var apiItem in orderData.data.items) {
+          final localItem = apiItem.toLocalOrderItem();
+          state.orderItems.add(localItem);
+          state.frozenItems.add(FrozenItem(
+            id: apiItem.menuItemId.toString(),
+            name: apiItem.itemName,
+            quantity: apiItem.quantity,
+          ));
+        }
+        _updateTotal(state);
+        developer.log(
+            'Loaded ${orderData.data.items.length} items for table $tableId. Order ID: ${state.placedOrderId.value}',
+            name: 'FETCH_ORDER');
+      }
+    } catch (e) {
+      developer.log('Error fetching order: $e');
+      if (Get.context != null) {
+        SnackBarUtil.showError(
+          Get.context!,
+          'Failed to load existing order',
+          duration: const Duration(seconds: 2),
+        );
+      }
+    } finally {
+      state.isLoadingOrder.value = false;
+      state.hasLoadedOrder.value = true;
+    }
+  }
+
+
   // UPDATED: Unified order processing with reorder logic
   Future<void> _processOrder({
     required int tableId,
@@ -1192,29 +1201,6 @@ class OrderManagementController extends GetxController {
     try {
       isLoading.value = true;
       final state = getTableState(tableId);
-
-      // Validate customer details
-      if (state.fullNameController.text.trim().isEmpty) {
-        SnackBarUtil.showError(
-          context,
-          'Please enter customer name',
-          title: 'Validation Error',
-          duration: const Duration(seconds: 2),
-        );
-        isLoading.value = false;
-        return;
-      }
-
-      if (state.phoneController.text.trim().isEmpty) {
-        SnackBarUtil.showError(
-          context,
-          'Please enter customer phone',
-          title: 'Validation Error',
-          duration: const Duration(seconds: 2),
-        );
-        isLoading.value = false;
-        return;
-      }
 
       // Get new items only (not frozen ones)
       final newItems = _getNewItems(state, orderItems);
