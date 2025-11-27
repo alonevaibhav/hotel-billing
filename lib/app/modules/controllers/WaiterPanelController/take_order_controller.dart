@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'dart:developer' as developer;
@@ -8,8 +6,6 @@ import '../../../core/services/api_service.dart';
 import '../../../data/models/ResponseModel/table_model.dart';
 import '../../../route/app_routes.dart';
 import '../../../core/utils/snakbar_utils.dart';
-
-
 
 class TakeOrdersController extends GetxController {
   // Reactive variables
@@ -212,8 +208,7 @@ class TakeOrdersController extends GetxController {
 
   // Get total revenue from current orders
   int get totalRevenue {
-    return allTables
-        .where((t) => t.currentOrder != null)
-        .fold<int>(0, (sum, t) => sum + (t.currentOrder?.totalAmount?.round() ?? 0));
+    return allTables.where((t) => t.currentOrder != null).fold<int>(
+        0, (sum, t) => sum + (t.currentOrder?.totalAmount?.round() ?? 0));
   }
 }

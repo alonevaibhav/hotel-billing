@@ -110,50 +110,50 @@ Widget buildBottomSection(OrderManagementController controller, int tableId,
 
             Row(
               children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: (hasItems && !controller.isLoading.value)
-                        ? () {
-                      TableInfo? tableInfo;
-                      if (table is Map<String, dynamic>) {
-                        tableInfo = controller.mapToTableInfo(table);
-                      } else if (table is TableInfo) {
-                        tableInfo = table;
-                      } else {
-                        tableInfo = null;
-                      }
-                      controller.sendToChef(tableId, context, tableInfo, orderItems);
-                    }
-                        : null,
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: hasItems ? Colors.grey[700] : Colors.grey[400],
-                      side: BorderSide(
-                        color: hasItems ? Colors.grey[400]! : Colors.grey[300]!,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.r * scaleFactor),
-                      ),
-                      padding: EdgeInsets.symmetric(vertical: 14.h * scaleFactor),
-                    ),
-                    child: controller.isLoading.value
-                        ? SizedBox(
-                      width: 20.w * scaleFactor,
-                      height: 20.h * scaleFactor,
-                      child: CircularProgressIndicator(
-                        color: Colors.grey[700],
-                        strokeWidth: 2,
-                      ),
-                    )
-                        : Text(
-                      'kot to chef',
-                      style: TextStyle(
-                        fontSize: 14.sp * scaleFactor,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-                Gap(12.w * scaleFactor),
+                // Expanded(
+                //   child: OutlinedButton(
+                //     onPressed: (hasItems && !controller.isLoading.value)
+                //         ? () {
+                //       TableInfo? tableInfo;
+                //       if (table is Map<String, dynamic>) {
+                //         tableInfo = controller.mapToTableInfo(table);
+                //       } else if (table is TableInfo) {
+                //         tableInfo = table;
+                //       } else {
+                //         tableInfo = null;
+                //       }
+                //       controller.sendToChef(tableId, context, tableInfo, orderItems);
+                //     }
+                //         : null,
+                //     style: OutlinedButton.styleFrom(
+                //       foregroundColor: hasItems ? Colors.grey[700] : Colors.grey[400],
+                //       side: BorderSide(
+                //         color: hasItems ? Colors.grey[400]! : Colors.grey[300]!,
+                //       ),
+                //       shape: RoundedRectangleBorder(
+                //         borderRadius: BorderRadius.circular(8.r * scaleFactor),
+                //       ),
+                //       padding: EdgeInsets.symmetric(vertical: 14.h * scaleFactor),
+                //     ),
+                //     child: controller.isLoading.value
+                //         ? SizedBox(
+                //       width: 20.w * scaleFactor,
+                //       height: 20.h * scaleFactor,
+                //       child: CircularProgressIndicator(
+                //         color: Colors.grey[700],
+                //         strokeWidth: 2,
+                //       ),
+                //     )
+                //         : Text(
+                //       'kot to chef',
+                //       style: TextStyle(
+                //         fontSize: 14.sp * scaleFactor,
+                //         fontWeight: FontWeight.w600,
+                //       ),
+                //     ),
+                //   ),
+                // ),
+                // Gap(12.w * scaleFactor),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: (hasItems && !controller.isLoading.value && controller.canProceedToCheckout(tableId))
@@ -189,7 +189,7 @@ Widget buildBottomSection(OrderManagementController controller, int tableId,
                       ),
                     )
                         : Text(
-                      'kot to manager',
+                      'Place Order',
                       style: TextStyle(
                         fontSize: 14.sp * scaleFactor,
                         fontWeight: FontWeight.w600,

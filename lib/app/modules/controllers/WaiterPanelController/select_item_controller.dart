@@ -1,24 +1,18 @@
-// import 'package:flutter/material.dart';
+//
+// import 'package:flutter/material.dart' hide Table;
 // import 'package:get/get.dart';
-// import 'package:go_router/go_router.dart';
+// import 'package:hotelbilling/app/modules/controllers/WaiterPanelController/take_order_controller.dart';
 // import 'dart:developer' as developer;
 // import '../../../core/constants/api_constant.dart';
 // import '../../../core/services/api_service.dart';
 // import '../../../core/utils/snakbar_utils.dart';
-// import '../../../data/models/ResponseModel/order_model.dart';
+// import '../../../data/models/RequestModel/create_order_request.dart';
+// import '../../../data/models/ResponseModel/order_model.dart' hide OrderData;
 // import '../../../data/models/ResponseModel/table_model.dart';
 // import '../../../route/app_routes.dart';
+// import '../../model/froze_model.dart';
 //
-// // Simplified frozen item tracking
-// class FrozenItem {
-//   final String id;
-//   final String name;
-//   final int quantity;
 //
-//   FrozenItem({required this.id, required this.name, required this.quantity});
-// }
-//
-// // Streamlined table state
 // class TableOrderState {
 //   final int tableId;
 //   final orderItems = <Map<String, dynamic>>[].obs;
@@ -48,10 +42,7 @@
 //   }
 //
 //   int getFrozenQuantity(String itemId) {
-//     return frozenItems
-//             .firstWhereOrNull((item) => item.id == itemId)
-//             ?.quantity ??
-//         0;
+//     return frozenItems.firstWhereOrNull((item) => item.id == itemId)?.quantity ?? 0;
 //   }
 //
 //   bool get hasFrozenItems => frozenItems.isNotEmpty;
@@ -66,7 +57,6 @@
 //   @override
 //   void onInit() {
 //     super.onInit();
-//     // fetchExistingOrder(); // Dummy call to initialize
 //     developer.log('OrderManagementController initialized');
 //   }
 //
@@ -77,24 +67,23 @@
 //     super.onClose();
 //   }
 //
-//   // TableOrderState getTableState(int tableId) {
-//   //   return tableOrders.putIfAbsent(
-//   //     tableId,
-//   //         () => TableOrderState(tableId: tableId),
-//   //   );
-//   // }
+//   TableOrderState getTableState(int tableId) {
+//     final state = tableOrders.putIfAbsent(
+//       tableId,
+//       () => TableOrderState(tableId: tableId),
+//     );
+//     developer.log("Table loaded ($tableId). Items: ${state.orderItems.length}",
+//         name: "TABLE_STATE");
+//     return state;
+//   }
 //
-//   TableOrderState? get currentTableState =>
-//       activeTableId.value != null ? getTableState(activeTableId.value!) : null;
 //
-//   // Fetch existing order
-//   Future<void> fetchExistingOrder(int orderId, int tableId) async {
+//   Future<void> fetchOrder(int orderId, int tableId) async {
 //     final state = getTableState(tableId);
 //     if (state.hasLoadedOrder.value || orderId <= 0) {
 //       state.hasLoadedOrder.value = true;
 //       return;
 //     }
-//
 //     try {
 //       state.isLoadingOrder.value = true;
 //       final response = await ApiService.get<OrderResponseModel>(
@@ -102,18 +91,12 @@
 //         fromJson: (json) => OrderResponseModel.fromJson(json),
 //         includeToken: true,
 //       );
-//
 //       if (response.success && response.data != null) {
 //         final orderData = response.data!;
-//
-//         // Populate customer info
 //         state.fullNameController.text = orderData.data.order.customerName ?? '';
 //         state.phoneController.text = orderData.data.order.customerPhone ?? '';
-//
-//         // Load items and freeze them
 //         state.orderItems.clear();
 //         state.frozenItems.clear();
-//
 //         for (var apiItem in orderData.data.items) {
 //           final localItem = apiItem.toLocalOrderItem();
 //           state.orderItems.add(localItem);
@@ -123,7 +106,6 @@
 //             quantity: apiItem.quantity,
 //           ));
 //         }
-//
 //         _updateTotal(state);
 //         developer.log(
 //             'Loaded ${orderData.data.items.length} items for table $tableId');
@@ -143,198 +125,6 @@
 //     }
 //   }
 //
-//   // Set active table and fetch order
-//   // void setActiveTable(int tableId, TableInfo? tableInfo) {
-//   //   activeTableId.value = tableId;
-//   //   final state = getTableState(tableId);
-//   //   final orderId = tableInfo?.currentOrder?.orderId ?? 0;
-//   //
-//   //   if (orderId > 0 && !state.hasLoadedOrder.value) {
-//   //     fetchExistingOrder(orderId, tableId);
-//   //   }
-//   // }
-//
-//   // Item management
-//   // void addItemToTable(int tableId, Map<String, dynamic> item) {
-//   //   final state = getTableState(tableId);
-//   //   state.orderItems.add(item);
-//   //   _updateTotal(state);
-//   // }
-//
-//   // void incrementItemQuantity(int tableId, int index) {
-//   //   final state = getTableState(tableId);
-//   //   if (index < 0 || index >= state.orderItems.length) return;
-//   //
-//   //   final item = state.orderItems[index];
-//   //   final quantity = (item['quantity'] as int) + 1;
-//   //   _updateItemQuantity(state, index, quantity);
-//   // }
-//
-//   // void decrementItemQuantity(int tableId, int index, BuildContext context) {
-//   //   final state = getTableState(tableId);
-//   //   if (index < 0 || index >= state.orderItems.length) return;
-//   //
-//   //   final item = state.orderItems[index];
-//   //   final currentQty = item['quantity'] as int;
-//   //   final frozenQty = state.getFrozenQuantity(item['id'].toString());
-//   //
-//   //   if (frozenQty == 0) {
-//   //     // Before KOT: can reduce to 0 (removes item)
-//   //     if (currentQty > 1) {
-//   //       _updateItemQuantity(state, index, currentQty - 1);
-//   //     } else {
-//   //       _removeItem(state, index, context, fromDecrement: true);
-//   //     }
-//   //   } else {
-//   //     // After KOT: cannot go below frozen quantity
-//   //     if (currentQty > frozenQty) {
-//   //       _updateItemQuantity(state, index, currentQty - 1);
-//   //     } else {
-//   //       SnackBarUtil.showWarning(
-//   //         context,
-//   //         'Cannot reduce below sent quantity ($frozenQty)',
-//   //         title: 'Item Already Sent',
-//   //         duration: const Duration(seconds: 2),
-//   //       );
-//   //     }
-//   //   }
-//   // }
-//
-//   // void removeItemFromTable(int tableId, int index, BuildContext context) {
-//   //   final state = getTableState(tableId);
-//   //   if (index < 0 || index >= state.orderItems.length) return;
-//   //
-//   //   final item = state.orderItems[index];
-//   //   final frozenQty = state.getFrozenQuantity(item['id'].toString());
-//   //
-//   //   if (frozenQty > 0) {
-//   //     SnackBarUtil.showWarning(
-//   //       context,
-//   //       'Cannot remove - $frozenQty already sent to kitchen',
-//   //       title: 'Item Already Sent',
-//   //       duration: const Duration(seconds: 2),
-//   //     );
-//   //     return;
-//   //   }
-//   //
-//   //   _removeItem(state, index, context);
-//   // }
-//
-//   // void _updateItemQuantity(TableOrderState state, int index, int quantity) {
-//   //   final item = state.orderItems[index];
-//   //   final price = item['price'] as double;
-//   //   item['quantity'] = quantity;
-//   //   item['total_price'] = price * quantity;
-//   //   state.orderItems[index] = item;
-//   //   _updateTotal(state);
-//   // }
-//
-//   void _removeItem(TableOrderState state, int index, BuildContext context,
-//       {bool fromDecrement = false}) {
-//     final removedItem = state.orderItems.removeAt(index);
-//     _updateTotal(state);
-//     SnackBarUtil.showInfo(
-//       context,
-//       '${removedItem['item_name']} removed from order',
-//       title: 'Item Removed',
-//       duration: const Duration(seconds: 1),
-//     );
-//   }
-//
-//   // void _updateTotal(TableOrderState state) {
-//   //   state.finalCheckoutTotal.value = state.orderItems.fold<double>(
-//   //     0.0,
-//   //         (sum, item) => sum + (item['total_price'] as double),
-//   //   );
-//   // }
-//
-//   // Toggle urgent status
-//   // void toggleUrgentForTable(int tableId, BuildContext context, TableInfo? tableInfo) {
-//   //   final state = getTableState(tableId);
-//   //   state.isMarkAsUrgent.value = !state.isMarkAsUrgent.value;
-//   //   final tableNumber = tableInfo?.table.tableNumber ?? tableId.toString();
-//   //
-//   //   SnackBarUtil.show(
-//   //     context,
-//   //     state.isMarkAsUrgent.value
-//   //         ? 'Table $tableNumber marked as urgent'
-//   //         : 'Table $tableNumber removed from urgent',
-//   //     title: state.isMarkAsUrgent.value ? 'Marked as urgent' : 'Normal priority',
-//   //     type: state.isMarkAsUrgent.value ? SnackBarType.success : SnackBarType.info,
-//   //     duration: const Duration(seconds: 1),
-//   //   );
-//   //
-//   // }
-//
-//   // Send to chef
-//   Future<void> sendToChef(int tableId, BuildContext context,
-//       TableInfo? tableInfo, List<Map<String, dynamic>> orderItems) async {
-//     await _processOrder(
-//       tableId: tableId,
-//       context: context,
-//       tableInfo: tableInfo,
-//       orderItems: orderItems,
-//       destination: 'chef',
-//       successMessage: 'KOT sent to chef',
-//       errorMessage: 'Failed to send KOT to chef',
-//     );
-//   }
-//
-//   // Checkout
-//   Future<void> proceedToCheckout(int tableId, BuildContext context,
-//       TableInfo? tableInfo, List<Map<String, dynamic>> orderItems) async {
-//     await _processOrder(
-//       tableId: tableId,
-//       context: context,
-//       tableInfo: tableInfo,
-//       orderItems: orderItems,
-//       destination: 'manager',
-//       successMessage: 'KOT sent to manager',
-//       errorMessage: 'Failed to place order',
-//     );
-//   }
-//
-//   // Unified order processing
-//   Future<void> _processOrder({
-//     required int tableId,
-//     required BuildContext context,
-//     required TableInfo? tableInfo,
-//     required List<Map<String, dynamic>> orderItems,
-//     required String destination,
-//     required String successMessage,
-//     required String errorMessage,
-//   }) async {
-//     try {
-//       isLoading.value = true;
-//       final state = getTableState(tableId);
-//       final newItems = _getNewItems(state, orderItems);
-//
-//       // TODO: Replace with actual API call
-//       await Future.delayed(const Duration(seconds: 1));
-//
-//       _freezeItems(state, orderItems);
-//
-//       final tableNumber = tableInfo?.table.tableNumber ?? tableId.toString();
-//       SnackBarUtil.showSuccess(
-//         context,
-//         '$successMessage for Table $tableNumber',
-//         title: 'Success',
-//         duration: const Duration(seconds: 2),
-//       );
-//
-//       NavigationService.goBack();
-//     } catch (e) {
-//       developer.log('Order processing error: $e');
-//       SnackBarUtil.showError(
-//         context,
-//         errorMessage,
-//         title: 'Error',
-//         duration: const Duration(seconds: 2),
-//       );
-//     } finally {
-//       isLoading.value = false;
-//     }
-//   }
 //
 //   List<Map<String, dynamic>> _getNewItems(
 //       TableOrderState state, List<Map<String, dynamic>> items) {
@@ -375,20 +165,151 @@
 //     }
 //   }
 //
-//   // Navigation
-//   void navigateToAddItems(int tableId, TableInfo? tableInfo) {
-//     try {
-//       NavigationService.addItems(tableInfoToMap(tableInfo));
-//     } catch (e) {
-//       developer.log('Navigation error: $e');
-//       SnackBarUtil.showError(
-//         Get.context!,
-//         'Unable to proceed',
-//         title: 'Navigation Error',
-//         duration: const Duration(seconds: 1),
-//       );
+//   void addItemToTable(int tableId, Map<String, dynamic> item) {
+//     final state = getTableState(tableId);
+//     developer.log(
+//       'TRY ADD → table:$tableId id:${item['id']} name:${item['item_name']} qty:${item['quantity']} price:${item['price']}',
+//       name: 'ORDER_ADD',
+//     );
+//     if (item['id'] == null || item['id'] <= 0) {
+//       developer.log('❌ Invalid ID: ${item['id']}', name: 'ORDER_ADD');
+//       return;
 //     }
+//     if (item['quantity'] == null || item['quantity'] <= 0) {
+//       developer.log('❌ Invalid Quantity: ${item['quantity']}',
+//           name: 'ORDER_ADD');
+//       return;
+//     }
+//     state.orderItems.add(item);
+//     _updateTotal(state);
+//     developer.log('✅ ADDED → table:$tableId items:${state.orderItems.length}',
+//         name: 'ORDER_ADD');
+//     _logTableSnapshot(tableId, state);
 //   }
+//
+//   void incrementItemQuantity(int tableId, int index) {
+//     final state = getTableState(tableId);
+//     if (index < 0 || index >= state.orderItems.length) {
+//       developer.log('❌ Invalid index $index', name: 'ORDER_INC');
+//       return;
+//     }
+//     final item = state.orderItems[index];
+//     final newQty = (item['quantity'] as int) + 1;
+//     developer.log(
+//       'INC → table:$tableId index:$index id:${item['id']} name:${item['item_name']} from:${item['quantity']} to:$newQty',
+//       name: 'ORDER_INC',
+//     );
+//     _updateItemQuantity(state, index, newQty);
+//     _logTableSnapshot(tableId, state);
+//   }
+//
+//   void decrementItemQuantity(int tableId, int index, BuildContext context) {
+//     final state = getTableState(tableId);
+//     if (index < 0 || index >= state.orderItems.length) {
+//       developer.log('❌ Invalid index $index', name: 'ORDER_DEC');
+//       return;
+//     }
+//     final item = state.orderItems[index];
+//     final currentQty = item['quantity'] as int;
+//     final frozenQty = state.getFrozenQuantity(item['id'].toString());
+//
+//     developer.log(
+//       'DEC REQ → table:$tableId index:$index id:${item['id']} name:${item['item_name']} curr:$currentQty frozen:$frozenQty',
+//       name: 'ORDER_DEC',
+//     );
+//
+//     if (frozenQty == 0) {
+//       if (currentQty > 1) {
+//         _updateItemQuantity(state, index, currentQty - 1);
+//         developer.log('DEC OK → new:${currentQty - 1}', name: 'ORDER_DEC');
+//       } else {
+//         _removeItem(state, index, context, fromDecrement: true);
+//         developer.log(
+//             'REMOVED (qty→0) id:${item['id']} name:${item['item_name']}',
+//             name: 'ORDER_DEC');
+//       }
+//     } else {
+//       if (currentQty > frozenQty) {
+//         _updateItemQuantity(state, index, currentQty - 1);
+//         developer.log('DEC OK (>= frozen) new:${currentQty - 1}',
+//             name: 'ORDER_DEC');
+//       } else {
+//         developer.log('BLOCKED: cannot go below frozen ($frozenQty)',
+//             name: 'ORDER_DEC');
+//         SnackBarUtil.showWarning(
+//           context,
+//           'Cannot reduce below sent quantity ($frozenQty)',
+//           title: 'Item Already Sent',
+//           duration: const Duration(seconds: 2),
+//         );
+//       }
+//     }
+//     _logTableSnapshot(tableId, state);
+//   }
+//
+//   void removeItemFromTable(int tableId, int index, BuildContext context) {
+//     final state = getTableState(tableId);
+//     if (index < 0 || index >= state.orderItems.length) {
+//       developer.log('❌ Invalid index $index', name: 'REMOVE_ITEM');
+//       return;
+//     }
+//     final item = state.orderItems[index];
+//     final frozenQty = state.getFrozenQuantity(item['id'].toString());
+//     if (frozenQty > 0) {
+//       developer.log(
+//           'BLOCKED REMOVE → id:${item['id']} name:${item['item_name']} frozen:$frozenQty',
+//           name: 'REMOVE_ITEM');
+//       SnackBarUtil.showWarning(
+//         context,
+//         'Cannot remove - $frozenQty already sent to kitchen',
+//         title: 'Item Already Sent',
+//         duration: const Duration(seconds: 2),
+//       );
+//       return;
+//     }
+//     _removeItem(state, index, context);
+//     developer.log(
+//         'REMOVED → table:$tableId id:${item['id']} name:${item['item_name']}',
+//         name: 'REMOVE_ITEM');
+//     _logTableSnapshot(tableId, state);
+//   }
+//
+//   void _removeItem(TableOrderState state, int index, BuildContext context,
+//       {bool fromDecrement = false}) {
+//     final removedItem = state.orderItems.removeAt(index);
+//     _updateTotal(state);
+//     SnackBarUtil.showInfo(
+//       context,
+//       '${removedItem['item_name']} removed from order',
+//       title: 'Item Removed',
+//       duration: const Duration(seconds: 1),
+//     );
+//   }
+//
+//   void _updateItemQuantity(TableOrderState state, int index, int quantity) {
+//     final item = state.orderItems[index];
+//     final price = item['price'] as double;
+//     item['quantity'] = quantity;
+//     item['total_price'] = price * quantity;
+//     state.orderItems[index] = item;
+//     developer.log(
+//       'QTY UPDATE → id:${item['id']} name:${item['item_name']} qty:$quantity total:${item['total_price']}',
+//       name: 'UPDATE_QTY',
+//     );
+//     _updateTotal(state);
+//   }
+//
+//   void _updateTotal(TableOrderState state) {
+//     final newTotal = state.orderItems.fold<double>(
+//       0.0,
+//       (sum, item) => sum + (item['total_price'] as double),
+//     );
+//     state.finalCheckoutTotal.value = newTotal;
+//     developer.log('TOTAL UPDATE → table:${state.tableId} total:₹$newTotal',
+//         name: 'UPDATE_TOTAL');
+//   }
+//
+//
 //
 //   Map<String, dynamic>? tableInfoToMap(TableInfo? tableInfo) {
 //     if (tableInfo == null) return null;
@@ -421,163 +342,112 @@
 //     }
 //   }
 //
-//   void addItemToTable(int tableId, Map<String, dynamic> item) {
-//     final state = getTableState(tableId);
-//
-//     developer.log("Add item to table $tableId", name: "ADD_ITEM");
-//
-//     if (item['id'] == null || item['id'] <= 0) {
-//       developer.log("Invalid ID: ${item['id']}", name: "ADD_ITEM");
-//       return;
+//   // Helper for logging a full snapshot of orderItems + frozen quantities + total
+//   void _logTableSnapshot(int tableId, TableOrderState state) {
+//     final buffer = StringBuffer();
+//     buffer.writeln('TABLE SNAPSHOT → table:$tableId');
+//     for (var i = 0; i < state.orderItems.length; i++) {
+//       final it = state.orderItems[i];
+//       final frozen = state.getFrozenQuantity(it['id'].toString());
+//       buffer.writeln(
+//         '[$i] id:${it['id']} name:${it['item_name']} qty:${it['quantity']} frozen:$frozen total:${it['total_price']}',
+//       );
 //     }
-//
-//     if (item['quantity'] == null || item['quantity'] <= 0) {
-//       developer.log("Invalid Quantity: ${item['quantity']}", name: "ADD_ITEM");
-//       return;
-//     }
-//
-//     state.orderItems.add(item);
-//     _updateTotal(state);
-//
-//     developer.log("Item added. Total items: ${state.orderItems.length}",
-//         name: "ADD_ITEM");
+//     buffer.writeln('FINAL TOTAL: ${state.finalCheckoutTotal.value}');
+//     developer.log(buffer.toString(), name: 'ORDER_STATE');
 //   }
 //
-//   void incrementItemQuantity(int tableId, int index) {
-//     final state = getTableState(tableId);
+//   // Add this helper method to convert Map back to TableInfo
+//   TableInfo? mapToTableInfo(Map<String, dynamic>? map) {
+//     if (map == null) return null;
 //
-//     if (index < 0 || index >= state.orderItems.length) {
-//       developer.log("Invalid index $index", name: "INCREMENT_ITEM");
-//       return;
-//     }
-//
-//     final item = state.orderItems[index];
-//     final newQty = (item['quantity'] as int) + 1;
-//
-//     developer.log("Incrementing item ${item['item_name']} to $newQty",
-//         name: "INCREMENT_ITEM");
-//
-//     _updateItemQuantity(state, index, newQty);
-//   }
-//
-//   void decrementItemQuantity(int tableId, int index, BuildContext context) {
-//     final state = getTableState(tableId);
-//
-//     if (index < 0 || index >= state.orderItems.length) {
-//       developer.log("Invalid index $index", name: "DECREMENT");
-//       return;
-//     }
-//
-//     final item = state.orderItems[index];
-//     final currentQty = item['quantity'] as int;
-//     final frozenQty = state.getFrozenQuantity(item['id'].toString());
-//
-//     if (frozenQty == 0) {
-//       if (currentQty > 1) {
-//         _updateItemQuantity(state, index, currentQty - 1);
-//         developer.log("Decreased ${item['item_name']} to ${currentQty - 1}",
-//             name: "DECREMENT");
-//       } else {
-//         _removeItem(state, index, context, fromDecrement: true);
-//         developer.log("Removed item ${item['item_name']}", name: "DECREMENT");
-//       }
-//     } else {
-//       if (currentQty > frozenQty) {
-//         _updateItemQuantity(state, index, currentQty - 1);
-//         developer.log("Decreased item but not below frozen level",
-//             name: "DECREMENT");
-//       } else {
-//         developer.log("Cannot reduce below frozen qty ($frozenQty)",
-//             name: "DECREMENT");
-//       }
+//     try {
+//       return TableInfo(
+//         table: Table(
+//           id: map['id'] as int,
+//           hotelOwnerId: map['hotelOwnerId'] as int,
+//           tableAreaId: map['tableAreaId'] as int,
+//           tableNumber: map['tableNumber'] as String,
+//           tableType: map['tableType'] as String,
+//           capacity: map['capacity'] as int,
+//           status: map['status'] as String,
+//           description: map['description'] as String?,
+//           location: map['location'] as String?,
+//           createdAt: map['createdAt'] as String,
+//           updatedAt: map['updatedAt'] as String,
+//         ),
+//         currentOrder: map['currentOrder'] != null
+//             ? CurrentOrder.fromJson(map['currentOrder'] as Map<String, dynamic>)
+//             : null,
+//         areaName: map['areaName'] as String,
+//       );
+//     } catch (e) {
+//       developer.log('Error converting map to TableInfo: $e',
+//           name: 'MAP_CONVERSION');
+//       return null;
 //     }
 //   }
 //
-//   void removeItemFromTable(int tableId, int index, BuildContext context) {
-//     final state = getTableState(tableId);
+// // Update the methods that receive tableInfo as dynamic/Object
+//   Future<void> sendToChef(
+//     int tableId,
+//     BuildContext context,
+//     dynamic tableInfoData, // Change from TableInfo? to dynamic
+//     List<Map<String, dynamic>> orderItems,
+//   ) async {
+//     // Convert if it's a Map
+//     final TableInfo? tableInfo = tableInfoData is Map<String, dynamic>
+//         ? mapToTableInfo(tableInfoData)
+//         : tableInfoData as TableInfo?;
 //
-//     if (index < 0 || index >= state.orderItems.length) {
-//       developer.log("Invalid index $index", name: "REMOVE_ITEM");
-//       return;
-//     }
-//
-//     final item = state.orderItems[index];
-//     final frozenQty = state.getFrozenQuantity(item['id'].toString());
-//
-//     if (frozenQty > 0) {
-//       developer.log("Cannot remove. $frozenQty items frozen.",
-//           name: "REMOVE_ITEM");
-//       return;
-//     }
-//
-//     _removeItem(state, index, context);
-//     developer.log("Item removed: ${item['item_name']}", name: "REMOVE_ITEM");
-//   }
-//
-//   void _updateItemQuantity(TableOrderState state, int index, int quantity) {
-//     final item = state.orderItems[index];
-//     final price = item['price'] as double;
-//
-//     item['quantity'] = quantity;
-//     item['total_price'] = price * quantity;
-//     state.orderItems[index] = item;
-//
-//     developer.log(
-//       "Updated qty: ${item['item_name']} -> $quantity, total: ${item['total_price']}",
-//       name: "UPDATE_QTY",
+//     await _processOrder(
+//       tableId: tableId,
+//       context: context,
+//       tableInfo: tableInfo,
+//       orderItems: orderItems,
+//       destination: 'chef',
+//       successMessage: 'KOT sent to chef',
+//       errorMessage: 'Failed to send KOT to chef',
 //     );
-//
-//     _updateTotal(state);
 //   }
 //
-//   void _updateTotal(TableOrderState state) {
-//     final newTotal = state.orderItems.fold<double>(
-//       0.0,
-//       (sum, item) => sum + (item['total_price'] as double),
+//   Future<void> proceedToCheckout(
+//     int tableId,
+//     BuildContext context,
+//     dynamic tableInfoData, // Change from TableInfo? to dynamic
+//     List<Map<String, dynamic>> orderItems,
+//   ) async {
+//     // Convert if it's a Map
+//     final TableInfo? tableInfo = tableInfoData is Map<String, dynamic>
+//         ? mapToTableInfo(tableInfoData)
+//         : tableInfoData as TableInfo?;
+//
+//     await _processOrder(
+//       tableId: tableId,
+//       context: context,
+//       tableInfo: tableInfo,
+//       orderItems: orderItems,
+//       destination: 'manager',
+//       successMessage: 'KOT sent to manager',
+//       errorMessage: 'Failed to place order',
 //     );
-//
-//     state.finalCheckoutTotal.value = newTotal;
-//
-//     developer.log("Updated table total → ₹$newTotal", name: "UPDATE_TOTAL");
-//   }
-//
-//   TableOrderState getTableState(int tableId) {
-//     final state = tableOrders.putIfAbsent(
-//       tableId,
-//       () => TableOrderState(tableId: tableId),
-//     );
-//
-//     developer.log("Table loaded ($tableId). Items: ${state.orderItems.length}",
-//         name: "TABLE_STATE");
-//
-//     return state;
-//   }
-//
-//   void setActiveTable(int tableId, TableInfo? tableInfo) {
-//     activeTableId.value = tableId;
-//     final state = getTableState(tableId);
-//
-//     final orderId = tableInfo?.currentOrder?.orderId ?? 0;
-//     if (orderId > 0 && !state.hasLoadedOrder.value) {
-//       developer.log("Loading existing order $orderId for table $tableId",
-//           name: "ACTIVE_TABLE");
-//       fetchExistingOrder(orderId, tableId);
-//     }
 //   }
 //
 //   void toggleUrgentForTable(
-//       int tableId, BuildContext context, TableInfo? tableInfo) {
+//     int tableId,
+//     BuildContext context,
+//     dynamic tableInfoData, // Change from TableInfo? to dynamic
+//   ) {
+//     // Convert if it's a Map
+//     final TableInfo? tableInfo = tableInfoData is Map<String, dynamic>
+//         ? mapToTableInfo(tableInfoData)
+//         : tableInfoData as TableInfo?;
+//
 //     final state = getTableState(tableId);
-//
 //     state.isMarkAsUrgent.value = !state.isMarkAsUrgent.value;
-//
-//     developer.log(
-//       "Urgent status changed: ${state.isMarkAsUrgent.value}",
-//       name: "URGENT",
-//     );
-//
+//     developer.log('Urgent status changed: ${state.isMarkAsUrgent.value}',
+//         name: 'URGENT');
 //     final tableNumber = tableInfo?.table.tableNumber ?? tableId.toString();
-//
 //     SnackBarUtil.show(
 //       context,
 //       state.isMarkAsUrgent.value
@@ -590,10 +460,168 @@
 //       duration: const Duration(seconds: 1),
 //     );
 //   }
+//
+//   void navigateToAddItems(int tableId, dynamic tableInfoData) {
+//     try {
+//       // If it's already a TableInfo, convert to Map
+//       final Map<String, dynamic>? tableMap = tableInfoData is TableInfo
+//           ? tableInfoToMap(tableInfoData)
+//           : (tableInfoData as Map<String, dynamic>?);
+//
+//       NavigationService.addItems(tableMap);
+//     } catch (e) {
+//       developer.log('Navigation error: $e');
+//       SnackBarUtil.showError(
+//         Get.context!,
+//         'Unable to proceed',
+//         title: 'Navigation Error',
+//         duration: const Duration(seconds: 1),
+//       );
+//     }
+//   }
+//
+//   void setActiveTable(int tableId, dynamic tableInfoData) {
+//     // Convert if it's a Map
+//     final TableInfo? tableInfo = tableInfoData is Map<String, dynamic>
+//         ? mapToTableInfo(tableInfoData)
+//         : tableInfoData as TableInfo?;
+//
+//     activeTableId.value = tableId;
+//     final state = getTableState(tableId);
+//     final orderId = tableInfo?.currentOrder?.orderId ?? 0;
+//     if (orderId > 0 && !state.hasLoadedOrder.value) {
+//       developer.log("Loading existing order $orderId for table $tableId",
+//           name: "ACTIVE_TABLE");
+//       fetchOrder(orderId, tableId);
+//     }
+//   }
+//
+// // Unified order processing
+//   Future<void> _processOrder({
+//     required int tableId,
+//     required BuildContext context,
+//     required TableInfo? tableInfo,
+//     required List<Map<String, dynamic>> orderItems,
+//     required String destination,
+//     required String successMessage,
+//     required String errorMessage,
+//   }) async {
+//     try {
+//       isLoading.value = true;
+//       final state = getTableState(tableId);
+//
+//       // Validate customer details
+//       if (state.fullNameController.text.trim().isEmpty) {
+//         SnackBarUtil.showError(
+//           context,
+//           'Please enter customer name',
+//           title: 'Validation Error',
+//           duration: const Duration(seconds: 2),
+//         );
+//         isLoading.value = false;
+//         return;
+//       }
+//
+//       if (state.phoneController.text.trim().isEmpty) {
+//         SnackBarUtil.showError(
+//           context,
+//           'Please enter customer phone',
+//           title: 'Validation Error',
+//           duration: const Duration(seconds: 2),
+//         );
+//         isLoading.value = false;
+//         return;
+//       }
+//
+//       // Get new items only (not frozen ones)
+//       final newItems = _getNewItems(state, orderItems);
+//
+//       if (newItems.isEmpty) {
+//         SnackBarUtil.showWarning(
+//           context,
+//           'No new items to send. All items already sent to kitchen',
+//           title: 'Warning',
+//           duration: const Duration(seconds: 2),
+//         );
+//         isLoading.value = false;
+//         return;
+//       }
+//
+//       // Build request body
+//       final request = CreateOrderRequest(
+//         orderData: OrderData(
+//           hotelTableId: tableInfo?.table.id ?? tableId,
+//           customerName: state.fullNameController.text.trim(),
+//           customerPhone: state.phoneController.text.trim(),
+//           tableNumber: (tableInfo?.table.tableNumber ?? tableId).toString(),
+//           status: 'pending',
+//         ),
+//         items: newItems
+//             .map((item) => OrderItemRequest(
+//                   menuItemId: item['id'] as int,
+//                   quantity: item['quantity'] as int,
+//                   specialInstructions: item['special_instructions'] as String?,
+//                 ))
+//             .toList(),
+//       );
+//
+//       developer.log(
+//         'Sending order request: ${request.toJson()}',
+//         name: 'ORDER_API',
+//       );
+//
+//       // Make API call
+//       final response = await ApiService.post<OrderResponseModel>(
+//         endpoint: ApiConstants.waiterPostCreateOrder,
+//         body: request.toJson(),
+//         fromJson: (json) => OrderResponseModel.fromJson(json),
+//         includeToken: true,
+//       );
+//
+//       if (response.success && response.data != null) {
+//         // Freeze the items after successful API call
+//         _freezeItems(state, orderItems);
+//
+//         final tableNumber = tableInfo?.table.tableNumber ?? tableId.toString();
+//
+//         SnackBarUtil.showSuccess(
+//           context,
+//           '$successMessage for Table $tableNumber',
+//           title: 'Success',
+//           duration: const Duration(seconds: 2),
+//         );
+//
+//         developer.log(
+//           'Order sent successfully. Order ID: ${response.data?.data.order.id}',
+//           name: 'ORDER_API',
+//         );
+//
+//         final controller = Get.find<TakeOrdersController>();
+//         controller.refreshTables();
+//
+//         // Navigate back on success
+//         NavigationService.goBack();
+//       } else {
+//         throw Exception(response.errorMessage ?? 'Failed to process order');
+//       }
+//     } catch (e) {
+//       developer.log('Order processing error: $e', name: 'ORDER_API');
+//       SnackBarUtil.showError(
+//         context,
+//         errorMessage,
+//         title: 'Error',
+//         duration: const Duration(seconds: 2),
+//       );
+//     } finally {
+//       isLoading.value = false;
+//     }
+//   }
 // }
+
 
 import 'package:flutter/material.dart' hide Table;
 import 'package:get/get.dart';
+import 'package:hotelbilling/app/modules/controllers/WaiterPanelController/take_order_controller.dart';
 import 'dart:developer' as developer;
 import '../../../core/constants/api_constant.dart';
 import '../../../core/services/api_service.dart';
@@ -602,14 +630,8 @@ import '../../../data/models/RequestModel/create_order_request.dart';
 import '../../../data/models/ResponseModel/order_model.dart' hide OrderData;
 import '../../../data/models/ResponseModel/table_model.dart';
 import '../../../route/app_routes.dart';
+import '../../model/froze_model.dart';
 
-class FrozenItem {
-  final String id;
-  final String name;
-  final int quantity;
-
-  FrozenItem({required this.id, required this.name, required this.quantity});
-}
 
 class TableOrderState {
   final int tableId;
@@ -619,6 +641,7 @@ class TableOrderState {
   final finalCheckoutTotal = 0.0.obs;
   final isLoadingOrder = false.obs;
   final hasLoadedOrder = false.obs;
+  final placedOrderId = Rxn<int>(); // Store the placed order ID
   final fullNameController = TextEditingController();
   final phoneController = TextEditingController();
 
@@ -637,16 +660,17 @@ class TableOrderState {
     finalCheckoutTotal.value = 0.0;
     isMarkAsUrgent.value = false;
     hasLoadedOrder.value = false;
+    placedOrderId.value = null;
   }
 
   int getFrozenQuantity(String itemId) {
-    return frozenItems
-            .firstWhereOrNull((item) => item.id == itemId)
-            ?.quantity ??
-        0;
+    return frozenItems.firstWhereOrNull((item) => item.id == itemId)?.quantity ?? 0;
   }
 
   bool get hasFrozenItems => frozenItems.isNotEmpty;
+
+  // Check if this is a reorder scenario (order already exists)
+  bool get isReorderScenario => placedOrderId.value != null && placedOrderId.value! > 0;
 }
 
 class OrderManagementController extends GetxController {
@@ -671,24 +695,15 @@ class OrderManagementController extends GetxController {
   TableOrderState getTableState(int tableId) {
     final state = tableOrders.putIfAbsent(
       tableId,
-      () => TableOrderState(tableId: tableId),
+          () => TableOrderState(tableId: tableId),
     );
     developer.log("Table loaded ($tableId). Items: ${state.orderItems.length}",
         name: "TABLE_STATE");
     return state;
   }
 
-  // void setActiveTable(int tableId, TableInfo? tableInfo) {
-  //   activeTableId.value = tableId;
-  //   final state = getTableState(tableId);
-  //   final orderId = tableInfo?.currentOrder?.orderId ?? 0;
-  //   if (orderId > 0 && !state.hasLoadedOrder.value) {
-  //     developer.log("Loading existing order $orderId for table $tableId", name: "ACTIVE_TABLE");
-  //     fetchExistingOrder(orderId, tableId);
-  //   }
-  // }
 
-  Future<void> fetchExistingOrder(int orderId, int tableId) async {
+  Future<void> fetchOrder(int orderId, int tableId) async {
     final state = getTableState(tableId);
     if (state.hasLoadedOrder.value || orderId <= 0) {
       state.hasLoadedOrder.value = true;
@@ -703,6 +718,10 @@ class OrderManagementController extends GetxController {
       );
       if (response.success && response.data != null) {
         final orderData = response.data!;
+
+        // Store the placed order ID for reorder scenario
+        state.placedOrderId.value = orderData.data.order.id;
+
         state.fullNameController.text = orderData.data.order.customerName ?? '';
         state.phoneController.text = orderData.data.order.customerPhone ?? '';
         state.orderItems.clear();
@@ -718,7 +737,8 @@ class OrderManagementController extends GetxController {
         }
         _updateTotal(state);
         developer.log(
-            'Loaded ${orderData.data.items.length} items for table $tableId');
+            'Loaded ${orderData.data.items.length} items for table $tableId. Order ID: ${state.placedOrderId.value}',
+            name: 'FETCH_ORDER');
       }
     } catch (e) {
       developer.log('Error fetching order: $e');
@@ -735,75 +755,6 @@ class OrderManagementController extends GetxController {
     }
   }
 
-  // Send to chef
-  // Future<void> sendToChef(int tableId, BuildContext context,
-  //     TableInfo? tableInfo, List<Map<String, dynamic>> orderItems) async {
-  //   await _processOrder(
-  //     tableId: tableId,
-  //     context: context,
-  //     tableInfo: tableInfo,
-  //     orderItems: orderItems,
-  //     destination: 'chef',
-  //     successMessage: 'KOT sent to chef',
-  //     errorMessage: 'Failed to send KOT to chef',
-  //   );
-  // }
-
-  // Checkout
-  // Future<void> proceedToCheckout(int tableId, BuildContext context,
-  //     TableInfo? tableInfo, List<Map<String, dynamic>> orderItems) async {
-  //   await _processOrder(
-  //     tableId: tableId,
-  //     context: context,
-  //     tableInfo: tableInfo,
-  //     orderItems: orderItems,
-  //     destination: 'manager',
-  //     successMessage: 'KOT sent to manager',
-  //     errorMessage: 'Failed to place order',
-  //   );
-  // }
-
-  // Unified order processing
-  // Future<void> _processOrder({
-  //   required int tableId,
-  //   required BuildContext context,
-  //   required TableInfo? tableInfo,
-  //   required List<Map<String, dynamic>> orderItems,
-  //   required String destination,
-  //   required String successMessage,
-  //   required String errorMessage,
-  // }) async {
-  //   try {
-  //     isLoading.value = true;
-  //     final state = getTableState(tableId);
-  //     final newItems = _getNewItems(state, orderItems);
-  //
-  //     // TODO: Replace with actual API call
-  //     await Future.delayed(const Duration(seconds: 1));
-  //
-  //     _freezeItems(state, orderItems);
-  //
-  //     final tableNumber = tableInfo?.table.tableNumber ?? tableId.toString();
-  //     SnackBarUtil.showSuccess(
-  //       context,
-  //       '$successMessage for Table $tableNumber',
-  //       title: 'Success',
-  //       duration: const Duration(seconds: 2),
-  //     );
-  //
-  //     NavigationService.goBack();
-  //   } catch (e) {
-  //     developer.log('Order processing error: $e');
-  //     SnackBarUtil.showError(
-  //       context,
-  //       errorMessage,
-  //       title: 'Error',
-  //       duration: const Duration(seconds: 2),
-  //     );
-  //   } finally {
-  //     isLoading.value = false;
-  //   }
-  // }
 
   List<Map<String, dynamic>> _getNewItems(
       TableOrderState state, List<Map<String, dynamic>> items) {
@@ -981,42 +932,14 @@ class OrderManagementController extends GetxController {
   void _updateTotal(TableOrderState state) {
     final newTotal = state.orderItems.fold<double>(
       0.0,
-      (sum, item) => sum + (item['total_price'] as double),
+          (sum, item) => sum + (item['total_price'] as double),
     );
     state.finalCheckoutTotal.value = newTotal;
     developer.log('TOTAL UPDATE → table:${state.tableId} total:₹$newTotal',
         name: 'UPDATE_TOTAL');
   }
 
-  // void toggleUrgentForTable(int tableId, BuildContext context, TableInfo? tableInfo) {
-  //   final state = getTableState(tableId);
-  //   state.isMarkAsUrgent.value = !state.isMarkAsUrgent.value;
-  //   developer.log('Urgent status changed: ${state.isMarkAsUrgent.value}', name: 'URGENT');
-  //   final tableNumber = tableInfo?.table.tableNumber ?? tableId.toString();
-  //   SnackBarUtil.show(
-  //     context,
-  //     state.isMarkAsUrgent.value
-  //         ? 'Table $tableNumber marked as urgent'
-  //         : 'Table $tableNumber removed from urgent',
-  //     title: state.isMarkAsUrgent.value ? 'Marked as urgent' : 'Normal priority',
-  //     type: state.isMarkAsUrgent.value ? SnackBarType.success : SnackBarType.info,
-  //     duration: const Duration(seconds: 1),
-  //   );
-  // }
 
-  // void navigateToAddItems(int tableId, TableInfo? tableInfo) {
-  //   try {
-  //     NavigationService.addItems(tableInfoToMap(tableInfo));
-  //   } catch (e) {
-  //     developer.log('Navigation error: $e');
-  //     SnackBarUtil.showError(
-  //       Get.context!,
-  //       'Unable to proceed',
-  //       title: 'Navigation Error',
-  //       duration: const Duration(seconds: 1),
-  //     );
-  //   }
-  // }
 
   Map<String, dynamic>? tableInfoToMap(TableInfo? tableInfo) {
     if (tableInfo == null) return null;
@@ -1049,7 +972,6 @@ class OrderManagementController extends GetxController {
     }
   }
 
-  // Helper for logging a full snapshot of orderItems + frozen quantities + total
   void _logTableSnapshot(int tableId, TableOrderState state) {
     final buffer = StringBuffer();
     buffer.writeln('TABLE SNAPSHOT → table:$tableId');
@@ -1064,7 +986,6 @@ class OrderManagementController extends GetxController {
     developer.log(buffer.toString(), name: 'ORDER_STATE');
   }
 
-  // Add this helper method to convert Map back to TableInfo
   TableInfo? mapToTableInfo(Map<String, dynamic>? map) {
     if (map == null) return null;
 
@@ -1095,36 +1016,13 @@ class OrderManagementController extends GetxController {
     }
   }
 
-// Update the methods that receive tableInfo as dynamic/Object
-  Future<void> sendToChef(
-    int tableId,
-    BuildContext context,
-    dynamic tableInfoData, // Change from TableInfo? to dynamic
-    List<Map<String, dynamic>> orderItems,
-  ) async {
-    // Convert if it's a Map
-    final TableInfo? tableInfo = tableInfoData is Map<String, dynamic>
-        ? mapToTableInfo(tableInfoData)
-        : tableInfoData as TableInfo?;
-
-    await _processOrder(
-      tableId: tableId,
-      context: context,
-      tableInfo: tableInfo,
-      orderItems: orderItems,
-      destination: 'chef',
-      successMessage: 'KOT sent to chef',
-      errorMessage: 'Failed to send KOT to chef',
-    );
-  }
 
   Future<void> proceedToCheckout(
-    int tableId,
-    BuildContext context,
-    dynamic tableInfoData, // Change from TableInfo? to dynamic
-    List<Map<String, dynamic>> orderItems,
-  ) async {
-    // Convert if it's a Map
+      int tableId,
+      BuildContext context,
+      dynamic tableInfoData,
+      List<Map<String, dynamic>> orderItems,
+      ) async {
     final TableInfo? tableInfo = tableInfoData is Map<String, dynamic>
         ? mapToTableInfo(tableInfoData)
         : tableInfoData as TableInfo?;
@@ -1141,11 +1039,10 @@ class OrderManagementController extends GetxController {
   }
 
   void toggleUrgentForTable(
-    int tableId,
-    BuildContext context,
-    dynamic tableInfoData, // Change from TableInfo? to dynamic
-  ) {
-    // Convert if it's a Map
+      int tableId,
+      BuildContext context,
+      dynamic tableInfoData,
+      ) {
     final TableInfo? tableInfo = tableInfoData is Map<String, dynamic>
         ? mapToTableInfo(tableInfoData)
         : tableInfoData as TableInfo?;
@@ -1161,16 +1058,15 @@ class OrderManagementController extends GetxController {
           ? 'Table $tableNumber marked as urgent'
           : 'Table $tableNumber removed from urgent',
       title:
-          state.isMarkAsUrgent.value ? 'Marked as urgent' : 'Normal priority',
+      state.isMarkAsUrgent.value ? 'Marked as urgent' : 'Normal priority',
       type:
-          state.isMarkAsUrgent.value ? SnackBarType.success : SnackBarType.info,
+      state.isMarkAsUrgent.value ? SnackBarType.success : SnackBarType.info,
       duration: const Duration(seconds: 1),
     );
   }
 
   void navigateToAddItems(int tableId, dynamic tableInfoData) {
     try {
-      // If it's already a TableInfo, convert to Map
       final Map<String, dynamic>? tableMap = tableInfoData is TableInfo
           ? tableInfoToMap(tableInfoData)
           : (tableInfoData as Map<String, dynamic>?);
@@ -1188,7 +1084,6 @@ class OrderManagementController extends GetxController {
   }
 
   void setActiveTable(int tableId, dynamic tableInfoData) {
-    // Convert if it's a Map
     final TableInfo? tableInfo = tableInfoData is Map<String, dynamic>
         ? mapToTableInfo(tableInfoData)
         : tableInfoData as TableInfo?;
@@ -1199,11 +1094,92 @@ class OrderManagementController extends GetxController {
     if (orderId > 0 && !state.hasLoadedOrder.value) {
       developer.log("Loading existing order $orderId for table $tableId",
           name: "ACTIVE_TABLE");
-      fetchExistingOrder(orderId, tableId);
+      fetchOrder(orderId, tableId);
     }
   }
 
-// Unified order processing
+  // NEW: Add items to existing order (Reorder API)
+  Future<void> _addItemsToExistingOrder({
+    required int placedOrderId,
+    required int tableId,
+    required BuildContext context,
+    required TableInfo? tableInfo,
+    required List<Map<String, dynamic>> newItems,
+  }) async {
+    try {
+      // Build reorder request body
+      final requestBody = {
+        "items": newItems.map((item) {
+          final reorderItem = {
+            "menu_item_id": item['id'] as int,
+            "quantity": item['quantity'] as int,
+          };
+
+          // Add special_instructions only if it exists and is not empty
+          if (item['special_instructions'] != null &&
+              item['special_instructions'].toString().trim().isNotEmpty) {
+            reorderItem['special_instructions'] = item['special_instructions'] as int;
+          }
+
+          return reorderItem;
+        }).toList(),
+      };
+
+      developer.log(
+        'Reorder request for Order ID $placedOrderId: $requestBody',
+        name: 'REORDER_API',
+      );
+
+      // Make API call to add items to existing order
+      final response = await ApiService.post<OrderResponseModel>(
+        endpoint: ApiConstants.waiterPostReorder(placedOrderId),
+        body: requestBody,
+        fromJson: (json) => OrderResponseModel.fromJson(json),
+        includeToken: true,
+      );
+
+      if (response.success && response.data != null) {
+        final state = getTableState(tableId);
+
+        // Freeze the newly added items
+        _freezeItems(state, state.orderItems);
+
+        final tableNumber = tableInfo?.table.tableNumber ?? tableId.toString();
+
+        SnackBarUtil.showSuccess(
+          context,
+          'Items added to existing order for Table $tableNumber',
+          title: 'Success',
+          duration: const Duration(seconds: 2),
+        );
+
+        developer.log(
+          'Items added successfully to Order ID: $placedOrderId',
+          name: 'REORDER_API',
+        );
+
+        // Refresh tables
+        final controller = Get.find<TakeOrdersController>();
+        controller.refreshTables();
+
+        // Navigate back
+        NavigationService.goBack();
+      } else {
+        throw Exception(response.errorMessage ?? 'Failed to add items to order');
+      }
+    } catch (e) {
+      developer.log('Reorder error: $e', name: 'REORDER_API');
+      SnackBarUtil.showError(
+        context,
+        'Failed to add items to existing order',
+        title: 'Error',
+        duration: const Duration(seconds: 2),
+      );
+      rethrow;
+    }
+  }
+
+  // UPDATED: Unified order processing with reorder logic
   Future<void> _processOrder({
     required int tableId,
     required BuildContext context,
@@ -1254,59 +1230,85 @@ class OrderManagementController extends GetxController {
         return;
       }
 
-      // Build request body
-      final request = CreateOrderRequest(
-        orderData: OrderData(
-          hotelTableId: tableInfo?.table.id ?? tableId,
-          customerName: state.fullNameController.text.trim(),
-          customerPhone: state.phoneController.text.trim(),
-          tableNumber: (tableInfo?.table.tableNumber ?? tableId).toString(),
-          status: 'pending',
-        ),
-        items: newItems
-            .map((item) => OrderItemRequest(
-                  menuItemId: item['id'] as int,
-                  quantity: item['quantity'] as int,
-                  specialInstructions: item['special_instructions'] as String?,
-                ))
-            .toList(),
-      );
+      // DECISION: Check if this is a reorder scenario
+      if (state.isReorderScenario) {
+        // Use reorder API for existing orders
+        developer.log(
+          'Reorder scenario detected. Using reorder API for Order ID: ${state.placedOrderId.value}',
+          name: 'ORDER_ROUTING',
+        );
 
-      developer.log(
-        'Sending order request: ${request.toJson()}',
-        name: 'ORDER_API',
-      );
+        await _addItemsToExistingOrder(
+          placedOrderId: state.placedOrderId.value!,
+          tableId: tableId,
+          context: context,
+          tableInfo: tableInfo,
+          newItems: newItems,
+        );
+      } else {
+        // Use create order API for new orders
+        developer.log(
+          'New order scenario detected. Using create order API',
+          name: 'ORDER_ROUTING',
+        );
 
-      // Make API call
-      final response = await ApiService.post<OrderResponseModel>(
-        endpoint: ApiConstants.waiterPostCreateOrder,
-        body: request.toJson(),
-        fromJson: (json) => OrderResponseModel.fromJson(json),
-        includeToken: true,
-      );
-
-      if (response.success && response.data != null) {
-        // Freeze the items after successful API call
-        _freezeItems(state, orderItems);
-
-        final tableNumber = tableInfo?.table.tableNumber ?? tableId.toString();
-
-        SnackBarUtil.showSuccess(
-          context,
-          '$successMessage for Table $tableNumber',
-          title: 'Success',
-          duration: const Duration(seconds: 2),
+        final request = CreateOrderRequest(
+          orderData: OrderData(
+            hotelTableId: tableInfo?.table.id ?? tableId,
+            customerName: state.fullNameController.text.trim(),
+            customerPhone: state.phoneController.text.trim(),
+            tableNumber: (tableInfo?.table.tableNumber ?? tableId).toString(),
+            status: 'pending',
+          ),
+          items: newItems
+              .map((item) => OrderItemRequest(
+            menuItemId: item['id'] as int,
+            quantity: item['quantity'] as int,
+            specialInstructions: item['special_instructions'] as String?,
+          ))
+              .toList(),
         );
 
         developer.log(
-          'Order sent successfully. Order ID: ${response.data?.data.order.id}',
+          'Create order request: ${request.toJson()}',
           name: 'ORDER_API',
         );
 
-        // Navigate back on success
-        NavigationService.goBack();
-      } else {
-        throw Exception(response.errorMessage ?? 'Failed to process order');
+        final response = await ApiService.post<OrderResponseModel>(
+          endpoint: ApiConstants.waiterPostCreateOrder,
+          body: request.toJson(),
+          fromJson: (json) => OrderResponseModel.fromJson(json),
+          includeToken: true,
+        );
+
+        if (response.success && response.data != null) {
+          // Store the placed order ID for future reorders
+          state.placedOrderId.value = response.data!.data.order.id;
+
+          // Freeze the items after successful API call
+          _freezeItems(state, orderItems);
+
+          final tableNumber = tableInfo?.table.tableNumber ?? tableId.toString();
+
+          SnackBarUtil.showSuccess(
+            context,
+            '$successMessage for Table $tableNumber',
+            title: 'Success',
+            duration: const Duration(seconds: 2),
+          );
+
+          developer.log(
+            'Order created successfully. Order ID: ${state.placedOrderId.value}',
+            name: 'ORDER_API',
+          );
+
+          final controller = Get.find<TakeOrdersController>();
+          controller.refreshTables();
+
+          NavigationService.goBack();
+        } else {
+          throw Exception(response.errorMessage ?? 'Failed to process order');
+        }
       }
     } catch (e) {
       developer.log('Order processing error: $e', name: 'ORDER_API');

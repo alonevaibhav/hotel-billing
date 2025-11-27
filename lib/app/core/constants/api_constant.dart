@@ -17,6 +17,9 @@ class ApiConstants {
 
   static const String waiterPostCreateOrder = "/api/owner/employee/orders/create";
 
+  static String waiterPostReorder(int placedOrderId) => "/api/owner/employee/orders/$placedOrderId/items/add";
+
+
 
 
   // Dynamic URLs
