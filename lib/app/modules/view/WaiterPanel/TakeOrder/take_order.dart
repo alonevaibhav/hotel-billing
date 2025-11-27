@@ -11,6 +11,8 @@ class TakeOrderContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.put(TakeOrdersController());
 
+    controller.fetchTablesData();
+
     return RefreshIndicator(
       onRefresh: () async {
         await controller.refreshTables();

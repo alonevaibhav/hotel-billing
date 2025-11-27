@@ -1,4 +1,6 @@
 //
+//
+// import 'dart:developer' as Developer;
 // import 'package:flutter/material.dart' hide Table;
 // import 'package:get/get.dart';
 // import 'package:hotelbilling/app/modules/controllers/WaiterPanelController/take_order_controller.dart';
@@ -21,6 +23,7 @@
 //   final finalCheckoutTotal = 0.0.obs;
 //   final isLoadingOrder = false.obs;
 //   final hasLoadedOrder = false.obs;
+//   final placedOrderId = Rxn<int>(); // Store the placed order ID
 //   final fullNameController = TextEditingController();
 //   final phoneController = TextEditingController();
 //
@@ -39,13 +42,15 @@
 //     finalCheckoutTotal.value = 0.0;
 //     isMarkAsUrgent.value = false;
 //     hasLoadedOrder.value = false;
+//     placedOrderId.value = null;
 //   }
 //
 //   int getFrozenQuantity(String itemId) {
 //     return frozenItems.firstWhereOrNull((item) => item.id == itemId)?.quantity ?? 0;
 //   }
-//
 //   bool get hasFrozenItems => frozenItems.isNotEmpty;
+//   // Check if this is a reorder scenario (order already exists)
+//   bool get isReorderScenario => placedOrderId.value != null && placedOrderId.value! > 0;
 // }
 //
 // class OrderManagementController extends GetxController {
@@ -57,6 +62,8 @@
 //   @override
 //   void onInit() {
 //     super.onInit();
+//
+//
 //     developer.log('OrderManagementController initialized');
 //   }
 //
@@ -69,60 +76,11 @@
 //
 //   TableOrderState getTableState(int tableId) {
 //     final state = tableOrders.putIfAbsent(
-//       tableId,
-//       () => TableOrderState(tableId: tableId),
+//       tableId, () => TableOrderState(tableId: tableId),
 //     );
 //     developer.log("Table loaded ($tableId). Items: ${state.orderItems.length}",
 //         name: "TABLE_STATE");
 //     return state;
-//   }
-//
-//
-//   Future<void> fetchOrder(int orderId, int tableId) async {
-//     final state = getTableState(tableId);
-//     if (state.hasLoadedOrder.value || orderId <= 0) {
-//       state.hasLoadedOrder.value = true;
-//       return;
-//     }
-//     try {
-//       state.isLoadingOrder.value = true;
-//       final response = await ApiService.get<OrderResponseModel>(
-//         endpoint: ApiConstants.waiterGetTableOrder(orderId),
-//         fromJson: (json) => OrderResponseModel.fromJson(json),
-//         includeToken: true,
-//       );
-//       if (response.success && response.data != null) {
-//         final orderData = response.data!;
-//         state.fullNameController.text = orderData.data.order.customerName ?? '';
-//         state.phoneController.text = orderData.data.order.customerPhone ?? '';
-//         state.orderItems.clear();
-//         state.frozenItems.clear();
-//         for (var apiItem in orderData.data.items) {
-//           final localItem = apiItem.toLocalOrderItem();
-//           state.orderItems.add(localItem);
-//           state.frozenItems.add(FrozenItem(
-//             id: apiItem.menuItemId.toString(),
-//             name: apiItem.itemName,
-//             quantity: apiItem.quantity,
-//           ));
-//         }
-//         _updateTotal(state);
-//         developer.log(
-//             'Loaded ${orderData.data.items.length} items for table $tableId');
-//       }
-//     } catch (e) {
-//       developer.log('Error fetching order: $e');
-//       if (Get.context != null) {
-//         SnackBarUtil.showError(
-//           Get.context!,
-//           'Failed to load existing order',
-//           duration: const Duration(seconds: 2),
-//         );
-//       }
-//     } finally {
-//       state.isLoadingOrder.value = false;
-//       state.hasLoadedOrder.value = true;
-//     }
 //   }
 //
 //
@@ -302,7 +260,7 @@
 //   void _updateTotal(TableOrderState state) {
 //     final newTotal = state.orderItems.fold<double>(
 //       0.0,
-//       (sum, item) => sum + (item['total_price'] as double),
+//           (sum, item) => sum + (item['total_price'] as double),
 //     );
 //     state.finalCheckoutTotal.value = newTotal;
 //     developer.log('TOTAL UPDATE → table:${state.tableId} total:₹$newTotal',
@@ -342,7 +300,6 @@
 //     }
 //   }
 //
-//   // Helper for logging a full snapshot of orderItems + frozen quantities + total
 //   void _logTableSnapshot(int tableId, TableOrderState state) {
 //     final buffer = StringBuffer();
 //     buffer.writeln('TABLE SNAPSHOT → table:$tableId');
@@ -357,7 +314,6 @@
 //     developer.log(buffer.toString(), name: 'ORDER_STATE');
 //   }
 //
-//   // Add this helper method to convert Map back to TableInfo
 //   TableInfo? mapToTableInfo(Map<String, dynamic>? map) {
 //     if (map == null) return null;
 //
@@ -388,36 +344,13 @@
 //     }
 //   }
 //
-// // Update the methods that receive tableInfo as dynamic/Object
-//   Future<void> sendToChef(
-//     int tableId,
-//     BuildContext context,
-//     dynamic tableInfoData, // Change from TableInfo? to dynamic
-//     List<Map<String, dynamic>> orderItems,
-//   ) async {
-//     // Convert if it's a Map
-//     final TableInfo? tableInfo = tableInfoData is Map<String, dynamic>
-//         ? mapToTableInfo(tableInfoData)
-//         : tableInfoData as TableInfo?;
-//
-//     await _processOrder(
-//       tableId: tableId,
-//       context: context,
-//       tableInfo: tableInfo,
-//       orderItems: orderItems,
-//       destination: 'chef',
-//       successMessage: 'KOT sent to chef',
-//       errorMessage: 'Failed to send KOT to chef',
-//     );
-//   }
 //
 //   Future<void> proceedToCheckout(
-//     int tableId,
-//     BuildContext context,
-//     dynamic tableInfoData, // Change from TableInfo? to dynamic
-//     List<Map<String, dynamic>> orderItems,
-//   ) async {
-//     // Convert if it's a Map
+//       int tableId,
+//       BuildContext context,
+//       dynamic tableInfoData,
+//       List<Map<String, dynamic>> orderItems,
+//       ) async {
 //     final TableInfo? tableInfo = tableInfoData is Map<String, dynamic>
 //         ? mapToTableInfo(tableInfoData)
 //         : tableInfoData as TableInfo?;
@@ -434,11 +367,10 @@
 //   }
 //
 //   void toggleUrgentForTable(
-//     int tableId,
-//     BuildContext context,
-//     dynamic tableInfoData, // Change from TableInfo? to dynamic
-//   ) {
-//     // Convert if it's a Map
+//       int tableId,
+//       BuildContext context,
+//       dynamic tableInfoData,
+//       ) {
 //     final TableInfo? tableInfo = tableInfoData is Map<String, dynamic>
 //         ? mapToTableInfo(tableInfoData)
 //         : tableInfoData as TableInfo?;
@@ -454,16 +386,15 @@
 //           ? 'Table $tableNumber marked as urgent'
 //           : 'Table $tableNumber removed from urgent',
 //       title:
-//           state.isMarkAsUrgent.value ? 'Marked as urgent' : 'Normal priority',
+//       state.isMarkAsUrgent.value ? 'Marked as urgent' : 'Normal priority',
 //       type:
-//           state.isMarkAsUrgent.value ? SnackBarType.success : SnackBarType.info,
+//       state.isMarkAsUrgent.value ? SnackBarType.success : SnackBarType.info,
 //       duration: const Duration(seconds: 1),
 //     );
 //   }
 //
 //   void navigateToAddItems(int tableId, dynamic tableInfoData) {
 //     try {
-//       // If it's already a TableInfo, convert to Map
 //       final Map<String, dynamic>? tableMap = tableInfoData is TableInfo
 //           ? tableInfoToMap(tableInfoData)
 //           : (tableInfoData as Map<String, dynamic>?);
@@ -481,7 +412,6 @@
 //   }
 //
 //   void setActiveTable(int tableId, dynamic tableInfoData) {
-//     // Convert if it's a Map
 //     final TableInfo? tableInfo = tableInfoData is Map<String, dynamic>
 //         ? mapToTableInfo(tableInfoData)
 //         : tableInfoData as TableInfo?;
@@ -496,7 +426,148 @@
 //     }
 //   }
 //
-// // Unified order processing
+//   // NEW: Add items to existing order (Reorder API)
+//   Future<void> _addItemsToExistingOrder({
+//     required int placedOrderId,
+//     required int tableId,
+//     required BuildContext context,
+//     required TableInfo? tableInfo,
+//     required List<Map<String, dynamic>> newItems,
+//   }) async {
+//     try {
+//       // Build reorder request body
+//       final requestBody = {
+//         "items": newItems.map((item) {
+//           final reorderItem = {
+//             "menu_item_id": item['id'] as int,
+//             "quantity": item['quantity'] as int,
+//           };
+//
+//           // Add special_instructions only if it exists and is not empty
+//           if (item['special_instructions'] != null &&
+//               item['special_instructions'].toString().trim().isNotEmpty) {
+//             reorderItem['special_instructions'] = item['special_instructions'] as int;
+//           }
+//
+//           return reorderItem;
+//         }).toList(),
+//       };
+//
+//       developer.log(
+//         'Reorder request for Order ID $placedOrderId: $requestBody',
+//         name: 'REORDER_API',
+//       );
+//
+//       // Make API call to add items to existing order
+//       final response = await ApiService.post<OrderResponseModel>(
+//         endpoint: ApiConstants.waiterPostReorder(placedOrderId),
+//         body: requestBody,
+//         fromJson: (json) => OrderResponseModel.fromJson(json),
+//         includeToken: true,
+//       );
+//
+//       if (response.success && response.data != null) {
+//         final state = getTableState(tableId);
+//
+//         // Freeze the newly added items
+//         _freezeItems(state, state.orderItems);
+//
+//         final tableNumber = tableInfo?.table.tableNumber ?? tableId.toString();
+//
+//         SnackBarUtil.showSuccess(
+//           context,
+//           'Items added to existing order for Table $tableNumber',
+//           title: 'Success',
+//           duration: const Duration(seconds: 2),
+//         );
+//
+//         developer.log(
+//           'Items added successfully to Order ID: $placedOrderId',
+//           name: 'REORDER_API',
+//         );
+//
+//         // Refresh tables
+//         final controller = Get.find<TakeOrdersController>();
+//         controller.refreshTables();
+//
+//         // Navigate back
+//         NavigationService.goBack();
+//       } else {
+//         throw Exception(response.errorMessage ?? 'Failed to add items to order');
+//       }
+//     } catch (e) {
+//       developer.log('Reorder error: $e', name: 'REORDER_API');
+//       SnackBarUtil.showError(
+//         context,
+//         'Failed to add items to existing order',
+//         title: 'Error',
+//         duration: const Duration(seconds: 2),
+//       );
+//       rethrow;
+//     }
+//   }
+//
+//
+//   Future<void> fetchOrder(int orderId, int tableId) async {
+//     final state = getTableState(tableId);
+//
+//     // if (state.hasLoadedOrder.value || orderId <= 0) {
+//     //   state.hasLoadedOrder.value = false;
+//     //   return;
+//     // }
+//
+//     try {
+//       developer.log(
+//         'isLoadingOrder: ${state.isLoadingOrder.value}',
+//         name: 'FETCH_ORDER',
+//       );
+//       state.isLoadingOrder.value = true;
+//       final response = await ApiService.get<OrderResponseModel>(
+//         endpoint: ApiConstants.waiterGetTableOrder(orderId),
+//         fromJson: (json) => OrderResponseModel.fromJson(json),
+//         includeToken: true,
+//       );
+//       if (response.success && response.data != null) {
+//         final orderData = response.data!;
+//
+//         // Store the placed order ID for reorder scenario
+//         state.placedOrderId.value = orderData.data.order.id;
+//
+//         state.fullNameController.text = orderData.data.order.customerName ?? '';
+//         state.phoneController.text = orderData.data.order.customerPhone ?? '';
+//         state.orderItems.clear();
+//         state.frozenItems.clear();
+//         for (var apiItem in orderData.data.items) {
+//           final localItem = apiItem.toLocalOrderItem();
+//           state.orderItems.add(localItem);
+//           state.frozenItems.add(FrozenItem(
+//             id: apiItem.menuItemId.toString(),
+//             name: apiItem.itemName,
+//             quantity: apiItem.quantity,
+//           ));
+//         }
+//         _updateTotal(state);
+//         developer.log(
+//             'Loaded ${orderData.data.items.length} items for table $tableId. Order ID: ${state.placedOrderId.value}',
+//             name: 'FETCH_ORDER');
+//       }
+//     } catch (e) {
+//       developer.log('Error fetching order: $e');
+//       if (Get.context != null) {
+//         SnackBarUtil.showError(
+//           Get.context!,
+//           'Failed to load existing order',
+//           duration: const Duration(seconds: 2),
+//         );
+//       }
+//     } finally {
+//       state.isLoadingOrder.value = false;
+//       state.hasLoadedOrder.value = true;
+//     }
+//   }
+//
+//
+//   // UPDATED: Unified order processing with reorder logic
 //   Future<void> _processOrder({
 //     required int tableId,
 //     required BuildContext context,
@@ -509,29 +580,6 @@
 //     try {
 //       isLoading.value = true;
 //       final state = getTableState(tableId);
-//
-//       // Validate customer details
-//       if (state.fullNameController.text.trim().isEmpty) {
-//         SnackBarUtil.showError(
-//           context,
-//           'Please enter customer name',
-//           title: 'Validation Error',
-//           duration: const Duration(seconds: 2),
-//         );
-//         isLoading.value = false;
-//         return;
-//       }
-//
-//       if (state.phoneController.text.trim().isEmpty) {
-//         SnackBarUtil.showError(
-//           context,
-//           'Please enter customer phone',
-//           title: 'Validation Error',
-//           duration: const Duration(seconds: 2),
-//         );
-//         isLoading.value = false;
-//         return;
-//       }
 //
 //       // Get new items only (not frozen ones)
 //       final newItems = _getNewItems(state, orderItems);
@@ -547,62 +595,85 @@
 //         return;
 //       }
 //
-//       // Build request body
-//       final request = CreateOrderRequest(
-//         orderData: OrderData(
-//           hotelTableId: tableInfo?.table.id ?? tableId,
-//           customerName: state.fullNameController.text.trim(),
-//           customerPhone: state.phoneController.text.trim(),
-//           tableNumber: (tableInfo?.table.tableNumber ?? tableId).toString(),
-//           status: 'pending',
-//         ),
-//         items: newItems
-//             .map((item) => OrderItemRequest(
-//                   menuItemId: item['id'] as int,
-//                   quantity: item['quantity'] as int,
-//                   specialInstructions: item['special_instructions'] as String?,
-//                 ))
-//             .toList(),
-//       );
+//       // DECISION: Check if this is a reorder scenario
+//       if (state.isReorderScenario) {
+//         // Use reorder API for existing orders
+//         developer.log(
+//           'Reorder scenario detected. Using reorder API for Order ID: ${state.placedOrderId.value}',
+//           name: 'ORDER_ROUTING',
+//         );
 //
-//       developer.log(
-//         'Sending order request: ${request.toJson()}',
-//         name: 'ORDER_API',
-//       );
+//         await _addItemsToExistingOrder(
+//           placedOrderId: state.placedOrderId.value!,
+//           tableId: tableId,
+//           context: context,
+//           tableInfo: tableInfo,
+//           newItems: newItems,
+//         );
+//       } else {
+//         // Use create order API for new orders
+//         developer.log(
+//           'New order scenario detected. Using create order API',
+//           name: 'ORDER_ROUTING',
+//         );
 //
-//       // Make API call
-//       final response = await ApiService.post<OrderResponseModel>(
-//         endpoint: ApiConstants.waiterPostCreateOrder,
-//         body: request.toJson(),
-//         fromJson: (json) => OrderResponseModel.fromJson(json),
-//         includeToken: true,
-//       );
-//
-//       if (response.success && response.data != null) {
-//         // Freeze the items after successful API call
-//         _freezeItems(state, orderItems);
-//
-//         final tableNumber = tableInfo?.table.tableNumber ?? tableId.toString();
-//
-//         SnackBarUtil.showSuccess(
-//           context,
-//           '$successMessage for Table $tableNumber',
-//           title: 'Success',
-//           duration: const Duration(seconds: 2),
+//         final request = CreateOrderRequest(
+//           orderData: OrderData(
+//             hotelTableId: tableInfo?.table.id ?? tableId,
+//             customerName: state.fullNameController.text.trim(),
+//             customerPhone: state.phoneController.text.trim(),
+//             tableNumber: (tableInfo?.table.tableNumber ?? tableId).toString(),
+//             status: 'pending',
+//           ),
+//           items: newItems
+//               .map((item) => OrderItemRequest(
+//             menuItemId: item['id'] as int,
+//             quantity: item['quantity'] as int,
+//             specialInstructions: item['special_instructions'] as String?,
+//           ))
+//               .toList(),
 //         );
 //
 //         developer.log(
-//           'Order sent successfully. Order ID: ${response.data?.data.order.id}',
+//           'Create order request: ${request.toJson()}',
 //           name: 'ORDER_API',
 //         );
 //
-//         final controller = Get.find<TakeOrdersController>();
-//         controller.refreshTables();
+//         final response = await ApiService.post<OrderResponseModel>(
+//           endpoint: ApiConstants.waiterPostCreateOrder,
+//           body: request.toJson(),
+//           fromJson: (json) => OrderResponseModel.fromJson(json),
+//           includeToken: true,
+//         );
 //
-//         // Navigate back on success
-//         NavigationService.goBack();
-//       } else {
-//         throw Exception(response.errorMessage ?? 'Failed to process order');
+//         if (response.success && response.data != null) {
+//           // Store the placed order ID for future reorders
+//           state.placedOrderId.value = response.data!.data.order.id;
+//
+//           // Freeze the items after successful API call
+//           _freezeItems(state, orderItems);
+//
+//           final tableNumber = tableInfo?.table.tableNumber ?? tableId.toString();
+//
+//           SnackBarUtil.showSuccess(
+//             context,
+//             '$successMessage for Table $tableNumber',
+//             title: 'Success',
+//             duration: const Duration(seconds: 2),
+//           );
+//
+//           developer.log(
+//             'Order created successfully. Order ID: ${state.placedOrderId.value}',
+//             name: 'ORDER_API',
+//           );
+//
+//           final controller = Get.find<TakeOrdersController>();
+//           controller.refreshTables();
+//
+//           NavigationService.goBack();
+//         } else {
+//           throw Exception(response.errorMessage ?? 'Failed to process order');
+//         }
 //       }
 //     } catch (e) {
 //       developer.log('Order processing error: $e', name: 'ORDER_API');
@@ -619,6 +690,8 @@
 // }
 
 
+
+import 'dart:developer' as Developer;
 import 'package:flutter/material.dart' hide Table;
 import 'package:get/get.dart';
 import 'package:hotelbilling/app/modules/controllers/WaiterPanelController/take_order_controller.dart';
@@ -699,15 +772,6 @@ class OrderManagementController extends GetxController {
     developer.log("Table loaded ($tableId). Items: ${state.orderItems.length}",
         name: "TABLE_STATE");
     return state;
-  }
-
-
-  void checkAndFetchExistingOrder(int tableId, TableInfo? tableInfo) {
-    final state = getTableState(tableId);
-    final orderId = tableInfo?.currentOrder?.orderId ?? 0;
-    if (orderId > 0) {
-      fetchOrder(orderId, tableId);
-    }
   }
 
 
@@ -1038,6 +1102,22 @@ class OrderManagementController extends GetxController {
     }
   }
 
+  void resetTableStateIfNeeded(int tableId, TableInfo? tableInfo) {
+    final state = getTableState(tableId);
+    final orderId = tableInfo?.currentOrder?.orderId ?? 0;
+    final status = tableInfo?.table.status ?? 'unknown';
+
+    // Only reset if table is available and has no order
+    if (orderId <= 0 && status.toLowerCase() == 'available' && state.hasLoadedOrder.value) {
+      developer.log(
+          "Resetting state for available table $tableId",
+          name: "RESET_STATE"
+      );
+      state.clear();
+      state.hasLoadedOrder.value = false;
+    }
+  }
+
   void setActiveTable(int tableId, dynamic tableInfoData) {
     final TableInfo? tableInfo = tableInfoData is Map<String, dynamic>
         ? mapToTableInfo(tableInfoData)
@@ -1046,10 +1126,22 @@ class OrderManagementController extends GetxController {
     activeTableId.value = tableId;
     final state = getTableState(tableId);
     final orderId = tableInfo?.currentOrder?.orderId ?? 0;
-    if (orderId > 0 && !state.hasLoadedOrder.value) {
-      developer.log("Loading existing order $orderId for table $tableId",
-          name: "ACTIVE_TABLE");
+
+    developer.log(
+        "Setting active table $tableId with orderId: $orderId, hasLoadedOrder: ${state.hasLoadedOrder.value}",
+        name: "ACTIVE_TABLE"
+    );
+
+    // Always fetch order status (will clear if orderId is 0)
+    if (!state.hasLoadedOrder.value) {
       fetchOrder(orderId, tableId);
+    } else if (orderId <= 0) {
+      // If we switch back to a table with no order, clear it
+      developer.log(
+          "Table $tableId has no current order - clearing state",
+          name: "ACTIVE_TABLE"
+      );
+      state.clear();
     }
   }
 
@@ -1137,11 +1229,17 @@ class OrderManagementController extends GetxController {
 
   Future<void> fetchOrder(int orderId, int tableId) async {
     final state = getTableState(tableId);
+
     if (state.hasLoadedOrder.value || orderId <= 0) {
-      state.hasLoadedOrder.value = true;
+      state.hasLoadedOrder.value = false;
       return;
     }
+
     try {
+      developer.log(
+        'isLoadingOrder: ${state.isLoadingOrder.value}',
+        name: 'FETCH_ORDER',
+      );
       state.isLoadingOrder.value = true;
       final response = await ApiService.get<OrderResponseModel>(
         endpoint: ApiConstants.waiterGetTableOrder(orderId),
