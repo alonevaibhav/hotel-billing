@@ -309,7 +309,6 @@ class AddItemsController extends GetxController {
     selectedItems.value =
         allItems.where((item) => (item['quantity'] as int) > 0).toList();
   }
-
   void addSelectedItemsToTable(BuildContext context) {
     if (selectedItems.isEmpty) {
       SnackBarUtil.showWarning(
@@ -326,7 +325,6 @@ class AddItemsController extends GetxController {
       final orderController = Get.find<OrderManagementController>();
       final tableState = orderController.getTableState(tableId);
 
-      // ✅ LOG: Check selected items before processing
       developer.log('=== ADDING ITEMS ===');
       developer.log('Total selected items: ${selectedItems.length}');
       developer.log('Selected items: $selectedItems');
@@ -336,29 +334,45 @@ class AddItemsController extends GetxController {
         final quantity = item['quantity'] as int;
         final price = double.parse(item['price'].toString());
 
-        // ✅ VALIDATION: Check if id and quantity are valid
         developer.log('Processing item:');
         developer.log('  ID: $id (Type: ${id.runtimeType})');
         developer.log('  Quantity: $quantity (Type: ${quantity.runtimeType})');
         developer.log('  Price: $price');
         developer.log('  Item Name: ${item['item_name']}');
 
-        final orderItem = {
-          'id': id,
-          'item_name': item['item_name'],
-          'price': price,
-          'quantity': quantity,
-          'category': item['category_display'],
-          'description': item['description'] ?? '',
-          'preparation_time': item['preparation_time'] ?? 0,
-          'is_vegetarian': item['is_vegetarian'] ?? 0,
-          'is_featured': item['is_featured'] ?? 0,
-          'total_price': price * quantity,
-          'added_at': DateTime.now().toIso8601String(),
-        };
+        // ✅ FIX: Check if item already exists
+        final existingIndex = tableState.orderItems.indexWhere((e) => e['id'] == id);
 
-        developer.log('✅ Order item created: $orderItem');
-        tableState.orderItems.add(orderItem);
+        if (existingIndex >= 0) {
+          // ✅ MERGE: Item exists, update quantity
+          final existing = tableState.orderItems[existingIndex];
+          final oldQty = existing['quantity'] as int;
+          final newQty = oldQty + quantity;
+
+          existing['quantity'] = newQty;
+          existing['total_price'] = price * newQty;
+          tableState.orderItems[existingIndex] = existing;
+
+          developer.log('✅ MERGED: ${item['item_name']} - Old: $oldQty, New: $newQty');
+        } else {
+          // ✅ NEW ITEM: Add fresh row
+          final orderItem = {
+            'id': id,
+            'item_name': item['item_name'],
+            'price': price,
+            'quantity': quantity,
+            'category': item['category_display'],
+            'description': item['description'] ?? '',
+            'preparation_time': item['preparation_time'] ?? 0,
+            'is_vegetarian': item['is_vegetarian'] ?? 0,
+            'is_featured': item['is_featured'] ?? 0,
+            'total_price': price * quantity,
+            'added_at': DateTime.now().toIso8601String(),
+          };
+
+          tableState.orderItems.add(orderItem);
+          developer.log('✅ NEW ITEM: ${item['item_name']} - Qty: $quantity');
+        }
       }
 
       _updateTableTotal(tableState);
@@ -389,6 +403,7 @@ class AddItemsController extends GetxController {
       );
     }
   }
+
 
   void _updateTableTotal(TableOrderState tableState) {
     double total = 0.0;
