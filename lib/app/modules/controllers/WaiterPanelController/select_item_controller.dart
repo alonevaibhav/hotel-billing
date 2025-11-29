@@ -1,5 +1,4 @@
 //
-//
 // import 'dart:developer' as Developer;
 // import 'package:flutter/material.dart' hide Table;
 // import 'package:get/get.dart';
@@ -33,6 +32,8 @@
 //     fullNameController.dispose();
 //     phoneController.dispose();
 //   }
+//   int? lastFetchedOrderId;
+//
 //
 //   void clear() {
 //     fullNameController.clear();
@@ -43,6 +44,8 @@
 //     isMarkAsUrgent.value = false;
 //     hasLoadedOrder.value = false;
 //     placedOrderId.value = null;
+//     lastFetchedOrderId = null; // Reset this too
+//
 //   }
 //
 //   int getFrozenQuantity(String itemId) {
@@ -411,6 +414,22 @@
 //     }
 //   }
 //
+//   void resetTableStateIfNeeded(int tableId, TableInfo? tableInfo) {
+//     final state = getTableState(tableId);
+//     final orderId = tableInfo?.currentOrder?.orderId ?? 0;
+//     final status = tableInfo?.table.status ?? 'unknown';
+//
+//     // Only reset if table is available and has no order
+//     if (orderId <= 0 && status.toLowerCase() == 'available' && state.hasLoadedOrder.value) {
+//       developer.log(
+//           "Resetting state for available table $tableId",
+//           name: "RESET_STATE"
+//       );
+//       state.clear();
+//       state.hasLoadedOrder.value = false;
+//     }
+//   }
+//
 //   void setActiveTable(int tableId, dynamic tableInfoData) {
 //     final TableInfo? tableInfo = tableInfoData is Map<String, dynamic>
 //         ? mapToTableInfo(tableInfoData)
@@ -511,10 +530,10 @@
 //   Future<void> fetchOrder(int orderId, int tableId) async {
 //     final state = getTableState(tableId);
 //
-//     // if (state.hasLoadedOrder.value || orderId <= 0) {
-//     //   state.hasLoadedOrder.value = false;
-//     //   return;
-//     // }
+//     if (state.hasLoadedOrder.value || orderId <= 0) {
+//       state.hasLoadedOrder.value = false;
+//       return;
+//     }
 //
 //     try {
 //       developer.log(
@@ -689,8 +708,6 @@
 //   }
 // }
 
-
-
 import 'dart:developer' as Developer;
 import 'package:flutter/material.dart' hide Table;
 import 'package:get/get.dart';
@@ -705,7 +722,6 @@ import '../../../data/models/ResponseModel/table_model.dart';
 import '../../../route/app_routes.dart';
 import '../../model/froze_model.dart';
 
-
 class TableOrderState {
   final int tableId;
   final orderItems = <Map<String, dynamic>>[].obs;
@@ -714,7 +730,7 @@ class TableOrderState {
   final finalCheckoutTotal = 0.0.obs;
   final isLoadingOrder = false.obs;
   final hasLoadedOrder = false.obs;
-  final placedOrderId = Rxn<int>(); // Store the placed order ID
+  final placedOrderId = Rxn<int>();
   final fullNameController = TextEditingController();
   final phoneController = TextEditingController();
 
@@ -739,8 +755,8 @@ class TableOrderState {
   int getFrozenQuantity(String itemId) {
     return frozenItems.firstWhereOrNull((item) => item.id == itemId)?.quantity ?? 0;
   }
+
   bool get hasFrozenItems => frozenItems.isNotEmpty;
-  // Check if this is a reorder scenario (order already exists)
   bool get isReorderScenario => placedOrderId.value != null && placedOrderId.value! > 0;
 }
 
@@ -753,8 +769,6 @@ class OrderManagementController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-
-
     developer.log('OrderManagementController initialized');
   }
 
@@ -773,7 +787,6 @@ class OrderManagementController extends GetxController {
         name: "TABLE_STATE");
     return state;
   }
-
 
   List<Map<String, dynamic>> _getNewItems(
       TableOrderState state, List<Map<String, dynamic>> items) {
@@ -958,8 +971,6 @@ class OrderManagementController extends GetxController {
         name: 'UPDATE_TOTAL');
   }
 
-
-
   Map<String, dynamic>? tableInfoToMap(TableInfo? tableInfo) {
     if (tableInfo == null) return null;
     return {
@@ -1035,7 +1046,6 @@ class OrderManagementController extends GetxController {
     }
   }
 
-
   Future<void> proceedToCheckout(
       int tableId,
       BuildContext context,
@@ -1078,8 +1088,7 @@ class OrderManagementController extends GetxController {
           : 'Table $tableNumber removed from urgent',
       title:
       state.isMarkAsUrgent.value ? 'Marked as urgent' : 'Normal priority',
-      type:
-      state.isMarkAsUrgent.value ? SnackBarType.success : SnackBarType.info,
+      type: state.isMarkAsUrgent.value ? SnackBarType.success : SnackBarType.info,
       duration: const Duration(seconds: 1),
     );
   }
@@ -1118,6 +1127,7 @@ class OrderManagementController extends GetxController {
     }
   }
 
+  // ===== CRITICAL FIX: This method runs when waiter comes back to page =====
   void setActiveTable(int tableId, dynamic tableInfoData) {
     final TableInfo? tableInfo = tableInfoData is Map<String, dynamic>
         ? mapToTableInfo(tableInfoData)
@@ -1128,20 +1138,31 @@ class OrderManagementController extends GetxController {
     final orderId = tableInfo?.currentOrder?.orderId ?? 0;
 
     developer.log(
-        "Setting active table $tableId with orderId: $orderId, hasLoadedOrder: ${state.hasLoadedOrder.value}",
-        name: "ACTIVE_TABLE"
+      'SET ACTIVE TABLE → tableId:$tableId, orderId:$orderId, hasLoadedOrder:${state.hasLoadedOrder.value}, placedOrderId:${state.placedOrderId.value}',
+      name: 'ACTIVE_TABLE',
     );
 
-    // Always fetch order status (will clear if orderId is 0)
-    if (!state.hasLoadedOrder.value) {
-      fetchOrder(orderId, tableId);
-    } else if (orderId <= 0) {
-      // If we switch back to a table with no order, clear it
+    // FIX: Check all conditions to decide if we should fetch
+    // 1. Order exists in backend (orderId > 0)
+    // 2. We haven't loaded it yet (hasLoadedOrder == false)
+    if (orderId > 0 && !state.hasLoadedOrder.value) {
       developer.log(
-          "Table $tableId has no current order - clearing state",
-          name: "ACTIVE_TABLE"
+        'TRIGGER FETCH → orderId:$orderId for table $tableId',
+        name: 'ACTIVE_TABLE',
       );
-      state.clear();
+      fetchOrder(orderId, tableId);
+    } else if (orderId <= 0 && state.placedOrderId.value != null && state.placedOrderId.value! > 0 && !state.hasLoadedOrder.value) {
+      // Fallback: If tableInfo doesn't have orderId but we have it stored locally
+      developer.log(
+        'TRIGGER FETCH (FALLBACK) → using stored placedOrderId:${state.placedOrderId.value}',
+        name: 'ACTIVE_TABLE',
+      );
+      fetchOrder(state.placedOrderId.value!, tableId);
+    } else {
+      developer.log(
+        'SKIP FETCH → orderId:$orderId, hasLoadedOrder:${state.hasLoadedOrder.value}, placedOrderId:${state.placedOrderId.value}',
+        name: 'ACTIVE_TABLE',
+      );
     }
   }
 
@@ -1226,36 +1247,52 @@ class OrderManagementController extends GetxController {
     }
   }
 
-
+  // 2. Update fetchOrder method - SIMPLE VERSION
   Future<void> fetchOrder(int orderId, int tableId) async {
     final state = getTableState(tableId);
 
-    if (state.hasLoadedOrder.value || orderId <= 0) {
-      state.hasLoadedOrder.value = false;
+    // Skip if already loading or invalid order ID
+    if (state.isLoadingOrder.value || orderId <= 0) {
+      developer.log(
+        'FETCH SKIPPED → isLoading:${state.isLoadingOrder.value}, orderId:$orderId',
+        name: 'FETCH_ORDER',
+      );
+      return;
+    }
+
+    // Skip if already loaded (prevents duplicate API calls)
+    if (state.hasLoadedOrder.value) {
+      developer.log(
+        'FETCH SKIPPED → Already loaded for table $tableId',
+        name: 'FETCH_ORDER',
+      );
       return;
     }
 
     try {
       developer.log(
-        'isLoadingOrder: ${state.isLoadingOrder.value}',
+        'FETCH ORDER START → orderId:$orderId, tableId:$tableId',
         name: 'FETCH_ORDER',
       );
       state.isLoadingOrder.value = true;
+
       final response = await ApiService.get<OrderResponseModel>(
         endpoint: ApiConstants.waiterGetTableOrder(orderId),
         fromJson: (json) => OrderResponseModel.fromJson(json),
         includeToken: true,
       );
+
       if (response.success && response.data != null) {
         final orderData = response.data!;
 
-        // Store the placed order ID for reorder scenario
+        // Store the placed order ID
         state.placedOrderId.value = orderData.data.order.id;
 
         state.fullNameController.text = orderData.data.order.customerName ?? '';
         state.phoneController.text = orderData.data.order.customerPhone ?? '';
         state.orderItems.clear();
         state.frozenItems.clear();
+
         for (var apiItem in orderData.data.items) {
           final localItem = apiItem.toLocalOrderItem();
           state.orderItems.add(localItem);
@@ -1265,13 +1302,18 @@ class OrderManagementController extends GetxController {
             quantity: apiItem.quantity,
           ));
         }
+
         _updateTotal(state);
+
         developer.log(
-            'Loaded ${orderData.data.items.length} items for table $tableId. Order ID: ${state.placedOrderId.value}',
-            name: 'FETCH_ORDER');
+          'FETCH SUCCESS → Loaded ${orderData.data.items.length} items for table $tableId',
+          name: 'FETCH_ORDER',
+        );
+      } else {
+        throw Exception(response.errorMessage ?? 'Failed to fetch order');
       }
     } catch (e) {
-      developer.log('Error fetching order: $e');
+      developer.log('FETCH ERROR → $e', name: 'FETCH_ORDER');
       if (Get.context != null) {
         SnackBarUtil.showError(
           Get.context!,
@@ -1285,8 +1327,7 @@ class OrderManagementController extends GetxController {
     }
   }
 
-
-  // UPDATED: Unified order processing with reorder logic
+  // 4. After successful order creation, refresh properly
   Future<void> _processOrder({
     required int tableId,
     required BuildContext context,
@@ -1299,8 +1340,6 @@ class OrderManagementController extends GetxController {
     try {
       isLoading.value = true;
       final state = getTableState(tableId);
-
-      // Get new items only (not frozen ones)
       final newItems = _getNewItems(state, orderItems);
 
       if (newItems.isEmpty) {
@@ -1314,14 +1353,7 @@ class OrderManagementController extends GetxController {
         return;
       }
 
-      // DECISION: Check if this is a reorder scenario
       if (state.isReorderScenario) {
-        // Use reorder API for existing orders
-        developer.log(
-          'Reorder scenario detected. Using reorder API for Order ID: ${state.placedOrderId.value}',
-          name: 'ORDER_ROUTING',
-        );
-
         await _addItemsToExistingOrder(
           placedOrderId: state.placedOrderId.value!,
           tableId: tableId,
@@ -1330,12 +1362,6 @@ class OrderManagementController extends GetxController {
           newItems: newItems,
         );
       } else {
-        // Use create order API for new orders
-        developer.log(
-          'New order scenario detected. Using create order API',
-          name: 'ORDER_ROUTING',
-        );
-
         final request = CreateOrderRequest(
           orderData: OrderData(
             hotelTableId: tableInfo?.table.id ?? tableId,
@@ -1353,11 +1379,6 @@ class OrderManagementController extends GetxController {
               .toList(),
         );
 
-        developer.log(
-          'Create order request: ${request.toJson()}',
-          name: 'ORDER_API',
-        );
-
         final response = await ApiService.post<OrderResponseModel>(
           endpoint: ApiConstants.waiterPostCreateOrder,
           body: request.toJson(),
@@ -1366,10 +1387,16 @@ class OrderManagementController extends GetxController {
         );
 
         if (response.success && response.data != null) {
-          // Store the placed order ID for future reorders
-          state.placedOrderId.value = response.data!.data.order.id;
+          final createdOrderId = response.data!.data.order.id;
 
-          // Freeze the items after successful API call
+          // ===== CRITICAL FIX: Store order ID BEFORE freezing =====
+          state.placedOrderId.value = createdOrderId;
+          developer.log(
+            'Order created successfully. Order ID: $createdOrderId stored in state',
+            name: 'ORDER_API',
+          );
+
+          // Now freeze items
           _freezeItems(state, orderItems);
 
           final tableNumber = tableInfo?.table.tableNumber ?? tableId.toString();
@@ -1381,8 +1408,10 @@ class OrderManagementController extends GetxController {
             duration: const Duration(seconds: 2),
           );
 
+          // ===== CRITICAL FIX: Reset hasLoadedOrder so fetchOrder can trigger on return =====
+          state.hasLoadedOrder.value = false;
           developer.log(
-            'Order created successfully. Order ID: ${state.placedOrderId.value}',
+            'hasLoadedOrder reset to false - fetchOrder will trigger when waiter returns',
             name: 'ORDER_API',
           );
 
