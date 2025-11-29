@@ -1,5 +1,3 @@
-
-
 import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -29,10 +27,7 @@ class OrderManagementView extends StatelessWidget {
     final tableState = controller.getTableState(tableId);
     final orderId = tableInfo?.currentOrder?.orderId ?? 0;
 
-    // TableOrderState.d();
-
-
-    // controller.resetTableStateIfNeeded(tableId, tableInfo);
+    controller.resetTableStateIfNeeded(tableId, tableInfo);
 
     return Scaffold(
       backgroundColor: Colors.grey[50], // Softer background
