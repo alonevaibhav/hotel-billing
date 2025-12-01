@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -22,8 +21,9 @@ void main() async {
   // Check authentication status with role using enhanced TokenManager
   final authData = await TokenManager.checkAuthenticationWithRole();
   developer.log(
-      'Startup auth check - Authenticated: ${authData['isAuthenticated']}, Role: ${authData['userRole']}, User: ${authData['userName']}',
-      name: 'Main');
+    'Startup auth check - Authenticated: ${authData['isAuthenticated']}, Role: ${authData['userRole']}, User: ${authData['userName']}',
+    name: 'Main',
+  );
 
   // Initialize bindings for Go Router
   AppRoutes.initializeBindings();
@@ -44,10 +44,7 @@ void main() async {
 class MyApp extends StatefulWidget {
   final Map<String, dynamic> authData;
 
-  const MyApp({
-    super.key,
-    required this.authData,
-  });
+  const MyApp({super.key, required this.authData});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -96,9 +93,7 @@ class _MyAppState extends State<MyApp> {
               elevation: 0,
               iconTheme: IconThemeData(color: Colors.black),
             ),
-            textTheme: GoogleFonts.interTextTheme(
-              Theme.of(context).textTheme,
-            ),
+            textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme),
           ),
           debugShowCheckedModeBanner: false,
           title: 'Hotel-Billing',

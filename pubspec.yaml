@@ -72,8 +72,8 @@ flutter:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
-  assets:
-      - lib/demo/Json/tables.json
+#  assets:
+#      - lib/demo/Json/tables.json
 
   # Example of adding custom fonts (uncomment and modify as needed)
   # fonts:

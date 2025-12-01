@@ -8,6 +8,7 @@ import '../../../core/utils/snakbar_utils.dart';
 import '../../../data/models/ResponseModel/category_model.dart';
 import '../../../data/models/ResponseModel/subcategory_model.dart';
 import '../../../route/app_routes.dart';
+import '../../model/table_order_state_mode.dart';
 
 class AddItemsController extends GetxController {
   // Search functionality

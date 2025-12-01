@@ -7,6 +7,7 @@ import 'package:hotelbilling/app/modules/view/WaiterPanel/TakeOrder/components/w
 import '../../../../../data/models/ResponseModel/table_model.dart';
 import '../../../../../state/app-state.dart';
 import '../../../../controllers/WaiterPanelController/select_item_controller.dart';
+import '../../../../model/table_order_state_mode.dart';
 import '../../../../widgets/drawer.dart';
 import '../../../../widgets/header.dart';
 
