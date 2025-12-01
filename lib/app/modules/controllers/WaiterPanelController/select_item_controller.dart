@@ -749,7 +749,7 @@ import '../../service/table_order_service.dart';
 import '../../../core/utils/snakbar_utils.dart';
 import '../../../data/models/RequestModel/create_order_request.dart';
 import '../../../data/models/ResponseModel/table_model.dart';
-import '../../../data/repositories/order_repository.dart';
+import '../../service/order_repository.dart';
 import '../../../route/app_routes.dart';
 import '../../model/table_order_state_mode.dart';
 

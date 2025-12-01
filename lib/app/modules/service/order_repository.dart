@@ -3,8 +3,8 @@
 import 'dart:developer' as developer;
 import '../../core/constants/api_constant.dart';
 import '../../core/services/api_service.dart';
-import '../models/RequestModel/create_order_request.dart';
-import '../models/ResponseModel/order_model.dart';
+import '../../data/models/RequestModel/create_order_request.dart';
+import '../../data/models/ResponseModel/order_model.dart';
 
 
 class OrderRepository {
