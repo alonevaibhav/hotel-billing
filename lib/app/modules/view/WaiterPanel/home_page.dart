@@ -6,7 +6,7 @@ import '../../controllers/WaiterPanelController/home_controller.dart';
 import '../../widgets/drawer.dart';
 import '../../widgets/header.dart';
 import 'ReadyOrder/ready_order.dart';
-import 'TakeOrder/take_order.dart';
+import 'TakeOrder/take_order_main.dart';
 
 class WaiterDashboardView extends StatelessWidget {
   const WaiterDashboardView({super.key});

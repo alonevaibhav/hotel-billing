@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../../../../../apputils/Utils/common_utils.dart';
-import '../../../../../controllers/WaiterPanelController/add_item_controller.dart';
+import '../../../../controllers/WaiterPanelController/add_item_controller.dart';
 
 
 class SearchWidget extends StatelessWidget {

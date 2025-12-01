@@ -7,7 +7,7 @@
 // import '../modules/view/ChefPanel/dashboard.dart';
 // import '../modules/view/WaiterPanel/home_page.dart';
 // import '../modules/view/WaiterPanel/TakeOrder/components/add_items_view.dart';
-// import '../modules/view/WaiterPanel/TakeOrder/components/select_item.dart';
+// import '../modules/view/WaiterPanel/TakeOrder/components/order_view_main.dart';
 // import 'app_bindings.dart';
 //
 // class AppRoutes {
@@ -160,8 +160,8 @@ import '../data/models/ResponseModel/table_model.dart';
 import '../modules/auth/login_view.dart';
 import '../modules/view/ChefPanel/dashboard.dart';
 import '../modules/view/WaiterPanel/home_page.dart';
-import '../modules/view/WaiterPanel/TakeOrder/components/add_items_view.dart';
-import '../modules/view/WaiterPanel/TakeOrder/components/select_item.dart';
+import '../modules/view/WaiterPanel/TakeOrder/AddItems/add_items_view.dart';
+import '../modules/view/WaiterPanel/TakeOrder/OrderView/order_view_main.dart';
 import 'app_bindings.dart';
 
 class AppRoutes {

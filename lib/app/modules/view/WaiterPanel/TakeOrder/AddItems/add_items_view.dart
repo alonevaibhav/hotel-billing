@@ -8,9 +8,10 @@ import '../../../../../state/app-state.dart';
 import '../../../../controllers/WaiterPanelController/add_item_controller.dart';
 import '../../../../widgets/drawer.dart';
 import '../../../../widgets/header.dart';
-import 'widgets/category_filter_widget.dart';
-import 'widgets/menu_item_card.dart';
-import 'widgets/search_widget.dart';
+import '../widgets/category_filter_widget.dart';
+import '../widgets/menu_item_card.dart';
+import '../widgets/search_widget.dart';
+
 
 class AddItemsView extends StatelessWidget {
   final Map<String, dynamic>? table;

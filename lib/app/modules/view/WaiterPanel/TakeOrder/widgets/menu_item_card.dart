@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import '../../../../../controllers/WaiterPanelController/add_item_controller.dart';
+import '../../../../controllers/WaiterPanelController/add_item_controller.dart';
 
 class MenuItemCard extends StatelessWidget {
   final Map<String, dynamic> item;
