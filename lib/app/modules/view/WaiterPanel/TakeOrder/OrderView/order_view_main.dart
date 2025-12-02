@@ -561,65 +561,69 @@ class OrderManagementView extends StatelessWidget {
 
     controller.resetTableStateIfNeeded(tableId, tableInfo);
 
-    return Scaffold(
-      backgroundColor: Colors.grey[50], // Softer background
-      drawer: const CommonDrawerWidget(),
-      resizeToAvoidBottomInset: false,
-      body: Form(
-        key: controller.formKey,
-        child: Column(
-          children: [
-            // Header stays at top
-            CommonHeaderWidget(
-              customTitle:
-              'Table No - ${tableInfo?.table.tableNumber ?? "Unknown"}',
-              showDrawerButton: true,
-            ),
-            // Scrollable content with RefreshIndicator
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: () async {
-                  await controller.fetchOrder(orderId, tableId);
-                },
-                child: SingleChildScrollView(
-                  physics:
-                  const AlwaysScrollableScrollPhysics(), // This enables pull-to-refresh
-                  padding: EdgeInsets.all(16.w * scaleFactor),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      buildRecipientSection(tableState),
-                      Gap(20.h * scaleFactor),
-                      OrderHeader(
-                        controller: controller,
-                        tableId: tableId,
-                        tableInfo: tableInfo,
-                        tableState: tableState,
-                      ),
-                      Gap(16.h * scaleFactor),
-                      OrderContainer(
-                        controller: controller,
-                        tableId: tableId,
-                        tableState: tableState,
-                      ),
-                      Gap(16.h * scaleFactor), // Reduced gap at bottom
-                    ],
+    return WillPopScope(
+      onWillPop: () async {
+        // Reset the navigation flag when user goes back
+        controller.resetNavigationFlag();
+        return true; // Allow navigation
+      },
+      child: Scaffold(
+        backgroundColor: Colors.grey[50], // Softer background
+        drawer: const CommonDrawerWidget(),
+        resizeToAvoidBottomInset: false,
+        body: Form(
+          key: controller.formKey,
+          child: Column(
+            children: [
+              // Header stays at top
+              CommonHeaderWidget(
+                customTitle:
+                    'Table No - ${tableInfo?.table.tableNumber ?? "Unknown"}',
+                showDrawerButton: true,
+              ),
+              // Scrollable content with RefreshIndicator
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: () async {
+                    await controller.fetchOrder(orderId, tableId);
+                  },
+                  child: SingleChildScrollView(
+                    physics:
+                        const AlwaysScrollableScrollPhysics(), // This enables pull-to-refresh
+                    padding: EdgeInsets.all(16.w * scaleFactor),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        buildRecipientSection(tableState),
+                        Gap(20.h * scaleFactor),
+                        OrderHeader(
+                          controller: controller,
+                          tableId: tableId,
+                          tableInfo: tableInfo,
+                          tableState: tableState,
+                        ),
+                        Gap(16.h * scaleFactor),
+                        OrderContainer(
+                          controller: controller,
+                          tableId: tableId,
+                          tableState: tableState,
+                        ),
+                        Gap(16.h * scaleFactor), // Reduced gap at bottom
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-      // Fixed bottom bar
-      bottomNavigationBar: OrderFooter(
-        controller: controller,
-        tableId: tableId,
-        tableInfo: tableInfo,
+        // Fixed bottom bar
+        bottomNavigationBar: OrderFooter(
+          controller: controller,
+          tableId: tableId,
+          tableInfo: tableInfo,
+        ),
       ),
     );
   }
 }
-
-
-

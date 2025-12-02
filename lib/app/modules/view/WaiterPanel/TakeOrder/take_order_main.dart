@@ -9,8 +9,7 @@ class TakeOrderContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(TakeOrdersController(), permanent: true, // Keeps it alive even when page is closed
-    );
+    final controller = Get.put(TakeOrdersController(), permanent: true);
 
     return RefreshIndicator(
       onRefresh: () async {

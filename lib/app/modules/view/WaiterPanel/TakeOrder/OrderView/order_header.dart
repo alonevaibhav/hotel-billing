@@ -6,11 +6,8 @@ import 'package:gap/gap.dart';
 import '../../../../../data/models/ResponseModel/table_model.dart';
 import '../../../../controllers/WaiterPanelController/select_item_controller.dart';
 import '../../../../model/table_order_state_mode.dart';
-
 import 'order_view_main.dart';
 
-
-// 1. HEADER - Items label with Urgent and Add Items buttons
 class OrderHeader extends StatelessWidget {
   final OrderManagementController controller;
   final int tableId;
