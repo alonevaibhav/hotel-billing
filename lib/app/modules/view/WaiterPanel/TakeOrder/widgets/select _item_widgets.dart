@@ -16,7 +16,7 @@ Widget buildRecipientSection(TableOrderState tableState) {
       Expanded(
         child: CommonUiUtils.buildTextFormField(
           controller: tableState.fullNameController,
-          label: 'Recipient name',
+          label: 'Customer name',
           hint: 'Enter full name',
           icon: Icons.person,
           keyboardType: TextInputType.name,
