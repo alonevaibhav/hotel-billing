@@ -584,7 +584,6 @@ import 'package:flutter/material.dart' hide Table;
 import 'package:get/get.dart';
 import 'package:hotelbilling/app/modules/controllers/WaiterPanelController/take_order_controller.dart';
 import 'dart:developer' as developer;
-import '../../../core/services/notification_service.dart';
 import '../../../core/services/socket_service.dart';
 import '../../service/table_order_service.dart';
 import '../../../core/utils/snakbar_utils.dart';
@@ -595,6 +594,7 @@ import '../../../route/app_routes.dart';
 import '../../model/table_order_state_mode.dart';
 import '../../view/WaiterPanel/TakeOrder/widgets/success_order_notification.dart';
 
+/// Main controller for order management with socket integration
 class OrderManagementController extends GetxController {
   // Dependencies
   final OrderRepository _orderRepository = OrderRepository();
@@ -607,836 +607,251 @@ class OrderManagementController extends GetxController {
   final isLoading = false.obs;
   final isSocketConnected = false.obs;
 
+  // Helpers
+  late final _socketHandler = _SocketHandler(this);
+  late final _stateManager = _StateManager(this);
+  late final _itemManager = _ItemManager(this);
+  late final _orderProcessor = _OrderProcessor(this);
+  late final _uiHelper = _UIHelper(this);
+
   @override
   void onInit() {
     super.onInit();
     developer.log('OrderManagementController initialized', name: 'ORDER_MGMT');
-    _initializeSocketListeners();
+    _socketHandler.initialize();
   }
 
   @override
   void onClose() {
-    _removeSocketListeners();
+    _socketHandler.cleanup();
     tableOrders.values.forEach((state) => state.dispose());
     tableOrders.clear();
     super.onClose();
   }
 
-  // ==================== SOCKET INITIALIZATION ====================
+  // Delegate to helpers
+  TableOrderState getTableState(int tableId) => _stateManager.getTableState(tableId);
+  void setActiveTable(int tableId, dynamic tableInfoData) => _stateManager.setActiveTable(tableId, tableInfoData);
+  void resetTableStateIfNeeded(int tableId, TableInfo? tableInfo) => _stateManager.resetTableStateIfNeeded(tableId, tableInfo);
+  void clearTableOrders(int tableId) => _stateManager.clearTableOrders(tableId);
 
-  /// Initialize socket listeners for real-time order updates
-  void _initializeSocketListeners() {
+  void addItemToTable(int tableId, Map<String, dynamic> item) => _itemManager.addItemToTable(tableId, item);
+  void incrementItemQuantity(int tableId, int index) => _itemManager.incrementItemQuantity(tableId, index);
+  void decrementItemQuantity(int tableId, int index, BuildContext context) => _itemManager.decrementItemQuantity(tableId, index, context);
+  void removeItemFromTable(int tableId, int index, BuildContext context) => _itemManager.removeItemFromTable(tableId, index, context);
+
+  Future<void> fetchOrder(int orderId, int tableId) => _orderProcessor.fetchOrder(orderId, tableId);
+  Future<void> proceedToCheckout(int tableId, BuildContext context, dynamic tableInfoData, List<Map<String, dynamic>> orderItems) => _orderProcessor.proceedToCheckout(tableId, context, tableInfoData, orderItems);
+
+  void toggleUrgentForTable(int tableId, BuildContext context, dynamic tableInfoData) => _uiHelper.toggleUrgentForTable(tableId, context, tableInfoData);
+  void navigateToAddItems(int tableId, dynamic tableInfoData) => _uiHelper.navigateToAddItems(tableId, tableInfoData);
+  bool canProceedToCheckout(int tableId) => _uiHelper.canProceedToCheckout(tableId);
+
+  bool get socketConnected => isSocketConnected.value;
+  Future<void> reconnectSocket() => _socketHandler.reconnect();
+
+  // Public utility methods for external use
+  Map<String, dynamic>? tableInfoToMap(TableInfo? tableInfo) => _uiHelper.tableInfoToMap(tableInfo);
+  TableInfo? mapToTableInfo(Map<String, dynamic>? map) => _stateManager.mapToTableInfo(map);
+}
+
+// ==================== SOCKET HANDLER ====================
+class _SocketHandler {
+  final OrderManagementController _controller;
+  _SocketHandler(this._controller);
+
+  void initialize() {
     try {
-      developer.log(
-        '🔌 Setting up socket listeners for orders...',
-        name: 'ORDER_MGMT.Socket',
-      );
+      developer.log('🔌 Setting up socket listeners...', name: 'SOCKET');
 
-      // Check socket connection status
-      isSocketConnected.value = _socketService.isConnected;
+      _controller.isSocketConnected.value = _controller._socketService.isConnected;
 
-      // Initialize repository socket listeners
-      _orderRepository.initializeSocketListeners(
+      _controller._orderRepository.initializeSocketListeners(
         onNewOrder: _handleNewOrder,
         onOrderStatusUpdate: _handleOrderStatusUpdate,
         onPaymentUpdate: _handlePaymentUpdate,
       );
 
-      // Listen to socket connection status changes
-      _socketService.on('authenticated', (data) {
-        isSocketConnected.value = true;
-        developer.log(
-          '✅ Socket authenticated - Ready to receive order updates',
-          name: 'ORDER_MGMT.Socket',
-        );
+      _controller._socketService.on('authenticated', (data) {
+        _controller.isSocketConnected.value = true;
+        developer.log('✅ Socket authenticated', name: 'SOCKET');
       });
 
-      _socketService.on('disconnect', (data) {
-        isSocketConnected.value = false;
-        developer.log(
-          '⚠️ Socket disconnected',
-          name: 'ORDER_MGMT.Socket',
-        );
+      _controller._socketService.on('disconnect', (data) {
+        _controller.isSocketConnected.value = false;
+        developer.log('⚠️ Socket disconnected', name: 'SOCKET');
       });
 
-      developer.log(
-        '✅ Socket listeners initialized successfully',
-        name: 'ORDER_MGMT.Socket',
-      );
+      developer.log('✅ Socket listeners initialized', name: 'SOCKET');
     } catch (e) {
-      developer.log(
-        '❌ Socket listener initialization error: $e',
-        name: 'ORDER_MGMT.Socket',
-      );
+      developer.log('❌ Socket initialization error: $e', name: 'SOCKET');
     }
   }
 
-  /// Remove socket listeners
-  void _removeSocketListeners() {
-    developer.log(
-      '🔌 Removing socket listeners...',
-      name: 'ORDER_MGMT.Socket',
-    );
-    _orderRepository.removeSocketListeners();
-    _socketService.off('authenticated');
-    _socketService.off('disconnect');
+  void cleanup() {
+    developer.log('🔌 Removing socket listeners...', name: 'SOCKET');
+    _controller._orderRepository.removeSocketListeners();
+    _controller._socketService.off('authenticated');
+    _controller._socketService.off('disconnect');
   }
-// ==================== SOCKET EVENT HANDLERS ====================
 
-  /// Handle new order notification from socket
+  Future<void> reconnect() async {
+    if (!_controller._socketService.isConnected) {
+      developer.log('🔄 Reconnecting socket...', name: 'SOCKET');
+      _controller._socketService.reconnect();
+    } else {
+      developer.log('✅ Socket already connected', name: 'SOCKET');
+    }
+  }
+
   void _handleNewOrder(Map<String, dynamic> data) {
     try {
-      developer.log(
-        '🔔 NEW ORDER EVENT RAW: $data',
-        name: 'ORDER_MGMT.Socket',
-      );
+      final orderData = _extractOrderData(data);
+      if (orderData == null) return;
 
-      // ✅ Handle both data structures
-      final orderData = data.containsKey('data')
-          ? data['data'] as Map<String, dynamic>?
-          : data;
+      final orderId = _extractOrderId(orderData);
+      final tableNumber = orderData['table_number'] ?? orderData['tableNumber'] ?? 'Unknown';
+      final message = data['message'] ?? 'New order received for Table $tableNumber';
 
-      if (orderData == null || orderData.isEmpty) {
-        developer.log(
-          '⚠️ Empty order data in new_order event',
-          name: 'ORDER_MGMT.Socket',
-        );
-        return;
-      }
+      developer.log('📋 New order - ID: $orderId, Table: $tableNumber', name: 'SOCKET');
 
-      // Extract order details with fallbacks
-      final orderId = orderData['id'] ??
-          orderData['order_id'] ??
-          orderData['orderId'] ??
-          0;
-      final tableNumber = orderData['table_number'] ??
-          orderData['tableNumber'] ??
-          'Unknown';
-      final message = data['message'] ??
-          'New order received for Table $tableNumber';
-
-      developer.log(
-        '📋 Parsed order - ID: $orderId, Table: $tableNumber',
-        name: 'ORDER_MGMT.Socket',
-      );
-
-      // Show notification
-      if (Get.context != null) {
-        SnackBarUtil.showSuccess(
-          Get.context!,
-          message,
-          title: '🔔 New Order - Table $tableNumber',
-          duration: const Duration(seconds: 3),
-        );
-      }
-
-      // Refresh table list
-      try {
-        final takeOrderController = Get.find<TakeOrdersController>();
-        takeOrderController.refreshTables();
-        developer.log(
-          '✅ Tables refreshed after new order',
-          name: 'ORDER_MGMT.Socket',
-        );
-      } catch (e) {
-        developer.log(
-          '⚠️ Could not refresh tables: $e',
-          name: 'ORDER_MGMT.Socket',
-        );
-      }
+      _showNotification(message, '🔔 New Order - Table $tableNumber', isSuccess: true);
+      _refreshTables();
     } catch (e) {
-      developer.log(
-        '❌ Error handling new order: $e',
-        name: 'ORDER_MGMT.Socket',
-      );
+      developer.log('❌ Error handling new order: $e', name: 'SOCKET');
     }
   }
 
-  /// Handle order status update from socket
   void _handleOrderStatusUpdate(Map<String, dynamic> data) {
     try {
-      developer.log(
-        '📊 STATUS UPDATE EVENT RAW: $data',
-        name: 'ORDER_MGMT.Socket',
-      );
+      final orderData = _extractOrderData(data);
+      if (orderData == null) return;
 
-      // ✅ Handle both data structures
-      final orderData = data.containsKey('data')
-          ? data['data'] as Map<String, dynamic>?
-          : data;
-
-      if (orderData == null || orderData.isEmpty) {
-        developer.log(
-          '⚠️ Empty order data in status update event',
-          name: 'ORDER_MGMT.Socket',
-        );
-        return;
-      }
-
-      // Extract with multiple fallbacks
-      final orderId = orderData['orderId'] ??
-          orderData['order_id'] ??
-          orderData['id'] ??
-          0;
+      final orderId = _extractOrderId(orderData);
       final newStatus = orderData['status'] ?? 'unknown';
-      final tableNumber = orderData['table_number'] ??
-          orderData['tableNumber'] ??
-          '';
-      final message = data['message'] ??
-          'Order #$orderId status: $newStatus';
+      final message = data['message'] ?? 'Order #$orderId status: $newStatus';
 
-      developer.log(
-        '📋 Parsed status update - Order: $orderId, Status: $newStatus',
-        name: 'ORDER_MGMT.Socket',
-      );
+      developer.log('📋 Status update - Order: $orderId, Status: $newStatus', name: 'SOCKET');
 
-      // Update local state
       _updateOrderStatusInTables(orderId, newStatus);
-
-      // Show notification
-      if (Get.context != null) {
-        SnackBarUtil.show(
-          Get.context!,
-          message,
-          title: '📊 Order Status Update',
-          type: SnackBarType.info,
-          duration: const Duration(seconds: 2),
-        );
-      }
-
-      // Refresh tables
-      try {
-        final takeOrderController = Get.find<TakeOrdersController>();
-        takeOrderController.refreshTables();
-        developer.log(
-          '✅ Tables refreshed after status update',
-          name: 'ORDER_MGMT.Socket',
-        );
-      } catch (e) {
-        developer.log(
-          '⚠️ Could not refresh tables: $e',
-          name: 'ORDER_MGMT.Socket',
-        );
-      }
+      _showNotification(message, '📊 Order Status Update', isSuccess: false);
+      _refreshTables();
     } catch (e) {
-      developer.log(
-        '❌ Error handling status update: $e',
-        name: 'ORDER_MGMT.Socket',
-      );
+      developer.log('❌ Error handling status update: $e', name: 'SOCKET');
     }
   }
 
-  /// Handle payment update from socket
   void _handlePaymentUpdate(Map<String, dynamic> data) {
     try {
-      developer.log(
-        '💰 PAYMENT UPDATE EVENT RAW: $data',
-        name: 'ORDER_MGMT.Socket',
-      );
-
       final message = data['message'] ?? 'Payment updated';
-      final orderData = data.containsKey('data') ? data['data'] : data;
-      final orderId = orderData?['orderId'] ?? orderData?['order_id'] ?? 0;
+      final orderData = _extractOrderData(data);
+      final orderId = orderData != null ? _extractOrderId(orderData) : 0;
 
-      developer.log(
-        '📋 Parsed payment update - Order: $orderId',
-        name: 'ORDER_MGMT.Socket',
-      );
+      developer.log('📋 Payment update - Order: $orderId', name: 'SOCKET');
 
-      // Show notification
-      if (Get.context != null) {
-        SnackBarUtil.showSuccess(
-          Get.context!,
-          message,
-          title: '💰 Payment Received',
-          duration: const Duration(seconds: 2),
-        );
-      }
-
-      // Refresh tables
-      try {
-        final takeOrderController = Get.find<TakeOrdersController>();
-        takeOrderController.refreshTables();
-        developer.log(
-          '✅ Tables refreshed after payment update',
-          name: 'ORDER_MGMT.Socket',
-        );
-      } catch (e) {
-        developer.log(
-          '⚠️ Could not refresh tables: $e',
-          name: 'ORDER_MGMT.Socket',
-        );
-      }
+      _showNotification(message, '💰 Payment Received', isSuccess: true);
+      _refreshTables();
     } catch (e) {
-      developer.log(
-        '❌ Error handling payment update: $e',
-        name: 'ORDER_MGMT.Socket',
-      );
+      developer.log('❌ Error handling payment update: $e', name: 'SOCKET');
     }
   }
 
+  Map<String, dynamic>? _extractOrderData(Map<String, dynamic> data) {
+    final orderData = data.containsKey('data') ? data['data'] as Map<String, dynamic>? : data;
+    if (orderData == null || orderData.isEmpty) {
+      developer.log('⚠️ Empty order data', name: 'SOCKET');
+      return null;
+    }
+    return orderData;
+  }
 
-  /// Update order status in local table states
+  int _extractOrderId(Map<String, dynamic> orderData) {
+    return orderData['orderId'] ?? orderData['order_id'] ?? orderData['id'] ?? 0;
+  }
+
   void _updateOrderStatusInTables(int orderId, String newStatus) {
-    for (var state in tableOrders.values) {
+    for (var state in _controller.tableOrders.values) {
       if (state.placedOrderId.value == orderId) {
-        developer.log(
-          '📝 Updating status for table ${state.tableId}: order $orderId → $newStatus',
-          name: 'ORDER_MGMT.Socket',
-        );
-        // You can add a status field to TableOrderState if needed
-        // state.orderStatus.value = newStatus;
+        developer.log('📝 Updating status for table ${state.tableId}: $newStatus', name: 'SOCKET');
       }
     }
   }
 
-  // ==================== STATE MANAGEMENT ====================
+  void _showNotification(String message, String title, {required bool isSuccess}) {
+    if (Get.context != null) {
+      if (isSuccess) {
+        SnackBarUtil.showSuccess(Get.context!, message, title: title, duration: const Duration(seconds: 2));
+      } else {
+        SnackBarUtil.show(Get.context!, message, title: title, type: SnackBarType.info, duration: const Duration(seconds: 2));
+      }
+    }
+  }
 
-  /// Get or create table state
+  void _refreshTables() {
+    try {
+      Get.find<TakeOrdersController>().refreshTables();
+      developer.log('✅ Tables refreshed', name: 'SOCKET');
+    } catch (e) {
+      developer.log('⚠️ Could not refresh tables: $e', name: 'SOCKET');
+    }
+  }
+}
+
+// ==================== STATE MANAGER ====================
+class _StateManager {
+  final OrderManagementController _controller;
+  _StateManager(this._controller);
+
   TableOrderState getTableState(int tableId) {
-    final state = tableOrders.putIfAbsent(
+    final state = _controller.tableOrders.putIfAbsent(
       tableId,
           () => TableOrderState(tableId: tableId),
     );
-    developer.log(
-      "Table loaded ($tableId). Items: ${state.orderItems.length}",
-      name: "TABLE_STATE",
-    );
+    developer.log("Table loaded ($tableId). Items: ${state.orderItems.length}", name: "STATE");
     return state;
   }
 
-  /// Set active table and fetch order if needed
   void setActiveTable(int tableId, dynamic tableInfoData) {
-    final TableInfo? tableInfo = _parseTableInfo(tableInfoData);
-
-    activeTableId.value = tableId;
+    final tableInfo = _parseTableInfo(tableInfoData);
+    _controller.activeTableId.value = tableId;
     final state = getTableState(tableId);
     final orderId = tableInfo?.currentOrder?.orderId ?? 0;
 
-    developer.log(
-      'SET ACTIVE TABLE → tableId:$tableId, orderId:$orderId, hasLoadedOrder:${state.hasLoadedOrder.value}',
-      name: 'ACTIVE_TABLE',
-    );
+    developer.log('Active table: $tableId, Order: $orderId', name: 'STATE');
 
-    // Fetch order if exists and not loaded
     if (orderId > 0 && !state.hasLoadedOrder.value) {
-      developer.log('TRIGGER FETCH → orderId:$orderId', name: 'ACTIVE_TABLE');
-      fetchOrder(orderId, tableId);
-    } else if (orderId <= 0 &&
-        state.placedOrderId.value != null &&
-        state.placedOrderId.value! > 0 &&
-        !state.hasLoadedOrder.value) {
-      // Fallback: Use stored placedOrderId
-      developer.log(
-        'TRIGGER FETCH (FALLBACK) → placedOrderId:${state.placedOrderId.value}',
-        name: 'ACTIVE_TABLE',
-      );
-      fetchOrder(state.placedOrderId.value!, tableId);
+      _controller.fetchOrder(orderId, tableId);
+    } else if (orderId <= 0 && state.placedOrderId.value != null && state.placedOrderId.value! > 0 && !state.hasLoadedOrder.value) {
+      _controller.fetchOrder(state.placedOrderId.value!, tableId);
     }
   }
 
-  /// Reset table state if table becomes available
   void resetTableStateIfNeeded(int tableId, TableInfo? tableInfo) {
     final state = getTableState(tableId);
     final orderId = tableInfo?.currentOrder?.orderId ?? 0;
     final status = tableInfo?.table.status ?? 'unknown';
 
-    if (orderId <= 0 &&
-        status.toLowerCase() == 'available' &&
-        state.hasLoadedOrder.value) {
-      developer.log(
-        "Resetting state for available table $tableId",
-        name: "RESET_STATE",
-      );
+    if (orderId <= 0 && status.toLowerCase() == 'available' && state.hasLoadedOrder.value) {
+      developer.log("Resetting state for table $tableId", name: "STATE");
       state.clear();
       state.hasLoadedOrder.value = false;
     }
   }
 
-  /// Clear table orders
   void clearTableOrders(int tableId) {
-    if (tableOrders.containsKey(tableId)) {
-      tableOrders[tableId]?.dispose();
-      tableOrders.remove(tableId);
+    if (_controller.tableOrders.containsKey(tableId)) {
+      _controller.tableOrders[tableId]?.dispose();
+      _controller.tableOrders.remove(tableId);
     }
-  }
-
-  // ==================== ITEM MANAGEMENT ====================
-
-  /// Add item to table order
-  void addItemToTable(int tableId, Map<String, dynamic> item) {
-    final state = getTableState(tableId);
-    TableOrderService.mergeOrAddItem(state.orderItems, item);
-    _updateTotal(state);
-  }
-
-  /// Increment item quantity
-  void incrementItemQuantity(int tableId, int index) {
-    final state = getTableState(tableId);
-    if (!_isValidIndex(index, state.orderItems.length, 'ORDER_INC')) return;
-
-    final item = state.orderItems[index];
-    final newQty = (item['quantity'] as int) + 1;
-
-    developer.log(
-      'INC → table:$tableId index:$index qty:${item['quantity']}→$newQty',
-      name: 'ORDER_INC',
-    );
-
-    state.orderItems[index] =
-        TableOrderService.updateItemQuantity(item, newQty);
-    _updateTotal(state);
-    _logTableSnapshot(tableId, state);
-  }
-
-  /// Decrement item quantity
-  void decrementItemQuantity(int tableId, int index, BuildContext context) {
-    final state = getTableState(tableId);
-    if (!_isValidIndex(index, state.orderItems.length, 'ORDER_DEC')) return;
-
-    final item = state.orderItems[index];
-    final currentQty = item['quantity'] as int;
-    final frozenQty = state.getFrozenQuantity(item['id'].toString());
-
-    developer.log(
-      'DEC REQ → table:$tableId index:$index curr:$currentQty frozen:$frozenQty',
-      name: 'ORDER_DEC',
-    );
-
-    if (frozenQty == 0) {
-      if (currentQty > 1) {
-        state.orderItems[index] =
-            TableOrderService.updateItemQuantity(item, currentQty - 1);
-        _updateTotal(state);
-      } else {
-        _removeItem(state, index, context);
-      }
-    } else {
-      if (TableOrderService.canDecrementItem(currentQty, frozenQty)) {
-        state.orderItems[index] =
-            TableOrderService.updateItemQuantity(item, currentQty - 1);
-        _updateTotal(state);
-      } else {
-        _showCannotReduceWarning(context, frozenQty);
-      }
-    }
-
-    _logTableSnapshot(tableId, state);
-  }
-
-  /// Remove item from table
-  void removeItemFromTable(int tableId, int index, BuildContext context) {
-    final state = getTableState(tableId);
-    if (!_isValidIndex(index, state.orderItems.length, 'REMOVE_ITEM')) return;
-
-    final item = state.orderItems[index];
-    final frozenQty = state.getFrozenQuantity(item['id'].toString());
-
-    if (!TableOrderService.canRemoveItem(frozenQty)) {
-      _showCannotRemoveWarning(context, frozenQty);
-      return;
-    }
-
-    _removeItem(state, index, context);
-    developer.log(
-      'REMOVED → table:$tableId id:${item['id']}',
-      name: 'REMOVE_ITEM',
-    );
-    _logTableSnapshot(tableId, state);
-  }
-
-  // ==================== ORDER OPERATIONS ====================
-
-  /// Fetch order from server
-  Future<void> fetchOrder(int orderId, int tableId) async {
-    final state = getTableState(tableId);
-
-    if (state.isLoadingOrder.value ||
-        orderId == 0 ||
-        state.hasLoadedOrder.value) {
-      return;
-    }
-
-    try {
-      state.isLoadingOrder.value = true;
-
-      final orderData = await _orderRepository.getOrderById(orderId);
-
-      state.placedOrderId.value = orderData.data.order.id;
-      state.orderItems.clear();
-      state.frozenItems.clear();
-
-      // Process and group items
-      final processedItems = TableOrderService.processOrderItems(
-        orderData.data.items,
-        state.frozenItems,
-      );
-
-      state.orderItems.addAll(processedItems);
-      _updateTotal(state);
-
-      developer.log(
-        'Order fetched: ${state.orderItems.length} items',
-        name: 'FETCH_ORDER',
-      );
-    } catch (e) {
-      developer.log('Error fetching order: $e', name: 'FETCH_ORDER');
-    } finally {
-      state.isLoadingOrder.value = false;
-      state.hasLoadedOrder.value = true;
-    }
-  }
-
-  /// Proceed to checkout
-  Future<void> proceedToCheckout(
-      int tableId,
-      BuildContext context,
-      dynamic tableInfoData,
-      List<Map<String, dynamic>> orderItems,
-      ) async {
-    final TableInfo? tableInfo = _parseTableInfo(tableInfoData);
-
-    await _processOrder(
-      tableId: tableId,
-      context: context,
-      tableInfo: tableInfo,
-      orderItems: orderItems,
-      successMessage: 'KOT sent to manager',
-      errorMessage: 'Failed to place order',
-    );
-  }
-
-  /// Process order (create new or add to existing)
-  Future<void> _processOrder({
-    required int tableId,
-    required BuildContext context,
-    required TableInfo? tableInfo,
-    required List<Map<String, dynamic>> orderItems,
-    required String successMessage,
-    required String errorMessage,
-  }) async {
-    try {
-      isLoading.value = true;
-      final state = getTableState(tableId);
-
-      final newItems = TableOrderService.getNewItems(
-        state.frozenItems,
-        orderItems,
-      );
-
-      if (newItems.isEmpty) {
-        _showNoNewItemsWarning(context);
-        isLoading.value = false;
-        return;
-      }
-
-      if (state.isReorderScenario) {
-        await _addItemsToExistingOrder(
-          placedOrderId: state.placedOrderId.value!,
-          tableId: tableId,
-          context: context,
-          tableInfo: tableInfo,
-          newItems: newItems,
-        );
-      } else {
-        await _createNewOrder(
-          tableId: tableId,
-          context: context,
-          tableInfo: tableInfo,
-          state: state,
-          newItems: newItems,
-          successMessage: successMessage,
-        );
-      }
-    } catch (e) {
-      developer.log('Order processing error: $e', name: 'ORDER_API');
-      SnackBarUtil.showError(context, errorMessage, title: 'Error');
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  /// Create new order (REST API - backend handles socket emission)
-  Future<void> _createNewOrder({
-    required int tableId,
-    required BuildContext context,
-    required TableInfo? tableInfo,
-    required TableOrderState state,
-    required List<Map<String, dynamic>> newItems,
-    required String successMessage,
-  }) async {
-    final request = CreateOrderRequest(
-      orderData: OrderData(
-        hotelTableId: tableInfo?.table.id ?? tableId,
-        customerName: state.fullNameController.text.trim(),
-        customerPhone: state.phoneController.text.trim(),
-        tableNumber: (tableInfo?.table.tableNumber ?? tableId).toString(),
-        status: 'pending',
-      ),
-      items: newItems
-          .map((item) => OrderItemRequest(
-        menuItemId: item['id'] as int,
-        quantity: item['quantity'] as int,
-        specialInstructions: item['special_instructions'] as String?,
-      ))
-          .toList(),
-    );
-
-    // ✅ Use REST API - backend automatically emits socket notification
-    final response = await _orderRepository.createOrder(request);
-    final createdOrderId = response.data.order.id;
-
-    state.placedOrderId.value = createdOrderId;
-    state.addFrozenItems(newItems);
-
-    developer.log(
-      '✅ Order created: ID $createdOrderId (Socket notification sent by backend)',
-      name: 'ORDER_API',
-    );
-
-    // Show local notification
-    await showOrderNotification(
-      orderId: createdOrderId,
-      tableNumber: (tableInfo?.table.tableNumber ?? tableId).toString(),
-      itemCount: newItems.length,
-      isNewOrder: true,
-    );
-
-    _showSuccessAndRefresh(context, tableInfo, tableId, successMessage);
-  }
-
-  /// Add items to existing order (REST API - backend handles socket emission)
-  Future<void> _addItemsToExistingOrder({
-    required int placedOrderId,
-    required int tableId,
-    required BuildContext context,
-    required TableInfo? tableInfo,
-    required List<Map<String, dynamic>> newItems,
-  }) async {
-    // ✅ Use REST API - backend automatically emits socket notification
-    await _orderRepository.addItemsToOrder(placedOrderId, newItems);
-
-    final state = getTableState(tableId);
-    state.placedOrderId.value = placedOrderId;
-    state.addFrozenItems(newItems);
-
-    developer.log(
-      '✅ Items added to order: ID $placedOrderId (Socket notification sent by backend)',
-      name: 'REORDER_API',
-    );
-
-    // Show local notification
-    await showOrderNotification(
-      orderId: placedOrderId,
-      tableNumber: (tableInfo?.table.tableNumber ?? tableId).toString(),
-      itemCount: newItems.length,
-      isNewOrder: false,
-    );
-
-    _showSuccessAndRefresh(
-      context,
-      tableInfo,
-      tableId,
-      'Items added to existing order',
-    );
-  }
-
-  // ==================== UI ACTIONS ====================
-
-  /// Toggle urgent status
-  void toggleUrgentForTable(
-      int tableId,
-      BuildContext context,
-      dynamic tableInfoData,
-      ) {
-    final TableInfo? tableInfo = _parseTableInfo(tableInfoData);
-    final state = getTableState(tableId);
-
-    state.isMarkAsUrgent.value = !state.isMarkAsUrgent.value;
-
-    final tableNumber = tableInfo?.table.tableNumber ?? tableId.toString();
-    final message = state.isMarkAsUrgent.value
-        ? 'Table $tableNumber marked as urgent'
-        : 'Table $tableNumber removed from urgent';
-
-    SnackBarUtil.show(
-      context,
-      message,
-      title: state.isMarkAsUrgent.value ? 'Marked as urgent' : 'Normal priority',
-      type: state.isMarkAsUrgent.value ? SnackBarType.success : SnackBarType.info,
-      duration: const Duration(seconds: 1),
-    );
-  }
-
-  /// Navigate to add items screen
-  void navigateToAddItems(int tableId, dynamic tableInfoData) {
-    try {
-      final Map<String, dynamic>? tableMap = tableInfoData is TableInfo
-          ? tableInfoToMap(tableInfoData)
-          : (tableInfoData as Map<String, dynamic>?);
-
-      NavigationService.addItems(tableMap);
-    } catch (e) {
-      developer.log('Navigation error: $e');
-      SnackBarUtil.showError(
-        Get.context!,
-        'Unable to proceed',
-        title: 'Navigation Error',
-      );
-    }
-  }
-
-  /// Check if can proceed to checkout
-  bool canProceedToCheckout(int tableId) {
-    final state = getTableState(tableId);
-    return state.isAvailableForNewOrder;
-  }
-
-  /// Get socket connection status
-  bool get socketConnected => isSocketConnected.value;
-
-  /// Manually reconnect socket if disconnected
-  Future<void> reconnectSocket() async {
-    if (!_socketService.isConnected) {
-      developer.log(
-        '🔄 Attempting to reconnect socket...',
-        name: 'ORDER_MGMT.Socket',
-      );
-      _socketService.reconnect();
-    } else {
-      developer.log(
-        '✅ Socket already connected',
-        name: 'ORDER_MGMT.Socket',
-      );
-    }
-  }
-
-  // ==================== PRIVATE HELPERS ====================
-
-  void _updateTotal(TableOrderState state) {
-    final newTotal = TableOrderService.calculateTotal(state.orderItems);
-    state.updateTotal(newTotal);
-    developer.log(
-      'TOTAL UPDATE → table:${state.tableId} total:₹$newTotal',
-      name: 'UPDATE_TOTAL',
-    );
-  }
-
-  void _removeItem(
-      TableOrderState state,
-      int index,
-      BuildContext context,
-      ) {
-    final removedItem = state.orderItems.removeAt(index);
-    _updateTotal(state);
-    SnackBarUtil.showInfo(
-      context,
-      '${removedItem['item_name']} removed from order',
-      title: 'Item Removed',
-      duration: const Duration(seconds: 1),
-    );
-  }
-
-  bool _isValidIndex(int index, int length, String operation) {
-    if (index < 0 || index >= length) {
-      developer.log('❌ Invalid index $index', name: operation);
-      return false;
-    }
-    return true;
-  }
-
-  void _showCannotReduceWarning(BuildContext context, int frozenQty) {
-    SnackBarUtil.showWarning(
-      context,
-      'Cannot reduce below sent quantity ($frozenQty)',
-      title: 'Item Already Sent',
-      duration: const Duration(seconds: 2),
-    );
-  }
-
-  void _showCannotRemoveWarning(BuildContext context, int frozenQty) {
-    SnackBarUtil.showWarning(
-      context,
-      'Cannot remove - $frozenQty already sent to kitchen',
-      title: 'Item Already Sent',
-      duration: const Duration(seconds: 2),
-    );
-  }
-
-  void _showNoNewItemsWarning(BuildContext context) {
-    SnackBarUtil.showWarning(
-      context,
-      'No new items to send. All items already sent to kitchen',
-      title: 'Warning',
-      duration: const Duration(seconds: 2),
-    );
-  }
-
-  void _showSuccessAndRefresh(
-      BuildContext context,
-      TableInfo? tableInfo,
-      int tableId,
-      String message,
-      ) {
-    final tableNumber = tableInfo?.table.tableNumber ?? tableId.toString();
-
-    SnackBarUtil.showSuccess(
-      context,
-      '$message for Table $tableNumber',
-      title: 'Success',
-      duration: const Duration(seconds: 2),
-    );
-
-    final state = getTableState(tableId);
-    state.hasLoadedOrder.value = false;
-
-    final controller = Get.find<TakeOrdersController>();
-    controller.refreshTables();
-
-    NavigationService.goBack();
-  }
-
-  void _logTableSnapshot(int tableId, TableOrderState state) {
-    final buffer = StringBuffer();
-    buffer.writeln('TABLE SNAPSHOT → table:$tableId');
-    for (var i = 0; i < state.orderItems.length; i++) {
-      final it = state.orderItems[i];
-      final frozen = state.getFrozenQuantity(it['id'].toString());
-      buffer.writeln(
-        '[$i] id:${it['id']} name:${it['item_name']} qty:${it['quantity']} frozen:$frozen',
-      );
-    }
-    buffer.writeln('FINAL TOTAL: ${state.finalCheckoutTotal.value}');
-    developer.log(buffer.toString(), name: 'ORDER_STATE');
   }
 
   TableInfo? _parseTableInfo(dynamic tableInfoData) {
     if (tableInfoData is TableInfo) return tableInfoData;
-    if (tableInfoData is Map<String, dynamic>) {
-      return mapToTableInfo(tableInfoData);
-    }
+    if (tableInfoData is Map<String, dynamic>) return mapToTableInfo(tableInfoData);
     return null;
   }
 
-  Map<String, dynamic>? tableInfoToMap(TableInfo? tableInfo) {
-    if (tableInfo == null) return null;
-    return {
-      'id': tableInfo.table.id,
-      'tableNumber': tableInfo.table.tableNumber,
-      'tableType': tableInfo.table.tableType,
-      'capacity': tableInfo.table.capacity,
-      'status': tableInfo.table.status,
-      'description': tableInfo.table.description,
-      'location': tableInfo.table.location,
-      'areaName': tableInfo.areaName,
-      'hotelOwnerId': tableInfo.table.hotelOwnerId,
-      'tableAreaId': tableInfo.table.tableAreaId,
-      'createdAt': tableInfo.table.createdAt,
-      'updatedAt': tableInfo.table.updatedAt,
-      'currentOrder': tableInfo.currentOrder?.toJson(),
-    };
-  }
-
+  // Public method for external use
   TableInfo? mapToTableInfo(Map<String, dynamic>? map) {
     if (map == null) return null;
     try {
@@ -1460,11 +875,278 @@ class OrderManagementController extends GetxController {
         areaName: map['areaName'] as String,
       );
     } catch (e) {
-      developer.log(
-        'Error converting map to TableInfo: $e',
-        name: 'MAP_CONVERSION',
-      );
+      developer.log('Error converting map to TableInfo: $e', name: 'STATE');
       return null;
     }
+  }
+}
+
+// ==================== ITEM MANAGER ====================
+class _ItemManager {
+  final OrderManagementController _controller;
+  _ItemManager(this._controller);
+
+  void addItemToTable(int tableId, Map<String, dynamic> item) {
+    final state = _controller.getTableState(tableId);
+    TableOrderService.mergeOrAddItem(state.orderItems, item);
+    _updateTotal(state);
+  }
+
+  void incrementItemQuantity(int tableId, int index) {
+    final state = _controller.getTableState(tableId);
+    if (!_isValidIndex(index, state.orderItems.length)) return;
+
+    final item = state.orderItems[index];
+    final newQty = (item['quantity'] as int) + 1;
+
+    state.orderItems[index] = TableOrderService.updateItemQuantity(item, newQty);
+    _updateTotal(state);
+    _logTableSnapshot(tableId, state);
+  }
+
+  void decrementItemQuantity(int tableId, int index, BuildContext context) {
+    final state = _controller.getTableState(tableId);
+    if (!_isValidIndex(index, state.orderItems.length)) return;
+
+    final item = state.orderItems[index];
+    final currentQty = item['quantity'] as int;
+    final frozenQty = state.getFrozenQuantity(item['id'].toString());
+
+    if (frozenQty == 0) {
+      if (currentQty > 1) {
+        state.orderItems[index] = TableOrderService.updateItemQuantity(item, currentQty - 1);
+        _updateTotal(state);
+      } else {
+        _removeItem(state, index, context);
+      }
+    } else {
+      if (TableOrderService.canDecrementItem(currentQty, frozenQty)) {
+        state.orderItems[index] = TableOrderService.updateItemQuantity(item, currentQty - 1);
+        _updateTotal(state);
+      } else {
+        _showWarning(context, 'Cannot reduce below sent quantity ($frozenQty)', 'Item Already Sent');
+      }
+    }
+    _logTableSnapshot(tableId, state);
+  }
+
+  void removeItemFromTable(int tableId, int index, BuildContext context) {
+    final state = _controller.getTableState(tableId);
+    if (!_isValidIndex(index, state.orderItems.length)) return;
+
+    final item = state.orderItems[index];
+    final frozenQty = state.getFrozenQuantity(item['id'].toString());
+
+    if (!TableOrderService.canRemoveItem(frozenQty)) {
+      _showWarning(context, 'Cannot remove - $frozenQty already sent to kitchen', 'Item Already Sent');
+      return;
+    }
+
+    _removeItem(state, index, context);
+    _logTableSnapshot(tableId, state);
+  }
+
+  void _updateTotal(TableOrderState state) {
+    final newTotal = TableOrderService.calculateTotal(state.orderItems);
+    state.updateTotal(newTotal);
+  }
+
+  void _removeItem(TableOrderState state, int index, BuildContext context) {
+    final removedItem = state.orderItems.removeAt(index);
+    _updateTotal(state);
+    SnackBarUtil.showInfo(context, '${removedItem['item_name']} removed', title: 'Removed', duration: const Duration(seconds: 1));
+  }
+
+  bool _isValidIndex(int index, int length) {
+    if (index < 0 || index >= length) {
+      developer.log('❌ Invalid index $index', name: 'ITEM_MGMT');
+      return false;
+    }
+    return true;
+  }
+
+  void _showWarning(BuildContext context, String message, String title) {
+    SnackBarUtil.showWarning(context, message, title: title, duration: const Duration(seconds: 2));
+  }
+
+  void _logTableSnapshot(int tableId, TableOrderState state) {
+    final buffer = StringBuffer('TABLE $tableId:\n');
+    for (var i = 0; i < state.orderItems.length; i++) {
+      final it = state.orderItems[i];
+      final frozen = state.getFrozenQuantity(it['id'].toString());
+      buffer.writeln('[$i] ${it['item_name']} qty:${it['quantity']} frozen:$frozen');
+    }
+    buffer.writeln('Total: ${state.finalCheckoutTotal.value}');
+    developer.log(buffer.toString(), name: 'ITEM_MGMT');
+  }
+}
+
+// ==================== ORDER PROCESSOR ====================
+class _OrderProcessor {
+  final OrderManagementController _controller;
+  _OrderProcessor(this._controller);
+
+  Future<void> fetchOrder(int orderId, int tableId) async {
+    final state = _controller.getTableState(tableId);
+    if (state.isLoadingOrder.value || orderId == 0 || state.hasLoadedOrder.value) return;
+
+    try {
+      state.isLoadingOrder.value = true;
+      final orderData = await _controller._orderRepository.getOrderById(orderId);
+
+      state.placedOrderId.value = orderData.data.order.id;
+      state.orderItems.clear();
+      state.frozenItems.clear();
+
+      final processedItems = TableOrderService.processOrderItems(orderData.data.items, state.frozenItems);
+      state.orderItems.addAll(processedItems);
+
+      _controller._itemManager._updateTotal(state);
+      developer.log('Order fetched: ${state.orderItems.length} items', name: 'ORDER_API');
+    } catch (e) {
+      developer.log('Error fetching order: $e', name: 'ORDER_API');
+    } finally {
+      state.isLoadingOrder.value = false;
+      state.hasLoadedOrder.value = true;
+    }
+  }
+
+  Future<void> proceedToCheckout(int tableId, BuildContext context, dynamic tableInfoData, List<Map<String, dynamic>> orderItems) async {
+    final tableInfo = _controller._stateManager._parseTableInfo(tableInfoData);
+    await _processOrder(tableId, context, tableInfo, orderItems, 'KOT sent to manager');
+  }
+
+  Future<void> _processOrder(int tableId, BuildContext context, TableInfo? tableInfo, List<Map<String, dynamic>> orderItems, String successMessage) async {
+    try {
+      _controller.isLoading.value = true;
+      final state = _controller.getTableState(tableId);
+      final newItems = TableOrderService.getNewItems(state.frozenItems, orderItems);
+
+      if (newItems.isEmpty) {
+        SnackBarUtil.showWarning(context, 'No new items to send', title: 'Warning', duration: const Duration(seconds: 2));
+        return;
+      }
+
+      if (state.isReorderScenario) {
+        await _addItemsToExistingOrder(state.placedOrderId.value!, tableId, context, tableInfo, newItems);
+      } else {
+        await _createNewOrder(tableId, context, tableInfo, state, newItems, successMessage);
+      }
+    } catch (e) {
+      developer.log('Order error: $e', name: 'ORDER_API');
+      SnackBarUtil.showError(context, 'Failed to place order', title: 'Error');
+    } finally {
+      _controller.isLoading.value = false;
+    }
+  }
+
+  Future<void> _createNewOrder(int tableId, BuildContext context, TableInfo? tableInfo, TableOrderState state, List<Map<String, dynamic>> newItems, String successMessage) async {
+    final request = CreateOrderRequest(
+      orderData: OrderData(
+        hotelTableId: tableInfo?.table.id ?? tableId,
+        customerName: state.fullNameController.text.trim(),
+        customerPhone: state.phoneController.text.trim(),
+        tableNumber: (tableInfo?.table.tableNumber ?? tableId).toString(),
+        status: 'pending',
+      ),
+      items: newItems.map((item) => OrderItemRequest(
+        menuItemId: item['id'] as int,
+        quantity: item['quantity'] as int,
+        specialInstructions: item['special_instructions'] as String?,
+      )).toList(),
+    );
+
+    final response = await _controller._orderRepository.createOrder(request);
+    final orderId = response.data.order.id;
+    state.placedOrderId.value = orderId;
+    state.addFrozenItems(newItems);
+
+    await showOrderNotification(
+      orderId: orderId,
+      tableNumber: (tableInfo?.table.tableNumber ?? tableId).toString(),
+      itemCount: newItems.length,
+      isNewOrder: true,
+    );
+
+    _showSuccessAndRefresh(context, tableInfo, tableId, successMessage);
+  }
+
+  Future<void> _addItemsToExistingOrder(int orderId, int tableId, BuildContext context, TableInfo? tableInfo, List<Map<String, dynamic>> newItems) async {
+    await _controller._orderRepository.addItemsToOrder(orderId, newItems);
+
+    final state = _controller.getTableState(tableId);
+    state.addFrozenItems(newItems);
+
+    await showOrderNotification(
+      orderId: orderId,
+      tableNumber: (tableInfo?.table.tableNumber ?? tableId).toString(),
+      itemCount: newItems.length,
+      isNewOrder: false,
+    );
+
+    _showSuccessAndRefresh(context, tableInfo, tableId, 'Items added to existing order');
+  }
+
+  void _showSuccessAndRefresh(BuildContext context, TableInfo? tableInfo, int tableId, String message) {
+    final tableNumber = tableInfo?.table.tableNumber ?? tableId.toString();
+    SnackBarUtil.showSuccess(context, '$message for Table $tableNumber', title: 'Success', duration: const Duration(seconds: 2));
+
+    _controller.getTableState(tableId).hasLoadedOrder.value = false;
+    Get.find<TakeOrdersController>().refreshTables();
+    NavigationService.goBack();
+  }
+}
+
+// ==================== UI HELPER ====================
+class _UIHelper {
+  final OrderManagementController _controller;
+  _UIHelper(this._controller);
+
+  void toggleUrgentForTable(int tableId, BuildContext context, dynamic tableInfoData) {
+    final tableInfo = _controller._stateManager._parseTableInfo(tableInfoData);
+    final state = _controller.getTableState(tableId);
+    state.isMarkAsUrgent.value = !state.isMarkAsUrgent.value;
+
+    final tableNumber = tableInfo?.table.tableNumber ?? tableId.toString();
+    final message = state.isMarkAsUrgent.value ? 'Table $tableNumber marked as urgent' : 'Table $tableNumber removed from urgent';
+
+    SnackBarUtil.show(context, message,
+        title: state.isMarkAsUrgent.value ? 'Marked as urgent' : 'Normal priority',
+        type: state.isMarkAsUrgent.value ? SnackBarType.success : SnackBarType.info,
+        duration: const Duration(seconds: 1));
+  }
+
+  void navigateToAddItems(int tableId, dynamic tableInfoData) {
+    try {
+      final tableMap = tableInfoData is TableInfo ? tableInfoToMap(tableInfoData) : (tableInfoData as Map<String, dynamic>?);
+      NavigationService.addItems(tableMap);
+    } catch (e) {
+      developer.log('Navigation error: $e', name: 'UI');
+      SnackBarUtil.showError(Get.context!, 'Unable to proceed', title: 'Error');
+    }
+  }
+
+  bool canProceedToCheckout(int tableId) {
+    return _controller.getTableState(tableId).isAvailableForNewOrder;
+  }
+
+  // Public method for external use
+  Map<String, dynamic>? tableInfoToMap(TableInfo? tableInfo) {
+    if (tableInfo == null) return null;
+    return {
+      'id': tableInfo.table.id,
+      'tableNumber': tableInfo.table.tableNumber,
+      'tableType': tableInfo.table.tableType,
+      'capacity': tableInfo.table.capacity,
+      'status': tableInfo.table.status,
+      'description': tableInfo.table.description,
+      'location': tableInfo.table.location,
+      'areaName': tableInfo.areaName,
+      'hotelOwnerId': tableInfo.table.hotelOwnerId,
+      'tableAreaId': tableInfo.table.tableAreaId,
+      'createdAt': tableInfo.table.createdAt,
+      'updatedAt': tableInfo.table.updatedAt,
+      'currentOrder': tableInfo.currentOrder?.toJson(),
+    };
   }
 }

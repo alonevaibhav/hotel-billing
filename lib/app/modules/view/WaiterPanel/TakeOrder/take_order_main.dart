@@ -9,9 +9,6 @@ class TakeOrderContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // final controller = Get.put(TakeOrdersController());
-    //
-    // controller.fetchTablesData();
     final controller = Get.put(TakeOrdersController(), permanent: true, // Keeps it alive even when page is closed
     );
 
