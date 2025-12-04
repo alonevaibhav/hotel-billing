@@ -63,7 +63,6 @@ class ApiService {
   }
 
   // ==================== Header Builder ====================
-  // ✅ FIXED: Made this method async to properly handle token retrieval
   static Future<Map<String, String>> _getHeaders(
       {bool includeToken = true}) async {
     final token = includeToken ? await getToken() : null;
@@ -83,9 +82,8 @@ class ApiService {
     bool includeToken = true,
   }) async {
     final uri =
-        Uri.parse('$baseUrl$endpoint').replace(queryParameters: queryParams);
-    final headers =
-        await _getHeaders(includeToken: includeToken); // ✅ FIXED: Added await
+    Uri.parse('$baseUrl$endpoint').replace(queryParameters: queryParams);
+    final headers = await _getHeaders(includeToken: includeToken);
 
     return _sendRequest<T>(
       method: 'GET',
@@ -102,8 +100,7 @@ class ApiService {
     bool includeToken = true,
   }) async {
     final uri = Uri.parse('$baseUrl$endpoint');
-    final headers =
-        await _getHeaders(includeToken: includeToken); // ✅ FIXED: Added await
+    final headers = await _getHeaders(includeToken: includeToken);
 
     return _sendRequest<T>(
       method: 'POST',
@@ -122,8 +119,7 @@ class ApiService {
     bool includeToken = true,
   }) async {
     final uri = Uri.parse('$baseUrl$endpoint');
-    final headers =
-        await _getHeaders(includeToken: includeToken); // ✅ FIXED: Added await
+    final headers = await _getHeaders(includeToken: includeToken);
 
     return _sendRequest<T>(
       method: 'PUT',
@@ -135,6 +131,26 @@ class ApiService {
     );
   }
 
+  // ==================== NEW: PATCH Method ====================
+  static Future<ApiResponse<T>> patch<T>({
+    required String endpoint,
+    required Map<String, dynamic> body,
+    required T Function(dynamic) fromJson,
+    bool includeToken = true,
+  }) async {
+    final uri = Uri.parse('$baseUrl$endpoint');
+    final headers = await _getHeaders(includeToken: includeToken);
+
+    return _sendRequest<T>(
+      method: 'PATCH',
+      uri: uri,
+      body: body,
+      fromJson: fromJson,
+      requestFunc: () =>
+          http.patch(uri, headers: headers, body: json.encode(body)),
+    );
+  }
+
   static Future<ApiResponse<T>> delete<T>({
     required String endpoint,
     Map<String, dynamic>? body,
@@ -142,8 +158,7 @@ class ApiService {
     bool includeToken = true,
   }) async {
     final uri = Uri.parse('$baseUrl$endpoint');
-    final headers =
-        await _getHeaders(includeToken: includeToken); // ✅ FIXED: Added await
+    final headers = await _getHeaders(includeToken: includeToken);
 
     return _sendRequest<T>(
       method: 'DELETE',
@@ -172,8 +187,7 @@ class ApiService {
 
     try {
       final request = http.MultipartRequest('POST', uri);
-      final headers =
-          await _getHeaders(includeToken: includeToken); // ✅ FIXED: Added await
+      final headers = await _getHeaders(includeToken: includeToken);
       headers.remove('Content-Type'); // Remove Content-Type for multipart
       request.headers.addAll(headers);
       request.fields.addAll(fields);
@@ -199,7 +213,7 @@ class ApiService {
     }
   }
 
-  // ==================== NEW: Multipart PUT Request ====================
+  // ==================== Multipart PUT Request ====================
   static Future<ApiResponse<T>> multipartPut<T>({
     required String endpoint,
     required Map<String, String> fields,
@@ -240,6 +254,47 @@ class ApiService {
     }
   }
 
+  // ==================== NEW: Multipart PATCH Request ====================
+  static Future<ApiResponse<T>> multipartPatch<T>({
+    required String endpoint,
+    required Map<String, String> fields,
+    required List<MultipartFiles> files,
+    required T Function(dynamic) fromJson,
+    bool includeToken = true,
+  }) async {
+    final uri = Uri.parse('$baseUrl$endpoint');
+
+    _logRequest('MULTIPART PATCH', uri, body: fields);
+    _logFiles(files);
+
+    try {
+      final request = http.MultipartRequest('PATCH', uri);
+      final headers = await _getHeaders(includeToken: includeToken);
+      headers.remove('Content-Type'); // Remove Content-Type for multipart
+      request.headers.addAll(headers);
+      request.fields.addAll(fields);
+
+      for (var file in files) {
+        request.files.add(await http.MultipartFile.fromPath(
+          file.field,
+          file.filePath,
+          contentType: file.contentType,
+        ));
+      }
+
+      final streamedResponse = await request.send().timeout(_timeoutDuration);
+      final response = await http.Response.fromStream(streamedResponse);
+      _logResponse(response);
+      return _handleResponse<T>(response, fromJson);
+    } on SocketException {
+      return _handleError('MULTIPART PATCH', uri, 'No internet connection');
+    } on TimeoutException {
+      return _handleError('MULTIPART PATCH', uri, 'Request timeout');
+    } catch (e) {
+      return _handleError('MULTIPART PATCH', uri, e.toString());
+    }
+  }
+
   // ==================== Response Handling ====================
 
   static Future<ApiResponse<T>> _sendRequest<T>({
@@ -264,9 +319,9 @@ class ApiService {
   }
 
   static ApiResponse<T> _handleResponse<T>(
-    http.Response response,
-    T Function(dynamic) fromJson,
-  ) {
+      http.Response response,
+      T Function(dynamic) fromJson,
+      ) {
     final statusCode = response.statusCode;
     final responseBody = response.body;
 
@@ -300,10 +355,10 @@ class ApiService {
   }
 
   static ApiResponse<T> _handleError<T>(
-    String method,
-    Uri uri,
-    String message,
-  ) {
+      String method,
+      Uri uri,
+      String message,
+      ) {
     _logError(method, uri, message);
     return ApiResponse<T>(
       success: false,
@@ -379,7 +434,7 @@ class ApiService {
       try {
         final jsonResponse = json.decode(response.body);
         final prettyJson =
-            const JsonEncoder.withIndent('  ').convert(jsonResponse);
+        const JsonEncoder.withIndent('  ').convert(jsonResponse);
         print('│ 📄 RESPONSE BODY:');
         for (var line in prettyJson.split('\n')) {
           print('│   $line');
@@ -414,7 +469,6 @@ class ApiService {
 
   // ==================== Debug Method ====================
 
-  // ✅ NEW: Add this method to debug token issues
   static Future<void> debugTokenInfo() async {
     if (kDebugMode) {
       final token = await getToken();
@@ -432,7 +486,7 @@ class ApiService {
     }
   }
 
-  // ==================== NEW: File Type Validation ====================
+  // ==================== File Type Validation ====================
 
   /// Validates if a file type is supported by the API
   static bool isFileTypeSupported(String filePath) {
@@ -494,7 +548,7 @@ class MultipartFiles {
   static MediaType _detectContentType(String path) {
     final ext = extension(path).toLowerCase().replaceFirst('.', '');
     switch (ext) {
-      // Images
+    // Images
       case 'jpg':
       case 'jpeg':
         return MediaType('image', 'jpeg');
@@ -503,7 +557,7 @@ class MultipartFiles {
       case 'gif':
         return MediaType('image', 'gif');
 
-      // Documents
+    // Documents
       case 'pdf':
         return MediaType('application', 'pdf');
       case 'doc':
@@ -517,7 +571,7 @@ class MultipartFiles {
         return MediaType('application',
             'vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
-      // Videos
+    // Videos
       case 'mp4':
         return MediaType('video', 'mp4');
       case 'avi':
