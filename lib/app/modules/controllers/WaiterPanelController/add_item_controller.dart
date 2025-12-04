@@ -1,28 +1,31 @@
+//
 // import 'package:flutter/material.dart';
 // import 'package:get/get.dart';
-// import 'package:hotelbilling/app/modules/controllers/WaiterPanelController/select_item_controller.dart';
 // import 'dart:developer' as developer;
-// import '../../../core/constants/api_constant.dart';
-// import '../../../core/services/api_service.dart';
 // import '../../../core/utils/snakbar_utils.dart';
 // import '../../../data/models/ResponseModel/category_model.dart';
-// import '../../../data/models/ResponseModel/subcategory_model.dart';
+// import '../../../data/repositories/menu_repository.dart';
 // import '../../../route/app_routes.dart';
+// import '../../controllers/WaiterPanelController/select_item_controller.dart';
 // import '../../model/table_order_state_mode.dart';
+// import '../../service/menu_item_service.dart';
 //
 // class AddItemsController extends GetxController {
+//   // Dependencies
+//   final MenuRepository _menuRepository = MenuRepository();
+//
 //   // Search functionality
 //   final searchController = TextEditingController();
 //   final searchQuery = ''.obs;
 //
-//   // Categories and filtering
+//   // Categories
 //   final categories = <String>[].obs;
 //   final categoryObjects = <Category>[].obs;
 //   final selectedCategory = 'All'.obs;
 //   final selectedCategoryId = Rxn<int>();
 //   final activeFilters = <String>[].obs;
 //
-//   // Menu data
+//   // Menu items
 //   final filteredItems = <Map<String, dynamic>>[].obs;
 //   final allItems = <Map<String, dynamic>>[].obs;
 //   final selectedItems = <Map<String, dynamic>>[].obs;
@@ -39,7 +42,7 @@
 //   void onInit() {
 //     super.onInit();
 //     _setupSearchListener();
-//     loadCategoriesFromAPI();
+//     loadCategories();
 //     developer.log('AddItemsController initialized');
 //   }
 //
@@ -48,6 +51,8 @@
 //     searchController.dispose();
 //     super.onClose();
 //   }
+//
+//   // ==================== INITIALIZATION ====================
 //
 //   void setTableContext(Map<String, dynamic>? table) {
 //     currentTable.value = table;
@@ -58,49 +63,40 @@
 //   void _setupSearchListener() {
 //     searchController.addListener(() {
 //       searchQuery.value = searchController.text;
-//       _filterItems();
+//       _applyFilters();
 //     });
 //   }
 //
-//   // Load categories from API
-//   Future<void> loadCategoriesFromAPI() async {
+//   // ==================== CATEGORY MANAGEMENT ====================
+//
+//   /// Load categories from API
+//   Future<void> loadCategories() async {
 //     try {
 //       isLoading.value = true;
-//       developer.log('Fetching categories from API...');
+//       developer.log('Loading categories...', name: 'ADD_ITEMS');
 //
-//       final apiResponse = await ApiService.get<CategoryResponse>(
-//         endpoint: ApiConstants.waiterGetMenuCategory,
-//         fromJson: (json) => CategoryResponse.fromJson(json),
-//         includeToken: true,
-//       );
+//       final response = await _menuRepository.getCategories();
 //
-//       if (apiResponse?.data?.success == true &&
-//           apiResponse!.data!.data.isNotEmpty) {
-//         categoryObjects.value =
-//             apiResponse.data!.data.where((cat) => cat.isActive == 1).toList();
+//       if (response.success && response.data.isNotEmpty) {
+//         categoryObjects.value = MenuItemService.getActiveCategories(response);
+//         categories.value = MenuItemService.buildCategoryNames(categoryObjects);
 //
-//         // Build category names list
-//         categories.value = [
-//           'All',
-//           ...categoryObjects.map((cat) => cat.categoryName).toList()..sort()
-//         ];
-//
-//         developer.log('Categories loaded: ${categories.length}');
+//         developer.log('Categories loaded: ${categories.length}', name: 'ADD_ITEMS');
 //
 //         // Load all items initially
 //         await _loadAllItems();
 //       } else {
-//         _showErrorAndUseFallback('Failed to load categories');
+//         _handleCategoryLoadError('Failed to load categories');
 //       }
 //     } catch (e) {
-//       developer.log('Error loading categories: $e');
-//       _showErrorAndUseFallback('Error loading categories: $e');
+//       developer.log('Error loading categories: $e', name: 'ADD_ITEMS');
+//       _handleCategoryLoadError('Error loading categories: $e');
 //     } finally {
 //       isLoading.value = false;
 //     }
 //   }
 //
-//   void _showErrorAndUseFallback(String message) {
+//   void _handleCategoryLoadError(String message) {
 //     SnackBarUtil.showError(
 //       Get.context!,
 //       message,
@@ -110,7 +106,45 @@
 //     categories.value = ['All'];
 //   }
 //
-//   // Load all items across all categories
+//   /// Select category
+//   Future<void> selectCategory(String categoryName) async {
+//     if (selectedCategory.value == categoryName) return;
+//
+//     selectedCategory.value = categoryName;
+//     developer.log('Category selected: $categoryName', name: 'ADD_ITEMS');
+//
+//     if (categoryName == 'All') {
+//       selectedCategoryId.value = null;
+//       _applyFilters();
+//       return;
+//     }
+//
+//     final category = categoryObjects.firstWhereOrNull(
+//           (cat) => cat.categoryName == categoryName,
+//     );
+//
+//     if (category == null) {
+//       developer.log('Category not found: $categoryName', name: 'ADD_ITEMS');
+//       return;
+//     }
+//
+//     selectedCategoryId.value = category.id;
+//
+//     // Check if items already loaded
+//     final hasItems = allItems.any(
+//           (item) => item['menu_category_id'] == category.id,
+//     );
+//
+//     if (!hasItems) {
+//       await _loadItemsForCategory(category.id, categoryName);
+//     }
+//
+//     _applyFilters();
+//   }
+//
+//   // ==================== ITEM LOADING ====================
+//
+//   /// Load all items across categories
 //   Future<void> _loadAllItems() async {
 //     try {
 //       allItems.clear();
@@ -119,83 +153,50 @@
 //         await _loadItemsForCategory(category.id, category.categoryName);
 //       }
 //
-//       _sortAndFilterItems();
-//       developer.log('All items loaded: ${allItems.length}');
+//       MenuItemService.sortItemsByName(allItems);
+//       _applyFilters();
+//
+//       developer.log('All items loaded: ${allItems.length}', name: 'ADD_ITEMS');
 //     } catch (e) {
-//       developer.log('Error loading all items: $e');
+//       developer.log('Error loading all items: $e', name: 'ADD_ITEMS');
 //     }
 //   }
 //
-//   // Load items for specific category (called when category is clicked)
-//   Future<void> selectCategory(String categoryName) async {
-//     if (selectedCategory.value == categoryName) return;
-//
-//     selectedCategory.value = categoryName;
-//     developer.log('Category selected: $categoryName');
-//
-//     if (categoryName == 'All') {
-//       selectedCategoryId.value = null;
-//       _filterItems();
-//       return;
-//     }
-//
-//     // Find category object
-//     final category = categoryObjects
-//         .firstWhereOrNull((cat) => cat.categoryName == categoryName);
-//
-//     if (category == null) {
-//       developer.log('Category not found: $categoryName');
-//       return;
-//     }
-//
-//     selectedCategoryId.value = category.id;
-//
-//     // Check if items for this category are already loaded
-//     final hasItems =
-//         allItems.any((item) => item['menu_category_id'] == category.id);
-//
-//     if (!hasItems) {
-//       // Load items from API
-//       await _loadItemsForCategory(category.id, categoryName);
-//     }
-//
-//     _filterItems();
-//   }
-//
-//   // Fetch items for a specific category
-//   Future<void> _loadItemsForCategory(
-//       int categoryId, String categoryName) async {
+//   /// Load items for specific category
+//   Future<void> _loadItemsForCategory(int categoryId, String categoryName) async {
 //     try {
 //       isLoadingItems.value = true;
-//       developer
-//           .log('Fetching items for category: $categoryName (ID: $categoryId)');
-//
-//       final apiResponse = await ApiService.get<MenuItemResponse>(
-//         endpoint: ApiConstants.getCleanerMenuSubcategory(categoryId),
-//         fromJson: (json) => MenuItemResponse.fromJson(json),
-//         includeToken: true,
+//       developer.log(
+//         'Loading items for: $categoryName (ID: $categoryId)',
+//         name: 'ADD_ITEMS',
 //       );
 //
-//       if (apiResponse?.data?.success == true &&
-//           apiResponse!.data!.data.isNotEmpty) {
+//       final response = await _menuRepository.getMenuItemsByCategory(categoryId);
+//
+//       if (response.success && response.data.isNotEmpty) {
 //         // Remove old items from this category
 //         allItems.removeWhere((item) => item['menu_category_id'] == categoryId);
 //
 //         // Process and add new items
-//         for (var item in apiResponse.data!.data) {
-//           if (item.isActive == 1 && item.isAvailable == 1) {
-//             final processedItem = _processMenuItem(item, categoryName);
-//             allItems.add(processedItem);
-//           }
-//         }
+//         final processedItems = MenuItemService.processMenuItems(
+//           response,
+//           categoryName,
+//         );
+//
+//         allItems.addAll(processedItems);
 //
 //         developer.log(
-//             'Loaded ${apiResponse.data!.data.length} items for $categoryName');
+//           'Loaded ${processedItems.length} items for $categoryName',
+//           name: 'ADD_ITEMS',
+//         );
 //       } else {
-//         developer.log('No items found for category: $categoryName');
+//         developer.log('No items found for: $categoryName', name: 'ADD_ITEMS');
 //       }
 //     } catch (e) {
-//       developer.log('Error loading items for category $categoryName: $e');
+//       developer.log(
+//         'Error loading items for $categoryName: $e',
+//         name: 'ADD_ITEMS',
+//       );
 //       SnackBarUtil.showError(
 //         Get.context!,
 //         'Failed to load items for $categoryName',
@@ -207,92 +208,55 @@
 //     }
 //   }
 //
-//   // Process menu item from API response
-//   Map<String, dynamic> _processMenuItem(MenuItem item, String categoryName) {
-//     return {
-//       'id': item.id,
-//       'hotel_owner_id': item.hotelOwnerId,
-//       'item_name': item.itemName,
-//       'description': item.description,
-//       'category_display': categoryName,
-//       'menu_category_id': item.menuCategoryId,
-//       'image_url': item.imageUrl,
-//       'price': item.price,
-//       'preparation_time': item.preparationTime,
-//       'is_active': item.isActive,
-//       'is_featured': item.isFeatured,
-//       'is_vegetarian': item.isVegetarian,
-//       'display_order': item.displayOrder,
-//       'menu_code': item.menuCode,
-//       'is_available': item.isAvailable,
-//       'spice_level': item.spiceLevel,
-//       'quantity': 0, // Initialize quantity
-//     };
+//   // ==================== FILTERING ====================
+//
+//   /// Apply all filters
+//   void _applyFilters() {
+//     filteredItems.value = MenuItemService.filterItems(
+//       allItems: allItems,
+//       selectedCategory: selectedCategory.value,
+//       searchQuery: searchQuery.value,
+//       activeFilters: activeFilters,
+//     );
+//
+//     developer.log(
+//       'Filtered: ${filteredItems.length}/${allItems.length} items',
+//       name: 'ADD_ITEMS',
+//     );
 //   }
 //
-//   void _sortAndFilterItems() {
-//     allItems.sort((a, b) =>
-//         (a['item_name'] as String).compareTo(b['item_name'] as String));
-//     _filterItems();
-//   }
-//
-//   void _filterItems() {
-//     if (allItems.isEmpty) {
-//       filteredItems.value = [];
-//       return;
-//     }
-//
-//     var filtered = allItems.where((item) {
-//       // Category filter
-//       bool matchesCategory = selectedCategory.value == 'All' ||
-//           item['category_display'] == selectedCategory.value;
-//
-//       // Search filter
-//       bool matchesSearch = searchQuery.value.isEmpty ||
-//           (item['item_name'] as String)
-//               .toLowerCase()
-//               .contains(searchQuery.value.toLowerCase());
-//
-//       // Active filters
-//       bool matchesFilters = true;
-//       if (activeFilters.contains('Vegetarian')) {
-//         matchesFilters = matchesFilters && (item['is_vegetarian'] == 1);
-//       }
-//       if (activeFilters.contains('Featured')) {
-//         matchesFilters = matchesFilters && (item['is_featured'] == 1);
-//       }
-//
-//       return matchesCategory && matchesSearch && matchesFilters;
-//     }).toList();
-//
-//     // Sort filtered items
-//     filtered.sort((a, b) =>
-//         (a['item_name'] as String).compareTo(b['item_name'] as String));
-//
-//     filteredItems.value = filtered;
-//     developer.log('Filtered: ${filtered.length}/${allItems.length} items');
-//   }
-//
+//   /// Toggle filter option
 //   void toggleFilter(String filter) {
 //     if (activeFilters.contains(filter)) {
 //       activeFilters.remove(filter);
 //     } else {
 //       activeFilters.add(filter);
 //     }
-//     _filterItems();
-//     developer.log('Filter toggled: $filter');
+//     _applyFilters();
+//     developer.log('Filter toggled: $filter', name: 'ADD_ITEMS');
 //   }
 //
+//   /// Clear search
+//   void clearSearch() {
+//     searchController.clear();
+//     searchQuery.value = '';
+//     _applyFilters();
+//   }
+//
+//   // ==================== QUANTITY MANAGEMENT ====================
+//
+//   /// Increment item quantity
 //   void incrementItemQuantity(Map<String, dynamic> item) {
 //     final index = allItems.indexWhere((el) => el['id'] == item['id']);
 //     if (index != -1) {
 //       allItems[index]['quantity'] = (allItems[index]['quantity'] as int) + 1;
 //       _updateSelectedItems();
-//       _filterItems();
-//       developer.log('Incremented ${item['item_name']}');
+//       _applyFilters();
+//       developer.log('Incremented: ${item['item_name']}', name: 'ADD_ITEMS');
 //     }
 //   }
 //
+//   /// Decrement item quantity
 //   void decrementItemQuantity(Map<String, dynamic> item) {
 //     final index = allItems.indexWhere((el) => el['id'] == item['id']);
 //     if (index != -1) {
@@ -300,24 +264,22 @@
 //       if (currentQty > 0) {
 //         allItems[index]['quantity'] = currentQty - 1;
 //         _updateSelectedItems();
-//         _filterItems();
-//         developer.log('Decremented ${item['item_name']}');
+//         _applyFilters();
+//         developer.log('Decremented: ${item['item_name']}', name: 'ADD_ITEMS');
 //       }
 //     }
 //   }
 //
 //   void _updateSelectedItems() {
-//     selectedItems.value =
-//         allItems.where((item) => (item['quantity'] as int) > 0).toList();
+//     selectedItems.value = MenuItemService.getSelectedItems(allItems);
 //   }
+//
+//   // ==================== ADD TO TABLE ====================
+//
+//   /// Add selected items to table order
 //   void addSelectedItemsToTable(BuildContext context) {
 //     if (selectedItems.isEmpty) {
-//       SnackBarUtil.showWarning(
-//         context,
-//         'Please select at least one item',
-//         title: 'No Items Selected',
-//         duration: const Duration(seconds: 1),
-//       );
+//       _showNoItemsWarning(context);
 //       return;
 //     }
 //
@@ -326,129 +288,123 @@
 //       final orderController = Get.find<OrderManagementController>();
 //       final tableState = orderController.getTableState(tableId);
 //
-//       developer.log('=== ADDING ITEMS ===');
-//       developer.log('Total selected items: ${selectedItems.length}');
-//       developer.log('Selected items: $selectedItems');
+//       developer.log('=== ADDING ITEMS ===', name: 'ADD_ITEMS');
+//       developer.log('Total selected: ${selectedItems.length}', name: 'ADD_ITEMS');
 //
-//       for (var item in selectedItems) {
-//         final id = item['id'];
-//         final quantity = item['quantity'] as int;
-//         final price = double.parse(item['price'].toString());
-//
-//         developer.log('Processing item:');
-//         developer.log('  ID: $id (Type: ${id.runtimeType})');
-//         developer.log('  Quantity: $quantity (Type: ${quantity.runtimeType})');
-//         developer.log('  Price: $price');
-//         developer.log('  Item Name: ${item['item_name']}');
-//
-//         // ✅ FIX: Check if item already exists
-//         final existingIndex = tableState.orderItems.indexWhere((e) => e['id'] == id);
-//
-//         if (existingIndex >= 0) {
-//           // ✅ MERGE: Item exists, update quantity
-//           final existing = tableState.orderItems[existingIndex];
-//           final oldQty = existing['quantity'] as int;
-//           final newQty = oldQty + quantity;
-//
-//           existing['quantity'] = newQty;
-//           existing['total_price'] = price * newQty;
-//           tableState.orderItems[existingIndex] = existing;
-//
-//           developer.log('✅ MERGED: ${item['item_name']} - Old: $oldQty, New: $newQty');
-//         } else {
-//           // ✅ NEW ITEM: Add fresh row
-//           final orderItem = {
-//             'id': id,
-//             'item_name': item['item_name'],
-//             'price': price,
-//             'quantity': quantity,
-//             'category': item['category_display'],
-//             'description': item['description'] ?? '',
-//             'preparation_time': item['preparation_time'] ?? 0,
-//             'is_vegetarian': item['is_vegetarian'] ?? 0,
-//             'is_featured': item['is_featured'] ?? 0,
-//             'total_price': price * quantity,
-//             'added_at': DateTime.now().toIso8601String(),
-//           };
-//
-//           tableState.orderItems.add(orderItem);
-//           developer.log('✅ NEW ITEM: ${item['item_name']} - Qty: $quantity');
-//         }
+//       for (var menuItem in selectedItems) {
+//         final orderItem = MenuItemService.createOrderItem(menuItem);
+//         _mergeOrAddToOrder(tableState, orderItem);
 //       }
 //
 //       _updateTableTotal(tableState);
-//
-//       final tableNumber = currentTable.value?['tableNumber'] ?? tableId;
-//       final totalItems = selectedItems.fold<int>(
-//           0, (sum, item) => sum + (item['quantity'] as int));
-//
-//       developer.log('✅ SUCCESS: Added $totalItems items to table $tableId');
-//       developer.log('=== END ADD ITEMS ===');
-//
-//       SnackBarUtil.showSuccess(
-//         context,
-//         '$totalItems items added to Table $tableNumber',
-//         title: 'Items Added',
-//         duration: const Duration(seconds: 1),
-//       );
-//
-//       clearAllSelections();
-//       NavigationService.goBack();
+//       _showSuccessAndNavigateBack(context);
 //     } catch (e) {
-//       developer.log('❌ ERROR: $e');
-//       SnackBarUtil.showError(
-//         context,
-//         'Failed to add items to order: $e',
-//         title: 'Error',
-//         duration: const Duration(seconds: 2),
+//       developer.log('Error adding items: $e', name: 'ADD_ITEMS');
+//       _showAddItemsError(context, e);
+//     }
+//   }
+//
+//   void _mergeOrAddToOrder(
+//       TableOrderState tableState,
+//       Map<String, dynamic> orderItem,
+//       ) {
+//     final id = orderItem['id'];
+//     final existingIndex = tableState.orderItems.indexWhere((e) => e['id'] == id);
+//
+//     if (existingIndex >= 0) {
+//       // Merge with existing item
+//       final existing = tableState.orderItems[existingIndex];
+//       final oldQty = existing['quantity'] as int;
+//       final newQty = oldQty + (orderItem['quantity'] as int);
+//       final price = existing['price'] as double;
+//
+//       existing['quantity'] = newQty;
+//       existing['total_price'] = price * newQty;
+//       tableState.orderItems[existingIndex] = existing;
+//
+//       developer.log(
+//         '✅ MERGED: ${orderItem['item_name']} - Old: $oldQty, New: $newQty',
+//         name: 'ADD_ITEMS',
+//       );
+//     } else {
+//       // Add new item
+//       tableState.orderItems.add(orderItem);
+//       developer.log(
+//         '✅ NEW: ${orderItem['item_name']} - Qty: ${orderItem['quantity']}',
+//         name: 'ADD_ITEMS',
 //       );
 //     }
 //   }
 //
-//
 //   void _updateTableTotal(TableOrderState tableState) {
-//     double total = 0.0;
-//     for (var item in tableState.orderItems) {
-//       total += item['total_price'] as double;
-//     }
+//     final total = tableState.orderItems.fold<double>(
+//       0.0,
+//           (sum, item) => sum + (item['total_price'] as double),
+//     );
 //     tableState.finalCheckoutTotal.value = total;
 //   }
 //
-//   int get totalSelectedItems {
-//     return selectedItems.fold<int>(
-//         0, (sum, item) => sum + (item['quantity'] as int));
+//   void _showSuccessAndNavigateBack(BuildContext context) {
+//     final tableNumber = currentTable.value?['tableNumber'] ?? currentTableId.value;
+//     final totalItems = MenuItemService.calculateTotalQuantity(selectedItems);
+//
+//     developer.log(
+//       '✅ SUCCESS: Added $totalItems items to table $currentTableId',
+//       name: 'ADD_ITEMS',
+//     );
+//
+//     SnackBarUtil.showSuccess(
+//       context,
+//       '$totalItems items added to Table $tableNumber',
+//       title: 'Items Added',
+//       duration: const Duration(seconds: 1),
+//     );
+//
+//     clearAllSelections();
+//     NavigationService.goBack();
 //   }
 //
-//   double get totalSelectedPrice {
-//     return selectedItems.fold<double>(0.0, (sum, item) {
-//       final price = double.parse(item['price'].toString());
-//       final quantity = item['quantity'] as int;
-//       return sum + (price * quantity);
-//     });
+//   void _showNoItemsWarning(BuildContext context) {
+//     SnackBarUtil.showWarning(
+//       context,
+//       'Please select at least one item',
+//       title: 'No Items Selected',
+//       duration: const Duration(seconds: 1),
+//     );
 //   }
 //
+//   void _showAddItemsError(BuildContext context, dynamic error) {
+//     SnackBarUtil.showError(
+//       context,
+//       'Failed to add items to order: $error',
+//       title: 'Error',
+//       duration: const Duration(seconds: 2),
+//     );
+//   }
+//
+//   // ==================== COMPUTED PROPERTIES ====================
+//
+//   int get totalSelectedItems =>
+//       MenuItemService.calculateTotalQuantity(selectedItems);
+//
+//   double get totalSelectedPrice =>
+//       MenuItemService.calculateTotalPrice(selectedItems);
+//
+//   // ==================== UTILITIES ====================
+//
+//   /// Clear all selections
 //   void clearAllSelections() {
-//     for (var item in allItems) {
-//       item['quantity'] = 0;
-//     }
+//     MenuItemService.resetItemQuantities(allItems);
 //     selectedItems.clear();
-//     _filterItems();
-//     developer.log('All selections cleared');
+//     _applyFilters();
+//     developer.log('All selections cleared', name: 'ADD_ITEMS');
 //   }
 //
-//   void clearSearch() {
-//     searchController.clear();
-//     searchQuery.value = '';
-//     _filterItems();
-//   }
-//
+//   /// Refresh categories
 //   Future<void> refreshCategories() async {
-//     await loadCategoriesFromAPI();
+//     await loadCategories();
 //   }
 // }
-
-
-// lib/app/modules/waiter_panel/controllers/add_items_controller.dart
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -481,9 +437,10 @@ class AddItemsController extends GetxController {
   final allItems = <Map<String, dynamic>>[].obs;
   final selectedItems = <Map<String, dynamic>>[].obs;
 
-  // Loading states
+  // Loading & Error states
   final isLoading = false.obs;
   final isLoadingItems = false.obs;
+  final errorMessage = ''.obs;
 
   // Table context
   final currentTable = Rxn<Map<String, dynamic>>();
@@ -518,12 +475,24 @@ class AddItemsController extends GetxController {
     });
   }
 
+  // ==================== ERROR HANDLING ====================
+
+  void _setError(String message) {
+    errorMessage.value = message;
+    developer.log('Error set: $message', name: 'ADD_ITEMS');
+  }
+
+  void _clearError() {
+    errorMessage.value = '';
+  }
+
   // ==================== CATEGORY MANAGEMENT ====================
 
   /// Load categories from API
   Future<void> loadCategories() async {
     try {
       isLoading.value = true;
+      _clearError();
       developer.log('Loading categories...', name: 'ADD_ITEMS');
 
       final response = await _menuRepository.getCategories();
@@ -537,10 +506,12 @@ class AddItemsController extends GetxController {
         // Load all items initially
         await _loadAllItems();
       } else {
+        _setError('No categories available');
         _handleCategoryLoadError('Failed to load categories');
       }
     } catch (e) {
       developer.log('Error loading categories: $e', name: 'ADD_ITEMS');
+      _setError('Failed to load menu categories. Please try again.');
       _handleCategoryLoadError('Error loading categories: $e');
     } finally {
       isLoading.value = false;
@@ -548,12 +519,14 @@ class AddItemsController extends GetxController {
   }
 
   void _handleCategoryLoadError(String message) {
-    SnackBarUtil.showError(
-      Get.context!,
-      message,
-      title: 'Error',
-      duration: const Duration(seconds: 2),
-    );
+    if (Get.context != null) {
+      SnackBarUtil.showError(
+        Get.context!,
+        message,
+        title: 'Error',
+        duration: const Duration(seconds: 2),
+      );
+    }
     categories.value = ['All'];
   }
 
@@ -610,6 +583,7 @@ class AddItemsController extends GetxController {
       developer.log('All items loaded: ${allItems.length}', name: 'ADD_ITEMS');
     } catch (e) {
       developer.log('Error loading all items: $e', name: 'ADD_ITEMS');
+      _setError('Failed to load menu items');
     }
   }
 
@@ -648,12 +622,14 @@ class AddItemsController extends GetxController {
         'Error loading items for $categoryName: $e',
         name: 'ADD_ITEMS',
       );
-      SnackBarUtil.showError(
-        Get.context!,
-        'Failed to load items for $categoryName',
-        title: 'Error',
-        duration: const Duration(seconds: 2),
-      );
+      if (Get.context != null) {
+        SnackBarUtil.showError(
+          Get.context!,
+          'Failed to load items for $categoryName',
+          title: 'Error',
+          duration: const Duration(seconds: 2),
+        );
+      }
     } finally {
       isLoadingItems.value = false;
     }
@@ -851,8 +827,9 @@ class AddItemsController extends GetxController {
     developer.log('All selections cleared', name: 'ADD_ITEMS');
   }
 
-  /// Refresh categories
+  /// Refresh categories (used by AsyncStateBuilder)
   Future<void> refreshCategories() async {
+    _clearError();
     await loadCategories();
   }
 }

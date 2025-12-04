@@ -583,34 +583,29 @@ class OrderManagementView extends StatelessWidget {
               ),
               // Scrollable content with RefreshIndicator
               Expanded(
-                child: RefreshIndicator(
-                  onRefresh: () async {
-                    await controller.fetchOrder(orderId, tableId);
-                  },
-                  child: SingleChildScrollView(
-                    physics:
-                        const AlwaysScrollableScrollPhysics(), // This enables pull-to-refresh
-                    padding: EdgeInsets.all(16.w * scaleFactor),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        buildRecipientSection(tableState),
-                        Gap(20.h * scaleFactor),
-                        OrderHeader(
-                          controller: controller,
-                          tableId: tableId,
-                          tableInfo: tableInfo,
-                          tableState: tableState,
-                        ),
-                        Gap(16.h * scaleFactor),
-                        OrderContainer(
-                          controller: controller,
-                          tableId: tableId,
-                          tableState: tableState,
-                        ),
-                        Gap(16.h * scaleFactor), // Reduced gap at bottom
-                      ],
-                    ),
+                child: SingleChildScrollView(
+                  physics:
+                      const AlwaysScrollableScrollPhysics(), // This enables pull-to-refresh
+                  padding: EdgeInsets.all(16.w * scaleFactor),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      buildRecipientSection(tableState),
+                      Gap(20.h * scaleFactor),
+                      OrderHeader(
+                        controller: controller,
+                        tableId: tableId,
+                        tableInfo: tableInfo,
+                        tableState: tableState,
+                      ),
+                      Gap(16.h * scaleFactor),
+                      OrderContainer(
+                        controller: controller,
+                        tableId: tableId,
+                        tableState: tableState,
+                      ),
+                      Gap(16.h * scaleFactor), // Reduced gap at bottom
+                    ],
                   ),
                 ),
               ),
