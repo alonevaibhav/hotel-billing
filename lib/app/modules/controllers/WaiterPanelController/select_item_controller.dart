@@ -12,7 +12,7 @@
 // import '../../../data/repositories/order_repository.dart';
 // import '../../../route/app_routes.dart';
 // import '../../model/table_order_state_mode.dart';
-// import '../../view/WaiterPanel/TakeOrder/widgets/success_order_notification.dart';
+// import '../../view/WaiterPanel/TakeOrder/widgets/notifications_widget.dart';
 //
 // /// Main controller for order management with socket integration
 // class OrderManagementController extends GetxController {
@@ -585,7 +585,7 @@ import '../../../data/models/ResponseModel/table_model.dart';
 import '../../../data/repositories/order_repository.dart';
 import '../../../route/app_routes.dart';
 import '../../model/table_order_state_mode.dart';
-import '../../view/WaiterPanel/TakeOrder/widgets/success_order_notification.dart';
+import '../../widgets/notifications_widget.dart';
 
 /// Main controller for order management with socket integration
 class OrderManagementController extends GetxController {
@@ -811,8 +811,7 @@ class _StateManager {
 
   TableOrderState getTableState(int tableId) {
     final state = _controller.tableOrders.putIfAbsent(
-      tableId,
-          () => TableOrderState(tableId: tableId),
+      tableId, () => TableOrderState(tableId: tableId),
     );
     developer.log("Table loaded ($tableId). Items: ${state.orderItems.length}", name: "STATE");
     return state;
