@@ -27,6 +27,13 @@ class ApiConstants {
 
   //Chef Panel
 
-  static const String chefGetAllOrder = "/api/owner/employee/orders/get";
+  static const String chefGetAllOrder = "/api/owner/employee/items/status/pending";
+
+  static const String chefGetPreparingOrder = "/api/owner/employee/items/status/preparing";
+
+  static String chefPatchOrderUpdate(int orderId,int id) => "/api/owner/employee/orders/$orderId/items/$id/status";
+
+
+
 
 }

@@ -62,7 +62,7 @@ class ChefDashboard extends StatelessWidget {
                   ),
                   child: const Center(
                     child: Text(
-                      'Accept Orders',
+                      'Pending Orders',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 16,
@@ -87,7 +87,7 @@ class ChefDashboard extends StatelessWidget {
                     ),
                     child: const Center(
                       child: Text(
-                        'Done Orders',
+                        'Preparing Orders',
                         style: TextStyle(
                           color: Colors.black87,
                           fontSize: 16,
@@ -132,7 +132,7 @@ class ChefDashboard extends StatelessWidget {
                     ),
                     child: const Center(
                       child: Text(
-                        'Accept Orders',
+                        'Pending Orders',
                         style: TextStyle(
                           color: Colors.black87,
                           fontSize: 16,
@@ -154,7 +154,7 @@ class ChefDashboard extends StatelessWidget {
                   ),
                   child: const Center(
                     child: Text(
-                      'Done Orders',
+                      'Preparing Orders',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 16,
