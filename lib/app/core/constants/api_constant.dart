@@ -19,12 +19,14 @@ class ApiConstants {
 
   static String waiterPostReorder(int placedOrderId) => "/api/owner/employee/orders/$placedOrderId/items/add";
 
-  // static const String waiterGetReadyToServe = "/api/owner/employee/orders/items/ready-to-serve";
   static const String waiterGetReadyToServe = "/api/owner/employee/items/waiter/panel";
-
-  // static const String waiterPatchOrderUpdate = "/api/owner/employee/orders/:orderId/items/:itemId/status";
 
   static String waiterPatchOrderUpdate(int orderId,int id) => "/api/owner/employee/orders/$orderId/items/$id/status";
 
+
+
+  //Chef Panel
+
+  static const String chefGetAllOrder = "/api/owner/employee/orders/get";
 
 }
