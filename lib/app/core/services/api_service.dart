@@ -6,7 +6,6 @@ import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../constants/api_constant.dart';
 
 class ApiResponse<T> {

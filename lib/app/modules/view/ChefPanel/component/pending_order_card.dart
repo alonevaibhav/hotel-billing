@@ -446,7 +446,7 @@ class PendingOrderCard extends StatelessWidget {
   Widget _buildOrderHeader() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.black54.withOpacity(0.3),
+        color: Colors.blueGrey.withOpacity(0.3),
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular((12 * scaleFactor).r),
           topRight: Radius.circular((12 * scaleFactor).r),
