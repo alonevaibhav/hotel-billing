@@ -404,8 +404,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hotelbilling/app/modules/view/ChefPanel/widgets/done_order_widget.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
