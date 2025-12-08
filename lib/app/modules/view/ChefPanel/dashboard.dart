@@ -5,8 +5,8 @@ import '../../../../apputils/Utils/double_tap_to_exit.dart';
 import '../../controllers/ChefController/dashboard_controller.dart';
 import '../../widgets/drawer.dart';
 import '../../widgets/header.dart';
-import 'accept_order.dart';
-import 'done_order.dart';
+import 'pending_order.dart';
+import 'preparing_order.dart';
 
 class ChefDashboard extends StatelessWidget {
   const ChefDashboard({super.key});

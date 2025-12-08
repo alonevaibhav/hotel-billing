@@ -163,38 +163,59 @@ Widget buildRejectDialog(BuildContext context, AcceptOrderController controller,
             SizedBox(
               width: double.infinity,
               child: Obx(
-                () => ElevatedButton(
-                  onPressed: controller.isLoading.value
-                      ? null
-                      : () => controller.rejectOrder(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue[500],
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular((8 * scaleFactor).r),
+                    () {
+                  // ✅ Check if the current item is being processed
+                  final isProcessing = controller.selectedItemId.value != null &&
+                      controller.processingItems.contains(controller.selectedItemId.value);
+
+                  return ElevatedButton(
+                    onPressed: isProcessing
+                        ? null
+                        : () => controller.rejectItem(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isProcessing ? Colors.grey[400] : Colors.blue[500],
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      disabledBackgroundColor: Colors.grey[400],
+                      disabledForegroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular((8 * scaleFactor).r),
+                      ),
+                      padding:
+                      EdgeInsets.symmetric(vertical: (14 * scaleFactor).h),
                     ),
-                    padding:
-                        EdgeInsets.symmetric(vertical: (14 * scaleFactor).h),
-                  ),
-                  child: controller.isLoading.value
-                      ? SizedBox(
-                          height: (20 * scaleFactor).h,
-                          width: (20 * scaleFactor).w,
+                    child: isProcessing
+                        ? Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          height: (18 * scaleFactor).sp,
+                          width: (18 * scaleFactor).sp,
                           child: const CircularProgressIndicator(
                             strokeWidth: 2,
                             valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
+                            AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
-                        )
-                      : Text(
-                          'cancel order',
+                        ),
+                        Gap((12 * scaleFactor).w),
+                        Text(
+                          'Cancelling...',
                           style: GoogleFonts.inter(
                             fontSize: (14 * scaleFactor).sp,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                ),
+                      ],
+                    )
+                        : Text(
+                      'Cancel Order',
+                      style: GoogleFonts.inter(
+                        fontSize: (14 * scaleFactor).sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
           ],

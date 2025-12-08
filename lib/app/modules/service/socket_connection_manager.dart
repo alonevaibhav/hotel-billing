@@ -1,6 +1,7 @@
 // lib/app/core/services/socket_connection_manager.dart
 import 'dart:developer' as developer;
 import 'package:get/get.dart';
+import '../../core/constants/api_constant.dart';
 import '../../core/services/socket_service.dart';
 import '../../core/services/storage_service.dart';
 
@@ -129,7 +130,7 @@ class SocketConnectionManager extends GetxService {
     }
 
     return await connect(
-      serverUrl: 'https://api-dev.squrepos.com',
+      serverUrl: ApiConstants.socketBaseUrl,
       hotelOwnerId: employeeData['hotelOwnerId'] ?? 0,
       role: authData['userRole'] ?? 'waiter',
       userId: employeeData['id'] ?? 0,

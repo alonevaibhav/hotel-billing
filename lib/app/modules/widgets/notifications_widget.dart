@@ -1,5 +1,6 @@
 import 'dart:developer' as developer;
 import '../../core/services/notification_service.dart';
+import '../../data/models/ResponseModel/pending_orders_model.dart';
 
 final notificationService = NotificationService.instance;
 
@@ -107,6 +108,63 @@ Future<void> showOrderCompletedNotification(int orderId, String tableNumber) asy
     developer.log(
       'Failed to show completed notification: $e',
       name: 'ReadyOrders.Notification',
+    );
+  }
+}
+
+
+
+///// WAITER NOTIFICATIONS //////
+
+
+/// 🔔 Show notification for grouped order
+Future<void> showGroupedOrderNotification({
+  required GroupedOrder groupedOrder,
+  bool isItemsAdded = false,
+}) async {
+  try {
+    final title = isItemsAdded
+        ? '✅ Items Added to Order'
+        : '🎉 New Order Received';
+
+    final itemCount = groupedOrder.totalItemsCount;
+    final itemNames = groupedOrder.items
+        .map((item) => '${item.quantity}x ${item.itemName}')
+        .take(5) // Show max 5 items in notification
+        .join(', ');
+
+    final moreItems = groupedOrder.items.length > 5
+        ? ' and ${groupedOrder.items.length - 5} more...'
+        : '';
+
+    final body = isItemsAdded
+        ? 'Order #${groupedOrder.orderId} - Table ${groupedOrder.tableNumber}'
+        : 'Order #${groupedOrder.orderId} - Table ${groupedOrder.tableNumber} - $itemCount ${itemCount == 1 ? 'item' : 'items'}';
+
+    final bigText = isItemsAdded
+        ? 'Items added to Order #${groupedOrder.orderId} for Table ${groupedOrder.tableNumber}:\n\n'
+        '$itemNames$moreItems\n\n'
+        : 'New order received for Table ${groupedOrder.tableNumber}:\n\n'
+        '$itemNames$moreItems\n\n'
+        'Total items: $itemCount\n'
+        'Please review and accept the order to start preparation.';
+
+    await notificationService.showBigTextNotification(
+      title: title,
+      body: body,
+      bigText: bigText,
+      payload: 'pending_order_${groupedOrder.orderId}',
+      priority: NotificationPriority.high,
+    );
+
+    developer.log(
+      'Grouped notification shown for order #${groupedOrder.orderId}',
+      name: 'AcceptOrderController.Notification',
+    );
+  } catch (e) {
+    developer.log(
+      'Failed to show grouped notification: $e',
+      name: 'AcceptOrderController.Notification',
     );
   }
 }
