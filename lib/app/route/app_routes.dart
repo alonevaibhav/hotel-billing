@@ -1,7 +1,10 @@
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:developer' as developer;
+import '../core/services/notification_storage_service.dart';
 import '../data/models/ResponseModel/table_model.dart';
 import '../modules/auth/login_view.dart';
 import '../modules/view/ChefPanel/dashboard.dart';
@@ -10,6 +13,7 @@ import '../modules/view/WaiterPanel/home_page.dart';
 import '../modules/view/WaiterPanel/TakeOrder/AddItems/add_items_view.dart';
 import '../modules/view/WaiterPanel/TakeOrder/OrderView/order_view_main.dart';
 import '../modules/view/WaiterPanel/sidebar/waiter_history/order_history_view.dart';
+import '../modules/view/WaiterPanel/sidebar/waiter_notification.dart';
 import 'app_bindings.dart';
 
 class AppRoutes {
@@ -21,8 +25,8 @@ class AppRoutes {
   static const waiterDashboard = '/restaurant';
   static const selectItem = '/restaurant/selectItem';
   static const addItems = '/restaurant/selectItem/addItems';
-
   static const waiterHistoryView = '/restaurant/orderView';
+  static const waiterNotificationView = '/restaurant/NotificationView';
 
   // Chef Routes
   static const chefDashboard = '/chefDashboard';
@@ -88,6 +92,19 @@ class AppRoutes {
           path: waiterHistoryView,
           builder: (context, state) => const WaiterOrderHistoryView(),
         ),
+        GoRoute(
+          path: waiterNotificationView,
+          builder: (context, state) {
+            final controller = Get.find<NotificationStorageController>();
+
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              controller.refreshNotifications();
+            });
+
+            return WaiterNotificationPage();
+          },
+        ),
+
 
         // Chef Routes
         GoRoute(
@@ -163,6 +180,11 @@ class NavigationService {
   static void pushToWaiterHistory() {
     router.push(AppRoutes.waiterHistoryView);
   }
+  static void pushToWaiterNotification() {
+    router.push(AppRoutes.waiterNotificationView);
+  }
+
+
   static void pushToChefHistory() {
     router.push(AppRoutes.chefHistoryView);
   }

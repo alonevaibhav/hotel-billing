@@ -71,6 +71,8 @@ class DrawerController extends GetxController {
     selectedSidebarItem.value = 'NOTIFICATION';
     developer.log('Notification menu pressed', name: 'Restaurant');
     Get.snackbar('Info', 'Notifications feature will be implemented');
+
+    NavigationService.pushToWaiterNotification();
   }
 
   void handleHistory() {

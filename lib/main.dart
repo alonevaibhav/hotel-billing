@@ -2,12 +2,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'dart:developer' as developer;
 import 'app/core/services/api_service.dart';
 import 'app/core/services/notification_service.dart';
+import 'app/core/services/notification_storage_service.dart';
 import 'app/core/services/session_manager_service.dart';
 import 'app/core/services/storage_service.dart';
 import 'app/modules/service/socket_connection_manager.dart';
@@ -18,11 +20,15 @@ void main() async {
 
   // Initialize services
   await ApiService.init();
+  await GetStorage.init();
   await Get.putAsync(() => StorageService().init());
   await Get.putAsync(() => NotificationService().init());
+  Get.put(NotificationStorageController());
+
 
   // ✅ Initialize Socket Connection Manager
   await SocketConnectionManager.init();
+
 
   // Check authentication status
   final authData = await TokenManager.checkAuthenticationWithRole();

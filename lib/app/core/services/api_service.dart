@@ -81,7 +81,7 @@ class ApiService {
     bool includeToken = true,
   }) async {
     final uri =
-    Uri.parse('$baseUrl$endpoint').replace(queryParameters: queryParams);
+        Uri.parse('$baseUrl$endpoint').replace(queryParameters: queryParams);
     final headers = await _getHeaders(includeToken: includeToken);
 
     return _sendRequest<T>(
@@ -318,9 +318,9 @@ class ApiService {
   }
 
   static ApiResponse<T> _handleResponse<T>(
-      http.Response response,
-      T Function(dynamic) fromJson,
-      ) {
+    http.Response response,
+    T Function(dynamic) fromJson,
+  ) {
     final statusCode = response.statusCode;
     final responseBody = response.body;
 
@@ -354,10 +354,10 @@ class ApiService {
   }
 
   static ApiResponse<T> _handleError<T>(
-      String method,
-      Uri uri,
-      String message,
-      ) {
+    String method,
+    Uri uri,
+    String message,
+  ) {
     _logError(method, uri, message);
     return ApiResponse<T>(
       success: false,
@@ -433,7 +433,7 @@ class ApiService {
       try {
         final jsonResponse = json.decode(response.body);
         final prettyJson =
-        const JsonEncoder.withIndent('  ').convert(jsonResponse);
+            const JsonEncoder.withIndent('  ').convert(jsonResponse);
         print('│ 📄 RESPONSE BODY:');
         for (var line in prettyJson.split('\n')) {
           print('│   $line');
@@ -547,7 +547,7 @@ class MultipartFiles {
   static MediaType _detectContentType(String path) {
     final ext = extension(path).toLowerCase().replaceFirst('.', '');
     switch (ext) {
-    // Images
+      // Images
       case 'jpg':
       case 'jpeg':
         return MediaType('image', 'jpeg');
@@ -556,7 +556,7 @@ class MultipartFiles {
       case 'gif':
         return MediaType('image', 'gif');
 
-    // Documents
+      // Documents
       case 'pdf':
         return MediaType('application', 'pdf');
       case 'doc':
@@ -570,7 +570,7 @@ class MultipartFiles {
         return MediaType('application',
             'vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
-    // Videos
+      // Videos
       case 'mp4':
         return MediaType('video', 'mp4');
       case 'avi':
