@@ -29,6 +29,9 @@ class ApiConstants {
 
   static String waiterPatchOrderUpdate(int orderId,int id) => "/api/owner/employee/orders/$orderId/items/$id/status";
 
+  static const String waiterGetHistory = "/api/owner/employee/orders/get";
+
+
 
 
   //Chef Panel

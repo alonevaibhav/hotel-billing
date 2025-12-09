@@ -5,7 +5,7 @@ import 'package:gap/gap.dart';
 import '../../../../../route/app_routes.dart';
 import '../../../../../state/app-state.dart';
 import '../../../../controllers/WaiterPanelController/add_item_controller.dart';
-import '../../../../widgets/drawer.dart';
+import '../../sidebar/waiter_drawer.dart';
 import '../../../../widgets/header.dart';
 import '../widgets/category_filter_widget.dart';
 import '../widgets/menu_item_card.dart';
@@ -24,7 +24,7 @@ class AddItemsView extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      drawer: const CommonDrawerWidget(),
+      drawer: const WaiterDrawerWidget(),
       resizeToAvoidBottomInset: false,
 
       // ✔ SINGLE RefreshIndicator
@@ -230,7 +230,7 @@ class AddItemsView extends StatelessWidget {
 // import '../../../../../route/app_routes.dart';
 // import '../../../../../state/app_initial_state.dart';
 // import '../../../../controllers/WaiterPanelController/add_item_controller.dart';
-// import '../../../../widgets/drawer.dart';
+// import '../../../../widgets/waiter_drawer.dart';
 // import '../../../../widgets/header.dart';
 // import '../widgets/category_filter_widget.dart';
 // import '../widgets/menu_item_card.dart';

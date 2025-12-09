@@ -600,91 +600,203 @@ class MultipartFiles {
 
 
 // ==================== GET - Usage Example ====================
-final response = await ApiService.get<xoxo>(
-endpoint: ApiConstants.getUserById(userId),
-fromJson: (json) => xoxo.fromJson(json),
-includeToken: true,
-);
+
+    Future<ApiResponse<OrderHistoryResponse>> getOrderHistory() async {
+    try {
+      // ApiService.get returns ApiResponse<T>, not the model directly
+      final response = await ApiService.get<OrderHistoryResponse>(
+        endpoint: ApiConstants.waiterGetHistory,
+        fromJson: (json) => OrderHistoryResponse.fromJson(json),
+        includeToken: true,
+      );
+      return response;
+    } catch (e) {
+      // Return error response instead of rethrowing
+      return ApiResponse<OrderHistoryResponse>(
+        success: false,
+        errorMessage: e.toString(),
+        statusCode: -1,
+      );
+    }
+  }
 
 // ==================== POST - Usage Example ====================
 
-final response = await ApiService.post<LoginResponseModel>(
-  endpoint: ApiConstants.hostelBillingLogin,
-  body: loginRequest.toJson(),
-  fromJson: (json) => LoginResponseModel.fromJson(json),
-  includeToken: false,
-);
+    Future<ApiResponse<OrderHistoryResponse>> getOrderHistory() async {
+    try {
+      // ApiService.get returns ApiResponse<T>, not the model directly
+      final response = await ApiService.post<LoginResponseModel>(
+        endpoint: ApiConstants.hostelBillingLogin,
+        body: loginRequest.toJson(),
+        fromJson: (json) => LoginResponseModel.fromJson(json),
+        includeToken: false,
+      );
+      return response;
+    } catch (e) {
+      // Return error response instead of rethrowing
+      return ApiResponse<OrderHistoryResponse>(
+        success: false,
+        errorMessage: e.toString(),
+        statusCode: -1,
+      );
+    }
+  }
 
 // ==================== PUT - Usage Example ====================
 
-final response = await ApiService.put<UserResponseModel>(
-  endpoint: ApiConstants.updateUser(userId),
-  body: updateRequest.toJson(),
-  fromJson: (json) => UserResponseModel.fromJson(json),
-  includeToken: true,
-);
+Future<ApiResponse<UserModel>> updateUserProfile(UpdateProfileRequest req) async {
+  try {
+    final response = await ApiService.put<UserModel>(
+      endpoint: ApiConstants.updateProfile,
+      body: req.toJson(),
+      fromJson: (json) => UserModel.fromJson(json),
+      includeToken: true,
+    );
+
+    return response;
+  } catch (e) {
+    return ApiResponse(
+      success: false,
+      errorMessage: e.toString(),
+      statusCode: -1,
+    );
+  }
+}
+
+// ==================== PATCH - Usage Example ====================
+
+
+Future<ApiResponse<UpdateOrderStatusResponse>> updateOrderStatus({
+  required int orderId,
+  required String status,
+}) async {
+  try {
+    final response = await ApiService.patch<UpdateOrderStatusResponse>(
+      endpoint: ApiConstants.updateOrderStatus(orderId),
+      body: {
+        "status": status,
+      },
+      fromJson: (json) => UpdateOrderStatusResponse.fromJson(json),
+      includeToken: true,
+    );
+
+    return response;
+  } catch (e) {
+    return ApiResponse(
+      success: false,
+      errorMessage: e.toString(),
+      statusCode: -1,
+    );
+  }
+}
+
 
 
 // ==================== DELETE - Usage Example ====================
 
-final response = await ApiService.delete<DeleteResponseModel>(
-  endpoint: ApiConstants.deleteAccount,
-  body: deleteRequest.toJson(),
-  fromJson: (json) => DeleteResponseModel.fromJson(json),
-  includeToken: true,
-);
+Future<ApiResponse<DeleteUserResponse>> deleteUser(String userId) async {
+  try {
+    final response = await ApiService.delete<DeleteUserResponse>(
+      endpoint: ApiConstants.deleteUser(userId),
+      fromJson: (json) => DeleteUserResponse.fromJson(json),
+      includeToken: true,
+    );
+
+    return response;
+  } catch (e) {
+    return ApiResponse(
+      success: false,
+      errorMessage: e.toString(),
+      statusCode: -1,
+    );
+  }
+}
 
 
 
 // ==================== MULTIPART POST - Usage Example ====================
-final fields = {
-  'user_id': userId,
-  'document_type': 'identity',
-  'category': 'verification',
-};
+Future<ApiResponse<ImageUploadResponseModel>> uploadImages(
+  List<String> filePaths,
+) async {
+  final files = filePaths
+      .map((path) => MultipartFiles(field: "images[]", filePath: path))
+      .toList();
 
-final files = [
-  MultipartFiles(
-    field: 'documents[]',
-    filePath: documentPath1,
-  ),
-  MultipartFiles(
-    field: 'documents[]',
-    filePath: documentPath2,
-  ),
-];
+  try {
+    final response = await ApiService.multipartPost<ImageUploadResponseModel>(
+      endpoint: ApiConstants.uploadImages,
+      fields: {
+        "user_id": "1234",
+        "type": "gallery",
+      },
+      files: files,
+      fromJson: (json) => ImageUploadResponseModel.fromJson(json),
+      includeToken: true,
+    );
 
-final response = await ApiService.multipartPost<DocumentUploadResponseModel>(
-  endpoint: ApiConstants.uploadDocuments,
-  fields: fields,
-  files: files,
-  fromJson: (json) => DocumentUploadResponseModel.fromJson(json),
-  includeToken: true,
-);
+    return response;
+  } catch (e) {
+    return ApiResponse(
+      success: false,
+      errorMessage: e.toString(),
+      statusCode: -1,
+    );
+  }
+}
+
 
 // ==================== MULTIPART PUT - Usage Example ====================
-final fields = {
-  'name': 'Updated Name',
-  'email': 'updated@example.com',
-  'phone': '1234567890',
-};
+Future<ApiResponse<UserModel>> updateProfileWithImage(
+  String filePath,
+  String name,
+) async {
+  try {
+    final response = await ApiService.multipartPut<UserModel>(
+      endpoint: ApiConstants.updateProfile,
+      fields: {
+        "name": name,
+        "email": "test@example.com",
+      },
+      files: [
+        MultipartFiles(field: "profile_image", filePath: filePath),
+      ],
+      fromJson: (json) => UserModel.fromJson(json),
+      includeToken: true,
+    );
 
-final files = [
-  MultipartFiles(
-    field: 'profile_image',
-    filePath: newImagePath,
-  ),
-];
-
-final response = await ApiService.multipartPut<UserResponseModel>(
-  endpoint: ApiConstants.updateProfile(userId),
-  fields: fields,
-  files: files,
-  fromJson: (json) => UserResponseModel.fromJson(json),
-  includeToken: true,
-);
+    return response;
+  } catch (e) {
+    return ApiResponse(
+      success: false,
+      errorMessage: e.toString(),
+      statusCode: -1,
+    );
+  }
+}
 
 
+// ==================== MULTIPART PATCH - Usage Example ====================
 
 
+Future<ApiResponse<UserModel>> patchProfileImage(String filePath) async {
+  try {
+    final response = await ApiService.multipartPatch<UserModel>(
+      endpoint: ApiConstants.patchProfileImage,
+      fields: {}, // optional
+      files: [
+        MultipartFiles(field: "profile_image", filePath: filePath),
+      ],
+      fromJson: (json) => UserModel.fromJson(json),
+      includeToken: true,
+    );
+
+    return response;
+  } catch (e) {
+    return ApiResponse(
+      success: false,
+      errorMessage: e.toString(),
+      statusCode: -1,
+    );
+  }
+}
  */

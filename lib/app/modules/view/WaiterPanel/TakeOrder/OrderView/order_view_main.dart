@@ -7,7 +7,7 @@
 // import '../../../../../state/app-state.dart';
 // import '../../../../controllers/WaiterPanelController/select_item_controller.dart';
 // import '../../../../model/table_order_state_mode.dart';
-// import '../../../../widgets/drawer.dart';
+// import '../../../../widgets/waiter_drawer.dart';
 // import '../../../../widgets/header.dart';
 // import '../widgets/select _item_widgets.dart';
 // import 'order_header.dart';
@@ -535,7 +535,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import '../../../../../data/models/ResponseModel/table_model.dart';
 import '../../../../controllers/WaiterPanelController/select_item_controller.dart';
-import '../../../../widgets/drawer.dart';
+import '../../sidebar/waiter_drawer.dart';
 import '../../../../widgets/header.dart';
 import '../widgets/select _item_widgets.dart';
 import 'order_container.dart';
@@ -569,7 +569,7 @@ class OrderManagementView extends StatelessWidget {
       },
       child: Scaffold(
         backgroundColor: Colors.grey[50], // Softer background
-        drawer: const CommonDrawerWidget(),
+        drawer: const WaiterDrawerWidget(),
         resizeToAvoidBottomInset: false,
         body: Form(
           key: controller.formKey,

@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:gap/gap.dart';
 import '../../../../apputils/Utils/double_tap_to_exit.dart';
 import '../../controllers/WaiterPanelController/home_controller.dart';
-import '../../widgets/drawer.dart';
+import 'sidebar/waiter_drawer.dart';
 import '../../widgets/header.dart';
 import 'ReadyOrder/ready_order.dart';
 import 'TakeOrder/take_order_main.dart';
@@ -19,7 +19,7 @@ class WaiterDashboardView extends StatelessWidget {
       child: SafeArea(
         child: Scaffold(
           backgroundColor: Colors.white,
-          drawer: const CommonDrawerWidget(), // Use the centralized drawer
+          drawer: const WaiterDrawerWidget(), // Use the centralized drawer
           body: Column(
             children: [
               // Common Header

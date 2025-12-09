@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:gap/gap.dart';
 import '../../../../apputils/Utils/double_tap_to_exit.dart';
 import '../../controllers/ChefController/dashboard_controller.dart';
-import '../../widgets/drawer.dart';
+import '../WaiterPanel/sidebar/waiter_drawer.dart';
 import '../../widgets/header.dart';
 import 'pending_order.dart';
 import 'preparing_order.dart';
@@ -18,7 +18,7 @@ class ChefDashboard extends StatelessWidget {
     return DoubleBackToExit(
       child: Scaffold(
         backgroundColor: Colors.white,
-        drawer: const CommonDrawerWidget(), // Use the centralized drawer
+        drawer: const WaiterDrawerWidget(), // Use the centralized drawer
         body: Column(
           children: [
             // Common Header
