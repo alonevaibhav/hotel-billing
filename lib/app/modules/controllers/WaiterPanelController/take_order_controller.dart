@@ -1,218 +1,3 @@
-// import 'package:flutter/material.dart';
-// import 'package:get/get.dart';
-// import 'dart:developer' as developer;
-// import '../../../core/constants/api_constant.dart';
-// import '../../../core/services/api_service.dart';
-// import '../../../data/models/ResponseModel/table_model.dart';
-// import '../../../route/app_routes.dart';
-// import '../../../core/utils/snakbar_utils.dart';
-//
-// class TakeOrdersController extends GetxController {
-//   // Reactive variables
-//   final isLoading = false.obs;
-//   final errorMessage = ''.obs;
-//
-//   // Tables data
-//   final tableResponseModel = Rxn<TableResponseModel>();
-//
-//   // Grouped tables by area
-//   final groupedTables = RxMap<String, List<TableInfo>>();
-//
-//   // All tables list for quick access
-//   final allTables = <TableInfo>[].obs;
-//
-//   @override
-//   void onInit() {
-//     super.onInit();
-//     developer.log('TakeOrdersController initialized', name: 'TakeOrders');
-//     fetchTablesData();
-//   }
-//
-//   @override
-//   void onReady() {
-//     super.onReady();
-//     developer.log('TakeOrdersController ready', name: 'TakeOrders');
-//   }
-//
-//   @override
-//   void onClose() {
-//     super.onClose();
-//     developer.log('TakeOrdersController disposed', name: 'TakeOrders');
-//   }
-//
-//   // Fetch tables data from API
-//   Future<void> fetchTablesData() async {
-//     try {
-//       isLoading.value = true;
-//       errorMessage.value = '';
-//
-//       developer.log('Fetching tables data from API', name: 'TakeOrders');
-//
-//       final apiResponse = await ApiService.get<TableResponseModel>(
-//         endpoint: ApiConstants.waiterGetTable,
-//         fromJson: (json) => TableResponseModel.fromJson(json),
-//         includeToken: true,
-//       );
-//
-//       if (apiResponse != null && apiResponse.data != null) {
-//         final response = apiResponse.data!;
-//
-//         if (response.success && response.data != null) {
-//           tableResponseModel.value = response;
-//           allTables.value = response.data!.tables;
-//           _groupTablesByArea(response.data!.tables);
-//
-//           developer.log(
-//             'Tables data loaded successfully: ${allTables.length} tables',
-//             name: 'TakeOrders',
-//           );
-//         } else {
-//           errorMessage.value = response.message.isNotEmpty
-//               ? response.message
-//               : 'Failed to load tables';
-//           developer.log(
-//             'Failed to load tables: ${errorMessage.value}',
-//             name: 'TakeOrders.Error',
-//           );
-//         }
-//       } else {
-//         errorMessage.value = 'Failed to load tables data';
-//         developer.log(
-//           'API response is null',
-//           name: 'TakeOrders.Error',
-//         );
-//       }
-//     } catch (e) {
-//       errorMessage.value = 'Error loading tables: ${e.toString()}';
-//       developer.log(
-//         'Error fetching tables data: ${e.toString()}',
-//         name: 'TakeOrders.Error',
-//       );
-//     } finally {
-//       isLoading.value = false;
-//     }
-//   }
-//
-//   // Group tables by area name
-//   void _groupTablesByArea(List<TableInfo> tables) {
-//     groupedTables.clear();
-//
-//     for (var tableInfo in tables) {
-//       if (!groupedTables.containsKey(tableInfo.areaName)) {
-//         groupedTables[tableInfo.areaName] = [];
-//       }
-//       groupedTables[tableInfo.areaName]!.add(tableInfo);
-//     }
-//
-//     developer.log(
-//       'Tables grouped into ${groupedTables.length} areas',
-//       name: 'TakeOrders',
-//     );
-//   }
-//
-//   // Get tables for a specific area
-//   List<TableInfo> getTablesForArea(String areaName) {
-//     return groupedTables[areaName] ?? [];
-//   }
-//
-//   // Calculate time elapsed since order creation (in minutes)
-//   int calculateElapsedTime(String createdAt) {
-//     try {
-//       final orderTime = DateTime.parse(createdAt);
-//       final now = DateTime.now();
-//       final difference = now.difference(orderTime);
-//       return difference.inMinutes;
-//     } catch (e) {
-//       developer.log(
-//         'Error calculating elapsed time: ${e.toString()}',
-//         name: 'TakeOrders.Error',
-//       );
-//       return 0;
-//     }
-//   }
-//
-//   // Handle table selection
-//   void handleTableTap(TableInfo tableInfo, BuildContext context) {
-//     try {
-//       final tableNumber = tableInfo.table.tableNumber;
-//       final isOccupied = tableInfo.table.status == 'occupied';
-//
-//       developer.log(
-//         'Table tapped: Table $tableNumber (ID: ${tableInfo.table.id}), Status: ${tableInfo.table.status}',
-//         name: 'TakeOrders',
-//       );
-//
-//       // Pass the complete table data
-//       NavigationService.selectItem(tableInfo);
-//
-//       if (isOccupied && tableInfo.currentOrder != null) {
-//         final order = tableInfo.currentOrder!;
-//         SnackBarUtil.showInfo(
-//           context,
-//           'Table $tableNumber - Order #${order.orderId} (₹${order.totalAmount})',
-//           title: 'Occupied Table',
-//           duration: const Duration(seconds: 2),
-//         );
-//       } else if (isOccupied) {
-//         SnackBarUtil.showInfo(
-//           context,
-//           'Table $tableNumber is occupied',
-//           title: 'Table Info',
-//           duration: const Duration(seconds: 1),
-//         );
-//       } else {
-//         SnackBarUtil.showSuccess(
-//           context,
-//           'Table $tableNumber selected successfully',
-//           title: 'Available Table',
-//           duration: const Duration(seconds: 1),
-//         );
-//       }
-//     } catch (e) {
-//       developer.log(
-//         'Error handling table tap: ${e.toString()}',
-//         name: 'TakeOrders.Error',
-//       );
-//       SnackBarUtil.showError(
-//         context,
-//         'Failed to select table',
-//         title: 'Error',
-//         duration: const Duration(seconds: 1),
-//       );
-//     }
-//   }
-//
-//   // Refresh tables data
-//   Future<void> refreshTables() async {
-//     await fetchTablesData();
-//   }
-//
-//   // Get table by ID
-//   TableInfo? getTableById(int tableId) {
-//     try {
-//       return allTables.firstWhere((table) => table.table.id == tableId);
-//     } catch (e) {
-//       return null;
-//     }
-//   }
-//
-//   // Get occupied tables count
-//   int get occupiedTablesCount {
-//     return allTables.where((t) => t.table.status == 'occupied').length;
-//   }
-//
-//   // Get available tables count
-//   int get availableTablesCount {
-//     return allTables.where((t) => t.table.status == 'available').length;
-//   }
-//
-//   // Get total revenue from current orders
-//   int get totalRevenue {
-//     return allTables.where((t) => t.currentOrder != null).fold<int>(
-//         0, (sum, t) => sum + (t.currentOrder?.totalAmount?.round() ?? 0));
-//   }
-// }
-
 import 'package:flutter/material.dart' hide Table;
 import 'package:get/get.dart';
 import 'dart:developer' as developer;
@@ -244,6 +29,10 @@ class TakeOrdersController extends GetxController {
   void onInit() {
     super.onInit();
     developer.log('TakeOrdersController initialized', name: 'TakeOrders');
+
+    // ✅ Setup debug listener first
+    _setupDebugListener();
+
     _setupSocketListeners();
     isSocketConnected.value = _socketManager.connectionStatus;
     fetchTablesData();
@@ -255,6 +44,54 @@ class TakeOrdersController extends GetxController {
     _removeSocketListeners();
     developer.log('TakeOrdersController disposed', name: 'TakeOrders');
     super.onClose();
+  }
+
+  /// ==================== DEBUG LISTENER ====================
+
+  /// ✅ Catch-all listener to intercept ALL socket events
+  void _setupDebugListener() {
+    developer.log('🔍 Setting up debug listener for ALL events', name: 'TakeOrders.Debug');
+
+    _socketManager.socketService.socket?.onAny((event, data) {
+      developer.log(
+          '🔔 [DEBUG] Socket event: $event\nData: $data',
+          name: 'TakeOrders.Debug'
+      );
+
+      // ✅ Manual routing to handlers (bypass broken SocketService.on())
+      switch (event) {
+        case 'new_order':
+          developer.log('🎯 Manually calling handler: new_order', name: 'TakeOrders.Debug');
+          _handleNewOrder(data);
+          break;
+        case 'order_status_update':
+          developer.log('🎯 Manually calling handler: order_status_update', name: 'TakeOrders.Debug');
+          _handleGenericUpdate(data);
+          break;
+        case 'payment_update':
+          developer.log('🎯 Manually calling handler: payment_update', name: 'TakeOrders.Debug');
+          _handlePaymentUpdate(data);
+          break;
+        case 'table_status_update':
+          developer.log('🎯 Manually calling handler: table_status_update', name: 'TakeOrders.Debug');
+          _handleGenericUpdate(data);
+          break;
+        case 'placeOrder_ack':
+          developer.log('🎯 Manually calling handler: placeOrder_ack', name: 'TakeOrders.Debug');
+          _handleGenericUpdate(data);
+          break;
+        case 'order_completed':
+          developer.log('🎯 Manually calling handler: order_completed', name: 'TakeOrders.Debug');
+          _handleGenericUpdate(data);
+          break;
+        case 'payment_completed':
+        case 'table_cleared':
+        case 'table_freed':
+          developer.log('🎯 Manually calling handler: table_freed', name: 'TakeOrders.Debug');
+          _handleTableFreed(data);
+          break;
+      }
+    });
   }
 
   /// ==================== SOCKET SETUP ====================
@@ -276,7 +113,7 @@ class TakeOrdersController extends GetxController {
       'table_freed': _handleTableFreed,
     };
 
-    // Register all handlers
+    // Register all handlers (still needed for logging purposes)
     eventHandlers.forEach((event, handler) {
       _socketManager.socketService.on(event, handler);
     });
@@ -315,10 +152,15 @@ class TakeOrdersController extends GetxController {
   /// ==================== SOCKET EVENT HANDLERS ====================
 
   void _handleNewOrder(dynamic rawData) {
-    final data = _parseSocketData(rawData);
-    if (data == null) return;
+    developer.log('🔔 NEW ORDER HANDLER CALLED', name: 'TakeOrders.Socket');
 
-    developer.log('🔔 NEW ORDER EVENT', name: 'TakeOrders.Socket');
+    final data = _parseSocketData(rawData);
+    if (data == null) {
+      developer.log('❌ Failed to parse data', name: 'TakeOrders.Socket');
+      return;
+    }
+
+    developer.log('✅ Data parsed successfully', name: 'TakeOrders.Socket');
 
     // Check for duplicates
     final orderData = data['data'] ?? data;
@@ -326,33 +168,31 @@ class TakeOrdersController extends GetxController {
     final timestamp = data['timestamp'] ?? DateTime.now().toIso8601String();
     final eventId = '$orderId-$timestamp';
 
-    if (_isDuplicateEvent(eventId)) return;
+    if (_isDuplicateEvent(eventId)) {
+      developer.log('⏭️ Duplicate event skipped', name: 'TakeOrders.Socket');
+      return;
+    }
 
     final tableNumber = _extractTableNumber(orderData);
     final message = data['message'] ?? 'New order received for Table $tableNumber';
 
     developer.log('📋 Order #$orderId, Table $tableNumber', name: 'TakeOrders.Socket');
-    _debouncedRefreshTables();
+    developer.log('🔄 Triggering table refresh...', name: 'TakeOrders.Socket');
 
-    if (Get.context != null && orderId > 0) {
-      SnackBarUtil.showSuccess(
-        Get.context!,
-        message,
-        title: '🔔 New Order - Table $tableNumber',
-        duration: const Duration(seconds: 3),
-      );
-    }
+    _debouncedRefreshTables();
   }
 
   void _handlePaymentUpdate(dynamic rawData) {
+    developer.log('💰 PAYMENT UPDATE HANDLER CALLED', name: 'TakeOrders.Socket');
+
     final data = _parseSocketData(rawData);
     if (data == null) return;
-
-    developer.log('💰 PAYMENT UPDATE EVENT', name: 'TakeOrders.Socket');
 
     final orderData = data['data'] ?? data;
     final tableId = _extractTableId(orderData);
     final message = data['message'] ?? 'Payment completed';
+
+    developer.log('💰 Payment update for table ID: $tableId', name: 'TakeOrders.Socket');
 
     _debouncedRefreshTables();
 
@@ -360,27 +200,22 @@ class TakeOrdersController extends GetxController {
     if (tableId != null) {
       _updateLocalTableStatus(tableId, 'available');
     }
-
-    if (Get.context != null) {
-      SnackBarUtil.showSuccess(
-        Get.context!,
-        message,
-        title: '💰 Payment Received',
-        duration: const Duration(seconds: 2),
-      );
-    }
   }
 
   void _handleTableFreed(dynamic rawData) {
+    developer.log('🆓 TABLE FREED HANDLER CALLED', name: 'TakeOrders.Socket');
+
     final data = _parseSocketData(rawData);
     if (data == null) return;
 
     final eventType = _getEventType(rawData);
-    developer.log('$eventType EVENT', name: 'TakeOrders.Socket');
+    developer.log('Event type: $eventType', name: 'TakeOrders.Socket');
 
     final tableData = data['data'] ?? data;
     final tableId = _extractTableId(tableData);
     final tableNumber = _extractTableNumber(tableData);
+
+    developer.log('Table #$tableNumber (ID: $tableId) freed', name: 'TakeOrders.Socket');
 
     _debouncedRefreshTables();
 
@@ -392,32 +227,17 @@ class TakeOrdersController extends GetxController {
     if (Get.context != null) {
       final icons = {'payment_completed': '💰', 'table_cleared': '🧹', 'table_freed': '🆓'};
       final icon = icons[eventType] ?? '✅';
-
-      SnackBarUtil.showSuccess(
-        Get.context!,
-        'Table $tableNumber is now available',
-        title: '$icon Table Available',
-        duration: const Duration(seconds: 2),
-      );
     }
   }
 
   void _handleGenericUpdate(dynamic rawData) {
+    developer.log('📊 GENERIC UPDATE HANDLER CALLED', name: 'TakeOrders.Socket');
+
     final data = _parseSocketData(rawData);
     if (data == null) return;
 
-    developer.log('📊 Generic update event', name: 'TakeOrders.Socket');
+    developer.log('📊 Triggering refresh...', name: 'TakeOrders.Socket');
     _debouncedRefreshTables();
-
-    if (Get.context != null && data['message'] != null) {
-      SnackBarUtil.show(
-        Get.context!,
-        data['message'],
-        title: '📊 Update',
-        type: SnackBarType.info,
-        duration: const Duration(seconds: 1),
-      );
-    }
   }
 
   /// ==================== HELPER METHODS ====================
@@ -499,11 +319,14 @@ class TakeOrdersController extends GetxController {
   }
 
   void _debouncedRefreshTables() {
+    developer.log('🔄 Debouncing table refresh...', name: 'TakeOrders.Socket');
     _refreshDebounceTimer?.cancel();
     _refreshDebounceTimer = Timer(_refreshDebounceDelay, () {
       if (!_isRefreshing) {
-        developer.log('⏰ Refreshing tables', name: 'TakeOrders');
+        developer.log('⏰ Executing debounced refresh', name: 'TakeOrders.Socket');
         fetchTablesData();
+      } else {
+        developer.log('⏭️ Refresh already in progress', name: 'TakeOrders.Socket');
       }
     });
   }
@@ -521,6 +344,8 @@ class TakeOrdersController extends GetxController {
       isLoading.value = true;
       errorMessage.value = '';
 
+      developer.log('📡 Fetching tables...', name: 'TakeOrders');
+
       final apiResponse = await ApiService.get<TableResponseModel>(
         endpoint: ApiConstants.waiterGetTable,
         fromJson: (json) => TableResponseModel.fromJson(json),
@@ -533,12 +358,19 @@ class TakeOrdersController extends GetxController {
           tableResponseModel.value = response;
           allTables.value = response.data!.tables;
           _groupTablesByArea(response.data!.tables);
+
           developer.log('✅ ${allTables.length} tables loaded', name: 'TakeOrders');
+
+          // Force UI update
+          allTables.refresh();
+          groupedTables.refresh();
         } else {
           errorMessage.value = response.message.isNotEmpty ? response.message : 'Failed to load tables';
+          developer.log('❌ API error: ${errorMessage.value}', name: 'TakeOrders');
         }
       } else {
         errorMessage.value = 'Failed to load tables data';
+        developer.log('❌ No data received', name: 'TakeOrders');
       }
     } catch (e) {
       errorMessage.value = 'Error loading tables: ${e.toString()}';
@@ -546,6 +378,7 @@ class TakeOrdersController extends GetxController {
     } finally {
       isLoading.value = false;
       _isRefreshing = false;
+      developer.log('✅ Fetch completed', name: 'TakeOrders');
     }
   }
 
