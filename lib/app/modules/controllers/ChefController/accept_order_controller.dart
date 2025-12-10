@@ -1189,14 +1189,7 @@ class AcceptOrderController extends GetxController {
         name: 'AcceptOrders.Error',
       );
 
-      Get.snackbar(
-        'Error',
-        'Failed to accept item',
-        backgroundColor: Colors.red[100],
-        colorText: Colors.red[900],
-        snackPosition: SnackPosition.TOP,
-        duration: const Duration(seconds: 2),
-      );
+
     } finally {
       processingItems.remove(itemId);
     }
