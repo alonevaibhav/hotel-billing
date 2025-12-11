@@ -1,24 +1,51 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gap/gap.dart';
+import 'package:hotelbilling/app/modules/view/ChefPanel/sidebar/chef_drawer.dart';
 import '../../../../apputils/Utils/double_tap_to_exit.dart';
 import '../../controllers/ChefController/dashboard_controller.dart';
+import '../../controllers/chef_drawer_controller.dart';
 import '../WaiterPanel/sidebar/waiter_drawer.dart';
 import '../../widgets/header.dart';
 import 'pending_order.dart';
 import 'preparing_order.dart';
 
-class ChefDashboard extends StatelessWidget {
+class ChefDashboard extends StatefulWidget {
   const ChefDashboard({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final ChefController controller = Get.put(ChefController());
+  State<ChefDashboard> createState() => _ChefDashboardState();
+}
 
+class _ChefDashboardState extends State<ChefDashboard> {
+  late ChefController controller;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize or get existing controller
+    if (Get.isRegistered<ChefController>()) {
+      controller = Get.find<ChefController>();
+    } else {
+      controller = Get.put(ChefController(), permanent: true);
+    }
+
+    // Reset to RESTAURANT selection when dashboard loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (Get.isRegistered<ChefDrawerController>()) {
+        final drawerController = Get.find<ChefDrawerController>();
+        drawerController.resetToDefault();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return DoubleBackToExit(
       child: Scaffold(
         backgroundColor: Colors.white,
-        drawer: const WaiterDrawerWidget(), // Use the centralized drawer
+        drawer: const ChefDrawerWidget(), // Use the centralized drawer
         body: Column(
           children: [
             // Common Header

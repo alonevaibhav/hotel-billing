@@ -3,18 +3,44 @@ import 'package:get/get.dart';
 import 'package:gap/gap.dart';
 import '../../../../apputils/Utils/double_tap_to_exit.dart';
 import '../../controllers/WaiterPanelController/home_controller.dart';
+import '../../controllers/drawer_controller.dart';
 import 'sidebar/waiter_drawer.dart';
 import '../../widgets/header.dart';
 import 'ReadyOrder/ready_order.dart';
 import 'TakeOrder/take_order_main.dart';
 
-class WaiterDashboardView extends StatelessWidget {
+class WaiterDashboardView extends StatefulWidget {
   const WaiterDashboardView({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final RestaurantController controller = Get.put(RestaurantController());
+  State<WaiterDashboardView> createState() => _WaiterDashboardViewState();
+}
 
+class _WaiterDashboardViewState extends State<WaiterDashboardView> {
+  late RestaurantController controller;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize or get existing controller
+    if (Get.isRegistered<RestaurantController>()) {
+      controller = Get.find<RestaurantController>();
+    } else {
+      controller = Get.put(RestaurantController(), permanent: true);
+    }
+
+    // Reset to RESTAURANT selection when dashboard loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (Get.isRegistered<WaiterDrawerController>()) {
+        final drawerController = Get.find<WaiterDrawerController>();
+        drawerController.resetToDefault();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return DoubleBackToExit(
       child: SafeArea(
         child: Scaffold(

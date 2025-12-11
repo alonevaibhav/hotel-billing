@@ -24,6 +24,7 @@ class RestaurantController extends GetxController {
   void onInit() {
     super.onInit();
     developer.log('RestaurantController initialized', name: 'Restaurant');
+
     _initializeData();
   }
 

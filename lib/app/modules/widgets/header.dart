@@ -21,7 +21,7 @@ class CommonHeaderWidget extends StatelessWidget implements PreferredSizeWidget 
 
   @override
   Widget build(BuildContext context) {
-    final DrawerController controller = Get.put(DrawerController());
+    final WaiterDrawerController controller = Get.put(WaiterDrawerController());
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),

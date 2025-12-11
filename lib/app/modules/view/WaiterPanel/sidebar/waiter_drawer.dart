@@ -11,7 +11,8 @@ class WaiterDrawerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final DrawerController controller = Get.put(DrawerController());
+    // final WaiterDrawerController controller = Get.put(WaiterDrawerController());
+    final WaiterDrawerController controller = Get.find<WaiterDrawerController>();
 
     return Drawer(
       backgroundColor: const Color(0xFFFAFAFC),
@@ -62,17 +63,6 @@ class WaiterDrawerWidget extends StatelessWidget {
                       Navigator.pop(context);
                     },
                   ),
-                  // _buildMenuItem(
-                  //   controller: controller,
-                  //   icon: PhosphorIcons.gear(PhosphorIconsStyle.regular),
-                  //   title: 'Settings',
-                  //   isSelected:
-                  //   controller.selectedSidebarItem.value == 'SETTINGS',
-                  //   onTap: () {
-                  //     controller.handleSettings();
-                  //     Navigator.pop(context);
-                  //   },
-                  // ),
                 ],
               ),
             ),
@@ -85,7 +75,7 @@ class WaiterDrawerWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildDrawerHeader(DrawerController controller) {
+  Widget _buildDrawerHeader(WaiterDrawerController controller) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -217,7 +207,7 @@ class WaiterDrawerWidget extends StatelessWidget {
   }
 
   Widget _buildMenuItem({
-    required DrawerController controller,
+    required WaiterDrawerController controller,
     required IconData icon,
     required String title,
     required bool isSelected,
@@ -295,7 +285,7 @@ class WaiterDrawerWidget extends StatelessWidget {
   }
 
   Widget _buildDrawerFooter(
-      DrawerController controller, BuildContext context) {
+      WaiterDrawerController controller, BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -399,7 +389,7 @@ class WaiterDrawerWidget extends StatelessWidget {
   }
 
   void _showLogoutDialog(
-      BuildContext context, DrawerController controller) {
+      BuildContext context, WaiterDrawerController controller) {
     showDialog(
       context: context,
       builder: (BuildContext context) {

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -25,10 +24,8 @@ void main() async {
   await Get.putAsync(() => NotificationService().init());
   Get.put(NotificationStorageController());
 
-
   // ✅ Initialize Socket Connection Manager
   await SocketConnectionManager.init();
-
 
   // Check authentication status
   final authData = await TokenManager.checkAuthenticationWithRole();
